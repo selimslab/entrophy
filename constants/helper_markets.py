@@ -1,0 +1,5 @@
+GOOGLE = "google"
+MARKET_PAKETI = "marketpaketi"
+AKAKCE = "akakce"
+
+HELPER_MARKETS = [AKAKCE, GOOGLE, MARKET_PAKETI]

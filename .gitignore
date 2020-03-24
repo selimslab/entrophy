@@ -1,0 +1,14 @@
+venv
+build
+*.pyc
+.idea
+project.egg-info
+
+.mypy_cache
+.pytest_cache
+
+image_match
+*.json
+*.env
+*.xlsx
+

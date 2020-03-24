@@ -1,0 +1,11 @@
+rsa==3.4.2
+pymongo
+dnspython
+bs4
+requests
+firebase-admin
+elasticsearch
+fuzzywuzzy[speedup]
+networkx
+tqdm
+

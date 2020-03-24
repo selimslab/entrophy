@@ -1,0 +1,32 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pylint = "*"
+pytest = "*"
+
+[packages]
+rsa = "<=3.5.0,>=3.1.2"
+pymongo = "*"
+tqdm = "*"
+bs4 = "*"
+dnspython = "*"
+scrapy-crawlera = "*"
+scrapy = "*"
+firebase-admin = "*"
+networkx = "*"
+fuzzywuzzy = {extras = ["speedup"],version = "*"}
+python-levenshtein = "*"
+shub = "*"
+elasticsearch = "*"
+python-dotenv = "*"
+pandas = "*"
+openpyxl = "*"
+xlrd = "*"
+
+requests = "*"
+
+[requires]
+python_version = "3.7"
