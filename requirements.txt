@@ -5,7 +5,6 @@ bs4
 requests
 firebase-admin
 elasticsearch
-fuzzywuzzy[speedup]
 networkx
 tqdm
 
