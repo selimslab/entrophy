@@ -7,4 +7,5 @@ firebase-admin
 elasticsearch
 networkx
 tqdm
+sentry-sdk==0.14.3
 
