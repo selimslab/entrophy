@@ -85,7 +85,7 @@ def get_prices(docs):
     prices = {
         market: price
         for market, price in prices.items()
-        if market not in keys.HELPER_MARKETS
+        if market in keys.VISIBLE_MARKETS
     }
 
     prices = {market: clean_price(price) for market, price in prices.items()}

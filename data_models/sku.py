@@ -24,3 +24,5 @@ class SKU:
     sku_ids_count: dict = None
     product_ids_count: dict = None
     barcodes: list = None
+    options: list = None
+

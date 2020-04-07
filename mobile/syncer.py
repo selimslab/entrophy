@@ -91,13 +91,28 @@ def sync_search():
         },
     }
 
+    search_by_id = {
+        "_source": {
+            "excludes": ["tags", "product_ids_count", "sku_ids_count", "links"]
+        },
+        {
+            "query": {
+                "ids": {"values": [
+                "5d7bdfa6525e36c343df0d8c",
+                "5d7bdfa6525e36c343df0e4e"
+              ]
+                }
+            }
+        }
+
+    }
     """
     {"best_price": {"order": "asc"}},
     {"market_count": {"order": "desc"}}, 
     """
     url = "https://search-narmoni-sby3slciocpfo5f3ubqhplod7u.eu-central-1.es.amazonaws.com/products/_search"
     firestore_client.collection(u"config").document(u"search").set(
-        {"url": url, "query": search_keyword, "barcode_search": search_barcode}
+        {"url": url, "query": search_keyword, "barcode_search": search_barcode, "search_by_id":search_by_id}
     )
 
 
