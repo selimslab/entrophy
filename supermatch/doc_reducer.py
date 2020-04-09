@@ -2,7 +2,7 @@ import collections
 from dataclasses import asdict
 import services
 import constants as keys
-from data_models import SKU
+from data_models.sku import SKU
 from services import convert_price
 from services import token_util
 from supermatch.exceptions import MatchingException

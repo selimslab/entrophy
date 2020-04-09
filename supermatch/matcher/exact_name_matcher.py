@@ -4,7 +4,7 @@ import constants as keys
 import services
 
 
-class ExactNameMatcherMixin:
+class ExactNameMatcher:
     @staticmethod
     def get_exact_match_groups(id_doc_pairs: dict, matched: set) -> list:
         print("creating exact_name_match_groups")

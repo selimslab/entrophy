@@ -30,27 +30,18 @@ def get_links(link):
     return links
 
 
-def save_case_results(name, docs, matching_collection):
-    paths = get_paths(name)
+def get_docs_with_ids(skus):
+    alldocs = list()
+    for sku_id, sku in skus.items():
+        docs = sku.get("docs")
+        ids = {keys.SKU_ID: sku_id, keys.PRODUCT_ID: sku.get(keys.PRODUCT_ID)}
+        for doc in docs:
+            if "clone" in doc.get("_id"):
+                continue
+            doc = {**doc, **ids}
+            alldocs.append(doc)
 
-    # create_excel(cursor=docs, excel_path=paths.excel_path)
-
-    json_util.save_json(paths.full_docs_path, docs)
-    json_util.save_json(paths.products_path, matching_collection.products)
-    json_util.save_json(paths.skus_path, matching_collection.skus)
-
-
-def get_docs_with_ids(matching_collection):
-    docs = list()
-    for doc_id, sku_and_product_ids in matching_collection.id_tree.items():
-        if "+clone" in doc_id:
-            # skip cloned docs
-            continue
-        doc = matching_collection.id_doc_pairs.get(doc_id)
-        doc = {**doc, **sku_and_product_ids}
-        docs.append(doc)
-
-    return docs
+    return alldocs
 
 
 def run_matcher(name, links, links_of_products=None):
@@ -60,8 +51,10 @@ def run_matcher(name, links, links_of_products=None):
     skus = create_matching(
         docs_to_match=docs_to_match, links_of_products=links_of_products
     )
-    docs = get_docs_with_ids(matching_collection)
-    save_case_results(name, docs, matching_collection)
+    paths = get_paths(name)
+    # create_excel(cursor=docs, excel_path=paths.excel_path)
+    json_util.save_json(paths.full_docs_path, docs)
+    json_util.save_json(paths.skus_path, skus)
 
 
 def palette():

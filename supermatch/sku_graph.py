@@ -5,7 +5,9 @@ import networkx as nx
 
 import constants as keys
 from services import GenericGraph
-from supermatch.matcher.main import Matcher
+from supermatch.matcher.barcode_matcher import BarcodeMatcher
+from supermatch.matcher.exact_name_matcher import ExactNameMatcher
+from supermatch.matcher.promoted_link_matcher import PromotedLinkMatcher
 
 
 class AbstractSKUGraphCreator(ABC):
@@ -75,7 +77,7 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
     def _add_edges_from_promoted_links(self, id_doc_pairs):
         print("addding_edges_from_promoted_links..")
 
-        link_id_pairs = Matcher.create_link_id_pairs(id_doc_pairs)
+        link_id_pairs = PromotedLinkMatcher.create_link_id_pairs(id_doc_pairs)
 
         promoted_connections = dict()
         refers_to_multiple_barcodes = set()
@@ -84,7 +86,7 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
             promoted = doc.get(keys.PROMOTED, {})
             if not promoted:
                 continue
-            promoted_links = Matcher.get_promoted_links(promoted)
+            promoted_links = PromotedLinkMatcher.get_promoted_links(promoted)
             promoted_links = [link for link in promoted_links if link in link_id_pairs]
 
             # add edge iff sizes are the same
@@ -128,14 +130,14 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
 
         self._init_sku_graph(id_doc_pairs)
         matched = set()
-        barcode_id_pairs = Matcher.create_barcode_id_pairs(id_doc_pairs)
+        barcode_id_pairs = BarcodeMatcher.create_barcode_id_pairs(id_doc_pairs)
         print(len(barcode_id_pairs), "barcodes in the pool")
         self._add_edges_from_barcodes(barcode_id_pairs)
 
         matched_using_promoted = self._add_edges_from_promoted_links(id_doc_pairs)
         matched.update(matched_using_promoted)
 
-        exact_match_groups = Matcher.get_exact_match_groups(id_doc_pairs, matched)
+        exact_match_groups = ExactNameMatcher.get_exact_match_groups(id_doc_pairs, matched)
         self._add_edges_from_exact_name_match(exact_match_groups)
 
         return self.sku_graph

@@ -1,10 +1,9 @@
 import data_services
-from data_models.matching import MatchingCollection
 from supersync import doc_comparator
 
 
-def sync_the_new_matching(matching_collection: MatchingCollection):
-    if not matching_collection:
+def sync_the_new_matching(skus):
+    if not skus:
         raise AttributeError("no matching_collection")
 
     id_product_pairs = data_services.get_id_product_pairs()

@@ -1,7 +1,7 @@
 import constants as keys
 
 
-class PromotedLinkMatcherMixin:
+class PromotedLinkMatcher:
     @staticmethod
     def get_promoted_links(promoted: dict) -> list:
         promoted_links = []

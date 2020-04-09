@@ -1,7 +1,7 @@
 import constants as keys
 
 
-class BarcodeMatcherMixin:
+class BarcodeMatcher:
     @staticmethod
     def create_barcode_id_pairs(id_doc_pairs):
         barcode_id_pairs = dict()
