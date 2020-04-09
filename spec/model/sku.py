@@ -3,15 +3,10 @@ from typing import Union
 
 
 @dataclass
-class SKU:
-    objectID: str = None
-    docs: list = None
+class BasicSKU:
     doc_ids: list = None
     sku_id: str = None
     product_id: str = None
-    product_ids_count: dict = None
-    sku_ids_count: dict = None
-    links: list = None
     name: str = None
     src: str = None
     prices: dict = None
@@ -26,6 +21,16 @@ class SKU:
     market_count: int = None
     video_url: str = None
     tags: str = None
-    most_common_tokens: list = None
     barcodes: list = None
     options: list = None
+
+
+@dataclass
+class SKU(BasicSKU):
+    objectID: str = None
+    product_ids_count: dict = None
+    sku_ids_count: dict = None
+    docs: list = None
+    doc_ids: list = None
+    links: list = None
+    most_common_tokens: list = None

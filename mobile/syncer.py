@@ -29,8 +29,8 @@ def push_cats():
         new_cat["name"] = cat
         new_cat["subcategories"] = tree[cat]
         new_cat["icon"] = (
-            "https://narmoni.s3.eu-central-1.amazonaws.com/market_logos/icons/"
-            + icons.get(cat)
+                "https://narmoni.s3.eu-central-1.amazonaws.com/market_logos/icons/"
+                + icons.get(cat)
         )
         cats.append(new_cat)
 
@@ -83,9 +83,9 @@ def sync_search():
         },
         "query": {
             "bool": {
-                "must": [{"match_all": {}},],
+                "must": [{"match_all": {}}, ],
                 "filter": [
-                    {"terms": {"barcodes": ["8690506390907", "1825470015283"],}},
+                    {"terms": {"barcodes": ["8690506390907", "1825470015283"], }},
                 ],
             }
         },
@@ -95,13 +95,14 @@ def sync_search():
         "_source": {
             "excludes": ["tags", "product_ids_count", "sku_ids_count", "links"]
         },
-        {
-            "query": {
-                "ids": {"values": [
-                "5d7bdfa6525e36c343df0d8c",
-                "5d7bdfa6525e36c343df0e4e"
-              ]
-                }
+        "query": {
+            "bool": {
+                "must": [{"match_all": {}}],
+                "filter": [
+                    {"ids": {"values": ["5d7bdfa6525e36c343df0d8c", "5d7bdfa6525e36c343df0e4e"]
+                             }
+                     }
+                ]
             }
         }
 
@@ -112,7 +113,7 @@ def sync_search():
     """
     url = "https://search-narmoni-sby3slciocpfo5f3ubqhplod7u.eu-central-1.es.amazonaws.com/products/_search"
     firestore_client.collection(u"config").document(u"search").set(
-        {"url": url, "query": search_keyword, "barcode_search": search_barcode, "search_by_id":search_by_id}
+        {"url": url, "query": search_keyword, "barcode_search": search_barcode, "search_by_id": search_by_id}
     )
 
 

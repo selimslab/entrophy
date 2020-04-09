@@ -10,6 +10,26 @@ from tqdm import tqdm
 import logging
 
 
+def sync_elastic(updates):
+    to_be_added, to_be_updated, ids_to_delete = updates
+    print("syncing products..")
+    elastic = Elastic()
+    elastic.update_docs(to_be_added)
+    elastic.replace_docs(to_be_updated)
+    if ids_to_delete:
+        elastic.delete_ids(ids_to_delete)
+
+
+def sync_firestore(updates):
+    print("syncing skus..")
+    to_be_added, to_be_updated, ids_to_delete = updates
+    fire_sync.batch_update_firestore(to_be_added)
+    fire_sync.batch_update_firestore(to_be_updated)
+    if ids_to_delete:
+        fire_sync.delete_old_ids(ids_to_delete)
+
+
+
 def update_elastic_docs(docs):
     el = Elastic()
     el.update_docs(docs)
@@ -110,23 +130,7 @@ def get_link_doc_pairs():
     return link_doc_pairs
 
 
-def sync_products_to_elastic(product_updates):
-    to_be_added, to_be_updated, ids_to_delete = product_updates
-    print("syncing products..")
-    elastic = Elastic()
-    elastic.update_docs(to_be_added)
-    elastic.replace_docs(to_be_updated)
-    if ids_to_delete:
-        elastic.delete_ids(ids_to_delete)
 
-
-def sync_skus_to_firestore(sku_updates):
-    print("syncing skus..")
-    to_be_added, to_be_updated, ids_to_delete = sku_updates
-    fire_sync.batch_update_firestore(to_be_added)
-    fire_sync.batch_update_firestore(to_be_updated)
-    if ids_to_delete:
-        fire_sync.delete_old_ids(ids_to_delete)
 
 
 def search_in_firestore(doc_id):

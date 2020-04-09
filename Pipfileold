@@ -16,11 +16,12 @@ dnspython = "*"
 scrapy-crawlera = "*"
 scrapy = "*"
 firebase-admin = "*"
+elasticsearch = "*"
 networkx = "*"
 fuzzywuzzy = {extras = ["speedup"],version = "*"}
 python-levenshtein = "*"
 shub = "*"
-elasticsearch = "*"
+
 python-dotenv = "*"
 pandas = "*"
 openpyxl = "*"

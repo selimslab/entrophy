@@ -1,8 +1,7 @@
 import constants as keys
 import data_services
-from data_models import MatchingMechanism
 from services import json_util
-from supermatch import create_matching
+from supermatch.main import create_matching
 from test.test_logs.paths import get_paths
 # from test.excel.excel import create_excel
 import data_services.mongo.collections as collections
@@ -44,17 +43,6 @@ def get_docs_with_ids(skus):
     return alldocs
 
 
-def run_matcher(name, links, links_of_products=None):
-    query = {keys.LINK: {"$in": links}}
-    docs_to_match = data_services.get_docs_to_match(query)
-
-    skus = create_matching(
-        docs_to_match=docs_to_match, links_of_products=links_of_products
-    )
-    paths = get_paths(name)
-    # create_excel(cursor=docs, excel_path=paths.excel_path)
-    json_util.save_json(paths.full_docs_path, docs)
-    json_util.save_json(paths.skus_path, skus)
 
 
 def palette():
@@ -72,19 +60,14 @@ def full():
         doc["_id"] = id
         docs_to_match.append(doc)
 
-    matching_mechanism = MatchingMechanism(barcode=True, promoted=True, exact_name=True)
     links_of_products = data_services.get_links_of_products()
     matching_collection = create_matching(
-        docs_to_match, matching_mechanism, links_of_products
+        docs_to_match, links_of_products
     )
     docs = get_docs_with_ids(matching_collection)
-    save_case_results("full", docs, matching_collection)
 
 
 if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-    name = "migros_seker"
-    links = get_links("https://www.migros.com.tr/dogus-toz-seker-5-kg-p-3285bd")
-    run_matcher(name=name, links=links)
+
     # test_palette()
     # test_full()
