@@ -77,30 +77,6 @@ def search_barcode(barcodes: list):
     return el.search(body)
 
 
-def get_id_sku_pairs(id_product_pairs=None):
-    print("getting id_sku_pairs..")
-
-    if id_product_pairs is None:
-        id_product_pairs = dict()
-
-    variants = [doc.get(keys.VARIANTS, []) for doc_id, doc in id_product_pairs.items()]
-    variants = services.flatten(variants)
-
-    logging.info(f"{len(variants)}, variants")
-
-    # sku and product are the same for the most
-    pairs = {
-        doc_id: doc
-        for doc_id, doc in id_product_pairs.items()
-        if doc_id not in variants
-    }
-
-    for doc in tqdm(fire_sync.firestore_generate_skus_by_id(variants)):
-        pairs[doc.get("objectID")] = doc
-
-    services.save_json("id_sku_pairs.json", pairs)
-    return pairs
-
 
 def get_id_product_pairs():
     el = Elastic()

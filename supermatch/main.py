@@ -5,7 +5,7 @@ import constants as keys
 from supermatch import id_doc_pairer, sku_grouper
 from supermatch.id_selector import select_unique_id
 from supermatch.sku_graph import sku_graph_creator
-from supermatch.doc_reducer import create_a_single_sku_doc_from_item_docs
+from supermatch.doc_reducer import reduce_docs_to_sku
 
 
 def create_matching(
@@ -33,14 +33,16 @@ def create_matching(
     )
 
     skus = dict()
+    used_sku_ids = set()
     for doc_ids in groups_of_doc_ids:
         docs = [id_doc_pairs.get(doc_id) for doc_id in doc_ids]
-        used_sku_ids = set()
-        sku = create_a_single_sku_doc_from_item_docs(docs, used_sku_ids)
+        sku = reduce_docs_to_sku(docs, used_sku_ids)
         if sku:
             sku["doc_ids"] = doc_ids
             sku["docs"] = docs
-            skus[sku.get("sku_id")] = sku
+            sku_id = sku.get("sku_id")
+            skus[sku_id] = sku
+            used_sku_ids.add(sku_id)
 
     groups_of_sku_ids = sku_grouper.group_skus(skus)
 

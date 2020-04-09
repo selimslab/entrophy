@@ -2,10 +2,10 @@ import collections
 from dataclasses import asdict
 import services
 import constants as keys
-from data_models.sku import SKU
+from spec.model.sku import SKU
 from services import convert_price
 from services import token_util
-from supermatch.exceptions import MatchingException
+from spec.exceptions import MatchingException
 from supermatch.id_selector import select_unique_id
 
 
@@ -124,7 +124,7 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
-def create_a_single_sku_doc_from_item_docs(docs: list, used_sku_ids: set) -> dict:
+def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
     if not docs:
         return {}
 

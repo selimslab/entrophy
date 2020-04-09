@@ -43,7 +43,6 @@ class BaseSpider(scrapy.Spider):
             if next_page_href:
                 next_page_url = self.base_url + next_page_href
                 yield response.follow(next_page_url, callback=self.parse)
-
         else:
             pass
 
