@@ -1,35 +1,18 @@
 import logging
 from typing import Iterator
-
+import collections
 import constants as keys
-import services
-import supermatch.sku_services as sku_services
-from data_models import MatchingMechanism, MatchingCollection
-from supermatch.id_tree_creator import create_id_tree
-from supermatch.product_services import product_creator
-from supermatch import id_doc_pairer
-
-
-def get_groups_of_doc_ids(id_doc_pairs, matching_mechanism):
-    graph_of_raw_docs = sku_services.sku_graph_creator.create_graph(
-        id_doc_pairs, matching_mechanism
-    )
-
-    groups_of_doc_ids: Iterator = sku_services.sku_graph_creator.create_connected_component_groups(
-        graph_of_raw_docs
-    )
-    return groups_of_doc_ids
+from data_models import MatchingMechanism
+from supermatch import id_doc_pairer, sku_grouper
+from supermatch.id_selector import select_unique_id
+from supermatch.sku_graph import sku_graph_creator
+from supermatch.doc_reducer import create_a_single_sku_doc_from_item_docs
 
 
 def create_matching(
-    docs_to_match: Iterator,
-    matching_mechanism: MatchingMechanism = None,
-    links_of_products: set = None,
+        docs_to_match: Iterator,
+        links_of_products: set = None
 ):
-    if matching_mechanism is None:
-        matching_mechanism = MatchingMechanism(
-            barcode=True, promoted=True, exact_name=True
-        )
     if links_of_products is None:
         links_of_products = set()
 
@@ -41,36 +24,48 @@ def create_matching(
         for doc_id, doc in id_doc_pairs.items()
         if doc.get(keys.LINK) not in links_of_products
     }
-    groups_of_doc_ids = get_groups_of_doc_ids(id_doc_pairs, matching_mechanism)
 
-    sku_id_doc_ids_pairs: dict = sku_services.get_sku_id_doc_ids_pairs(
-        groups_of_doc_ids, id_doc_pairs
+    graph_of_raw_docs = sku_graph_creator.create_graph(
+        id_doc_pairs
     )
 
-    id_sku_pairs = dict()
-    for sku_id, doc_ids in sku_id_doc_ids_pairs.items():
+    groups_of_doc_ids: Iterator = sku_graph_creator.create_connected_component_groups(
+        graph_of_raw_docs
+    )
+
+    skus = dict()
+    for doc_ids in groups_of_doc_ids:
         docs = [id_doc_pairs.get(doc_id) for doc_id in doc_ids]
-        sku = sku_services.create_a_single_sku_doc_from_item_docs(docs, sku_id)
+        used_sku_ids = set()
+        sku = create_a_single_sku_doc_from_item_docs(docs, used_sku_ids)
         if sku:
-            id_sku_pairs[sku_id] = sku
+            sku["doc_ids"] = doc_ids
+            sku["docs"] = docs
+            skus[sku.get("sku_id")] = sku
 
-    # id_sku_pairs = NodeSimilarity.add_similarity(id_sku_pairs)
+    groups_of_sku_ids = sku_grouper.group_skus(skus)
 
-    skus = list(id_sku_pairs.values())
-    skus = [services.sanitize_dict(sku) for sku in skus]
-    skus = [sku for sku in skus if sku]
+    used_product_ids = set()
+    for sku_ids in groups_of_sku_ids:
+        product_id_counts = collections.Counter()
+
+        for sku_id in sku_ids:
+            sku = skus.get(sku_id)
+            sku["options"] = sku_ids
+            product_id_counts.update(sku.get("product_id_counts", {}))
+            skus[sku_id] = sku
+
+        product_id = select_unique_id(product_id_counts, used_product_ids, sku_ids)
+        for sku_id in sku_ids:
+            skus[sku_id]["product_id"] = product_id
+
+        used_product_ids.add(product_id)
+
+    skus = [
+        {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
+        for sku_id, sku in skus.items()
+    ]
+    skus = [s for s in skus if s]
     logging.info(f"skus # {len(skus)}")
 
-    products: list = product_creator.create_products(id_sku_pairs)
-    products = [services.sanitize_dict(dict(product)) for product in products]
-    products = [p for p in products if p]
-
-    logging.info(f"products # {len(products)}")
-
-    id_tree = create_id_tree(sku_id_doc_ids_pairs, products)
-
-    matching_collection = MatchingCollection(
-        skus=skus, products=products, id_tree=id_tree
-    )
-
-    return matching_collection
+    return skus

@@ -3,7 +3,7 @@ from services import flattener
 
 
 def create_id_tree(sku_id_doc_ids_pairs, products):
-    id_tree = dict()
+    id_tree = {}
 
     for sku_id, doc_ids in sku_id_doc_ids_pairs.items():
         for doc_id in doc_ids:

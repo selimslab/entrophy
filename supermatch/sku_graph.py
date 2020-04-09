@@ -4,9 +4,8 @@ from abc import ABC, abstractmethod
 import networkx as nx
 
 import constants as keys
-from data_models.matching import MatchingMechanism
 from services import GenericGraph
-from .matcher.main import Matcher
+from supermatch.matcher.main import Matcher
 
 
 class AbstractSKUGraphCreator(ABC):
@@ -31,7 +30,7 @@ class AbstractSKUGraphCreator(ABC):
 
     @abstractmethod
     def create_graph(
-        self, id_doc_pairs: dict, matching_mechanism: MatchingMechanism
+            self, id_doc_pairs: dict
     ) -> nx.Graph:
         pass
 
@@ -124,23 +123,20 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
             self.sku_graph.add_edges_from(edges)
 
     def create_graph(
-        self, id_doc_pairs: dict, matching_mechanism: MatchingMechanism
+            self, id_doc_pairs: dict
     ) -> nx.Graph:
 
         self._init_sku_graph(id_doc_pairs)
         matched = set()
-        if matching_mechanism.barcode:
-            barcode_id_pairs = Matcher.create_barcode_id_pairs(id_doc_pairs)
-            print(len(barcode_id_pairs), "barcodes in the pool")
-            self._add_edges_from_barcodes(barcode_id_pairs)
+        barcode_id_pairs = Matcher.create_barcode_id_pairs(id_doc_pairs)
+        print(len(barcode_id_pairs), "barcodes in the pool")
+        self._add_edges_from_barcodes(barcode_id_pairs)
 
-        if matching_mechanism.promoted:
-            matched_using_promoted = self._add_edges_from_promoted_links(id_doc_pairs)
-            matched.update(matched_using_promoted)
+        matched_using_promoted = self._add_edges_from_promoted_links(id_doc_pairs)
+        matched.update(matched_using_promoted)
 
-        if matching_mechanism.exact_name:
-            exact_match_groups = Matcher.get_exact_match_groups(id_doc_pairs, matched)
-            self._add_edges_from_exact_name_match(exact_match_groups)
+        exact_match_groups = Matcher.get_exact_match_groups(id_doc_pairs, matched)
+        self._add_edges_from_exact_name_match(exact_match_groups)
 
         return self.sku_graph
 

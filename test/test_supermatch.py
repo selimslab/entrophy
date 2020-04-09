@@ -4,7 +4,7 @@ from data_models import MatchingMechanism
 from services import json_util
 from supermatch import create_matching
 from test.test_logs.paths import get_paths
-from test.excel.excel import create_excel
+# from test.excel.excel import create_excel
 import data_services.mongo.collections as collections
 
 import logging
@@ -33,7 +33,7 @@ def get_links(link):
 def save_case_results(name, docs, matching_collection):
     paths = get_paths(name)
 
-    create_excel(cursor=docs, excel_path=paths.excel_path)
+    # create_excel(cursor=docs, excel_path=paths.excel_path)
 
     json_util.save_json(paths.full_docs_path, docs)
     json_util.save_json(paths.products_path, matching_collection.products)
@@ -57,7 +57,7 @@ def run_matcher(name, links, links_of_products=None):
     query = {keys.LINK: {"$in": links}}
     docs_to_match = data_services.get_docs_to_match(query)
 
-    matching_collection = create_matching(
+    skus = create_matching(
         docs_to_match=docs_to_match, links_of_products=links_of_products
     )
     docs = get_docs_with_ids(matching_collection)

@@ -1,16 +1,13 @@
 import itertools
 import operator
-
-import constants as keys
 import data_services
 import services
-from .sku_reducer import reduce_skus_to_products
 
 
-def get_gratis_link_id_tuples(id_sku_pairs: dict, gratis_product_links: set) -> list:
+def get_gratis_link_id_tuples(skus: dict, gratis_product_links: set) -> list:
     gratis_links_with_sku = [
         (link, sku_id)
-        for sku_id, sku in id_sku_pairs.items()
+        for sku_id, sku in skus.items()
         for link in sku.get("links", [])
         if "?sku" in link
     ]
@@ -23,7 +20,7 @@ def get_gratis_link_id_tuples(id_sku_pairs: dict, gratis_product_links: set) -> 
     return gratis_link_id_tuples
 
 
-def get_google_groups(id_sku_pairs):
+def get_google_groups(skus):
     """
     variants: [{'250 ml': '/shopping/product/17523461779494271950'}, {} ... ]
     """
@@ -40,7 +37,7 @@ def get_google_groups(id_sku_pairs):
 
     google_link_id_tuples = [
         (link, variant_id_pairs.get(link), sku_id)
-        for sku_id, sku in id_sku_pairs.items()
+        for sku_id, sku in skus.items()
         for link in sku.get("links", [])
         if link in variant_id_pairs
     ]
@@ -66,21 +63,14 @@ def group_link_id_tuples(link_id_tuples):
     return groups
 
 
-def create_products(id_sku_pairs: dict) -> list:
-    google_groups = get_google_groups(id_sku_pairs)
+def group_skus(skus: dict) -> list:
+    google_groups = get_google_groups(skus)
 
     gratis_product_links: set = data_services.get_links_of_products()
     gratis_link_id_tuples = get_gratis_link_id_tuples(
-        id_sku_pairs, gratis_product_links
+        skus, gratis_product_links
     )
     gratis_groups = group_link_id_tuples(gratis_link_id_tuples)
-
-    gratis_product_names = data_services.get_gratis_product_names(gratis_product_links)
-    # this sku_id has a product name now
-    sku_id_gratis_name_pairs = {
-        sku_id: gratis_product_names.get(link)
-        for (link, sku_id) in gratis_link_id_tuples
-    }
 
     sku_groups = itertools.chain(google_groups, gratis_groups)
 
@@ -88,11 +78,8 @@ def create_products(id_sku_pairs: dict) -> list:
     groups_of_sku_ids = services.GenericGraph.create_connected_component_groups(
         graph_of_skus
     )
-    products = reduce_skus_to_products(
-        id_sku_pairs, groups_of_sku_ids, sku_id_gratis_name_pairs
-    )
 
-    return products
+    return groups_of_sku_ids
 
 
 if __name__ == "__main__":

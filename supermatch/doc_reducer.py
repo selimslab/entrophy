@@ -6,6 +6,7 @@ from data_models import SKU
 from services import convert_price
 from services import token_util
 from supermatch.exceptions import MatchingException
+from supermatch.id_selector import select_unique_id
 
 
 def clean_price(price):
@@ -123,44 +124,48 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
-def create_a_single_sku_doc_from_item_docs(docs: list, sku_id: str) -> dict:
+def create_a_single_sku_doc_from_item_docs(docs: list, used_sku_ids: set) -> dict:
     if not docs:
         return {}
 
+    sku = SKU()
+
     try:
-        prices = get_prices(docs)
+        sku.prices = get_prices(docs)
     except MatchingException:
         return {}
 
-    markets = list(set(prices.keys()))
-    market_count = len(markets)
-    best_price = min(list(prices.values()))
+    sku.markets = list(set(sku.prices.keys()))
+    sku.market_count = len(sku.markets)
+    sku.best_price = min(list(sku.prices.values()))
 
     barcodes = [doc.get(keys.BARCODES) for doc in docs]
     barcodes = services.flatten(barcodes)
     barcodes = [b for b in barcodes if b]
-    sku_barcode = list(set(barcodes))
+    sku.barcodes = list(set(barcodes))
+
+    sku.doc_ids = [doc.get("_id") for doc in docs]
 
     sku_ids = [doc.get(keys.SKU_ID) for doc in docs]
+    sku_ids = [p for p in sku_ids if p]
+    sku_ids_count = dict(collections.Counter(sku_ids))
+    sku.sku_id = select_unique_id(sku_ids_count, used_sku_ids, sku.doc_ids)
+
     product_ids = [doc.get(keys.PRODUCT_ID) for doc in docs]
-
-    sku_ids = [s for s in sku_ids if s]
     product_ids = [p for p in product_ids if p]
-
-    sku_ids = dict(collections.Counter(sku_ids))
-    product_ids = dict(collections.Counter(product_ids))
+    sku.product_ids_count = dict(collections.Counter(product_ids))
 
     links = [doc.get(keys.LINK) for doc in docs]
-    links = list(set(links))
+    sku.links = list(set(links))
 
     names = {
         doc.get(keys.MARKET): doc.get(keys.NAME) for doc in docs if doc.get(keys.NAME)
     }
-    selected_name = get_name(names)
+    sku.name = get_name(names)
 
-    tags, most_common_tokens = get_tags(names)
+    sku.tags, sku.most_common_tokens = get_tags(names)
 
-    selected_image = get_image(docs)
+    sku.src = get_image(docs)
 
     size = None
     digits = None
@@ -175,33 +180,15 @@ def create_a_single_sku_doc_from_item_docs(docs: list, sku_id: str) -> dict:
         ]
         size_info = [(d, u, s) for (d, u, s) in size_info if d and u and s]
         for (d, u, s) in size_info:
-            if str(d) in selected_name:
+            if str(d) in sku.name:
                 digits, unit, size = (d, u, s)
                 break
         if size_info and not digits:
             digits, unit, size = size_info[0]
 
-    unit_price = None
-    if digits:
-        unit_price = round(best_price / digits, 2)
+    sku.digits, sku.unit, sku.size = digits, unit, size
 
-    sku = SKU(
-        name=selected_name,
-        objectID=sku_id,
-        prices=prices,
-        markets=markets,
-        market_count=market_count,
-        best_price=best_price,
-        unit_price=unit_price,
-        links=links,
-        src=selected_image,
-        digits=digits,
-        unit=unit,
-        size=size,
-        tags=tags,
-        sku_ids_count=sku_ids,
-        product_ids_count=product_ids,
-        barcodes=sku_barcode,
-    )
+    if digits:
+        sku.unit_price = round(sku.best_price / digits, 2)
 
     return asdict(sku)
