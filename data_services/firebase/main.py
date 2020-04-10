@@ -10,6 +10,7 @@ from firebase_admin.exceptions import (
 from tqdm import tqdm
 import logging
 from .auth import cred_path
+import constants as keys
 
 # Use a service account
 cred = credentials.Certificate(cred_path)
@@ -31,21 +32,15 @@ def commit_batch(batch):
         return batch
 
 
-def batch_update_firestore(docs, create=None):
-    if create is None:
-        create = True
-
+def batch_update_firestore(docs):
     batch = firestore_client.batch()
     count = 0
 
     for doc in docs:
-        object_id = doc.get("objectID")
-        doc_ref = skus_collection.document(object_id)
-        if create:
-            batch.set(doc_ref, doc)
-        else:
-            batch.update(doc_ref, doc)
-
+        doc_id = doc.get(keys.SKU_ID)
+        doc_ref = skus_collection.document(doc_id)
+        batch.update(doc_ref, doc)
+        # batch.set(doc_ref, doc)
         count += 1
         if count == batch_size:
             batch = commit_batch(batch)

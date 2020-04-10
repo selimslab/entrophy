@@ -17,6 +17,7 @@ class BasicSKU:
     digits: Union[int, float] = None
     unit: str = None
     size: str = None
+
     unit_price: Union[int, float] = None
     best_price: Union[int, float] = None
 
