@@ -11,7 +11,9 @@ def get_paths(dirname):
     @dataclass
     class Paths:
         id_doc_pairs_path = os.path.join(files_dir, "id_doc_pairs.json")
-        skus_path = os.path.join(files_dir, "skus.json")
+        full_skus_path = os.path.join(files_dir, "full_skus.json")
+        basic_skus_path = os.path.join(files_dir, "basic_skus.json")
+
         products_path = os.path.join(files_dir, "products.json")
         excel_path = os.path.join(files_dir, dirname + ".xlsx")
         config_path = os.path.join(files_dir, "config.txt")
