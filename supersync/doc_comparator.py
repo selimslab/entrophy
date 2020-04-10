@@ -3,16 +3,13 @@ from typing import Tuple
 import constants as keys
 
 
-def compare_docs(new_docs: list, object_id_doc_pairs: dict) -> Tuple[list, list, list]:
+def compare_docs(new_docs: dict, old_docs: dict) -> Tuple[list, list, list]:
     to_be_added = list()
     to_be_updated = list()
-    ids_to_keep = set()
+    ids_to_keep = set(new_docs.keys())
 
-    for new_doc in new_docs:
-        doc_id = new_doc.get(keys.objectID)
-        ids_to_keep.add(doc_id)
-
-        old_doc = object_id_doc_pairs.get(doc_id, {})
+    for doc_id,new_doc in new_docs.items():
+        old_doc = old_docs.get(doc_id, {})
 
         if not old_doc:
             to_be_added.append(new_doc)
