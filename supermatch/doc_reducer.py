@@ -151,10 +151,6 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
     sku_ids_count = dict(collections.Counter(sku_ids))
     sku.sku_id = select_unique_id(sku_ids_count, used_sku_ids, sku.doc_ids)
 
-    product_ids = [doc.get(keys.PRODUCT_ID) for doc in docs]
-    product_ids = [p for p in product_ids if p]
-    sku.product_ids_count = dict(collections.Counter(product_ids))
-
     links = [doc.get(keys.LINK) for doc in docs]
     sku.links = list(set(links))
 
