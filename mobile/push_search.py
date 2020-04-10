@@ -60,7 +60,6 @@ def sync_search():
                 ]
             }
         }
-
     }
     """
     {"best_price": {"order": "asc"}},

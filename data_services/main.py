@@ -3,7 +3,7 @@ import constants as keys
 import data_services.firebase.main as fire_sync
 import data_services.mongo.collections as collections
 from data_services.elastic.main import Elastic
-from .mongo.mongo_sync import MongoSync
+from data_services.mongo.mongo_sync import MongoSync
 import services
 from tqdm import tqdm
 
@@ -24,7 +24,13 @@ def update_elastic_docs(docs):
 
 def search_elastic_by_ids(ids: list) -> list:
     el = Elastic()
-    body = {"query": {"ids": {"values": ids}}}
+    # body = {"query": {"ids": {"values": ids}}}
+    body = {
+        "_source": {
+            "includes": ["prices"]
+        },
+        "query": {"ids": {"values": ids}}
+    }
     return el.search(body)
 
 
@@ -74,22 +80,7 @@ def get_id_product_pairs():
         doc[keys.objectID] = product_id
         pairs[product_id] = doc
 
-    services.save_json("id_product_pairs.json", pairs)
     return pairs
-
-
-def get_link_doc_pairs():
-    print("get_link_doc_pairs..")
-
-    item_cursor = collections.items_collection.find(
-        {keys.LINK: {"$exists": True}},
-        {"_id": 0, keys.LINK: 1, keys.SKU_ID: 1},
-    )
-
-    link_doc_pairs = {
-        doc.pop(keys.LINK): doc for doc in tqdm(item_cursor) if keys.LINK in doc
-    }
-    return link_doc_pairs
 
 
 def search_in_firestore(doc_id):
@@ -170,3 +161,8 @@ def get_links_of_products() -> set:
     )
 
     return set(links_of_products)
+
+
+if __name__ == "__main__":
+    search_elastic_by_ids(["5e54cfc2d1e09b159549e7e3", "5e11bd9c1b07cf6bf3b913dd", "5d7bdfa6525e36c343df0d8c",
+                           "5d7bdfa6525e36c343df0e4e"])
