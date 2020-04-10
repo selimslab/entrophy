@@ -1,8 +1,3 @@
-import logging
-
-import elasticsearch.exceptions as elastic_errors
-import firebase_admin.exceptions as fire_errors
-
 import constants as keys
 import data_services
 
@@ -31,22 +26,16 @@ class InstantUpdater:
             update[keys.PRICES] = {**old_prices, **price_update}
             if product_id:
                 update[keys.objectID] = str(product_id)
-            self.elastic_update_batch.append(update)
+            self.batch.append(update)
 
-        if len(self.elastic_update_batch) >= self.batch_size:
+        if len(self.batch) >= self.batch_size:
             self.instant_update_elastic()
 
     def instant_update_elastic(self):
         try:
-            data_services.update_elastic_docs(self.elastic_update_batch)
-        except (
-                elastic_errors.ElasticsearchException,
-                elastic_errors.NotFoundError,
-                elastic_errors.ConnectionTimeout,
-        ) as e:
-            logging.error(e)
+            data_services.update_elastic_docs(self.batch)
         finally:
-            self.elastic_update_batch = []
+            self.batch = []
 
 
 instant_updater = InstantUpdater()
