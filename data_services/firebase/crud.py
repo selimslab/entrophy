@@ -1,5 +1,6 @@
 from .main import firestore_client, skus_collection, batch_size
 import constants as keys
+from tqdm import tqdm
 
 
 def commit_batch(batch):

@@ -1,5 +1,5 @@
 import constants as keys
-from data_models.spider_config import SpiderConfig
+from spec.model.spider_config import SpiderConfig
 from services.convertor import convert_price
 from services.get_soup import get_soup
 from spiders.spider_modules.base import BaseSpider

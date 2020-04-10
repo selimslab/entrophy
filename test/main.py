@@ -4,7 +4,7 @@ import constants as keys
 import data_services
 import data_services.firebase.main
 import data_services.mongo.collections as collections
-import data_services.query_elastic
+import data_services.elastic.query_elastic
 
 
 def ask(collection, query):
@@ -29,15 +29,10 @@ def inspect_case(link):
     print(name, sku_id, product_id)
 
     print("PRODUCT")
-    data_services.query_elastic.search_elastic(name)
+    data_services.elastic.query_elastic.search_elastic(name)
 
     print("SKU")
-    data_services.firebase.main.search_in_firestore(sku_id)
-
-    if product_id:
-        data_services.query_elastic.search_elastic_by_ids([product_id])
-        ask(collections.products_collection, {keys.objectID: product_id})
-
+    data_services.search_in_firestore(sku_id)
 
 def get_links_of_a_product(product_id):
     links = collections.items_collection.find(

@@ -1,21 +1,17 @@
-from data_services import Elastic
+from .main import elastic
 
 
 def search_elastic_by_ids(ids: list) -> list:
-    el = Elastic()
-    # body = {"query": {"ids": {"values": ids}}}
     body = {
         "_source": {
             "includes": ["prices"]
         },
         "query": {"ids": {"values": ids}}
     }
-    return el.search(body)
+    return elastic.search(body)
 
 
 def search_elastic(query):
-    el = Elastic()
-
     body = {
         "query": {
             "bool": {
@@ -31,12 +27,10 @@ def search_elastic(query):
         },
         "sort": ["_score"],
     }
-    return el.search(body)
+    return elastic.search(body)
 
 
 def search_barcode(barcodes: list):
-    el = Elastic()
-
     body = {
         "query": {
             "bool": {
@@ -46,4 +40,10 @@ def search_barcode(barcodes: list):
         }
     }
 
-    return el.search(body)
+    return elastic.search(body)
+
+
+if __name__ == "__main__":
+    search_elastic_by_ids(["5e54cfc2d1e09b159549e7e3", "5e11bd9c1b07cf6bf3b913dd",
+                           "5d7bdfa6525e36c343df0d8c",
+                           "5d7bdfa6525e36c343df0e4e"])

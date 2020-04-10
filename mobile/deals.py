@@ -1,10 +1,9 @@
 import pprint
 
 import constants as keys
-from data_services.firebase.main import firestore_all_skus_generator
 from mobile.deal_kw import antikws
 from services import json_util
-
+import data_services
 
 def find_good_deals(skus):
     deals = list()
@@ -58,7 +57,7 @@ def find_good_deals(skus):
 
 
 def create_deals():
-    deals = find_good_deals(firestore_all_skus_generator())
+    deals = find_good_deals(data_services.elastic.scroll())
     json_util.save_json("deals.json", deals)
 
 

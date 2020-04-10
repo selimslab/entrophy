@@ -43,13 +43,11 @@ def get_docs_with_ids(skus):
     return alldocs
 
 
-
-
 def palette():
     name = ("palette",)
     links = (json_util.read_json("pal.json"),)
     links_of_products = data_services.get_links_of_products()
-    run_matcher(name, links, links_of_products)
+    # run_matcher(name, links, links_of_products)
 
 
 def full():
@@ -69,5 +67,5 @@ def full():
 
 if __name__ == "__main__":
 
-    # test_palette()
-    # test_full()
+# test_palette()
+# test_full()

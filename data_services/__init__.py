@@ -4,6 +4,6 @@ from .elastic.main import elastic
 from .main import *
 from .mark_out_of_stock import *
 from .get_docs_to_match import *
-from .query_elastic import *
+from data_services.elastic.query_elastic import *
 from .gratis import *
 from .google import *

@@ -1,5 +1,5 @@
 import constants as keys
-from data_models.spider_config import SpiderConfig
+from spec.model.spider_config import SpiderConfig
 from spiders.spider_modules.base import BaseSpider
 from spiders.spider_modules.visible.with_search.mopas_helper import MopasHelper
 from spiders.test_spider import debug_spider
