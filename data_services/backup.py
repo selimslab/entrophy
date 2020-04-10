@@ -1,36 +1,9 @@
-import traceback
-
-from pymongo.errors import PyMongoError
-
 import constants as keys
 import data_services.mongo.collections as collections
 from data_services import MongoSync
-from services.ses import send_email
-
 from tqdm import tqdm
 
 
-def backup_decorator(func):
-    try:
-        func()
-    except (
-        PyMongoError,
-        KeyError,
-        ValueError,
-        TypeError,
-        IndexError,
-        AttributeError,
-    ) as e:
-        print(e)
-        print(traceback.format_exc())
-        try:
-            report = "\n\n".join([str(e), str(traceback.format_exc())])
-            send_email("backup error", report)
-        except (TypeError, AttributeError, KeyError, ValueError) as e:
-            print(e)
-
-
-@backup_decorator
 def backup_items_collection():
     print("backing up items_collection..")
 

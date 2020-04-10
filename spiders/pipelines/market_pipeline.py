@@ -6,7 +6,6 @@ from .base_pipeline import BasePipeline
 from .item_count_monitor import ItemCountMonitor
 from .size_adder import SizeAdder
 import data_services
-import data_services.mongo.collections as collections
 
 
 class MarketPipeline(BasePipeline):
@@ -78,12 +77,7 @@ class MarketPipeline(BasePipeline):
 
     def process_batch(self):
         links = [item.get(keys.LINK) for item in self.batch]
-        existing_links_cursor = collections.items_collection.find(
-            {
-                keys.LINK: {"$exists": True, "$in": links},
-            },
-            {"_id": 0, keys.LINK: 1, keys.SKU_ID: 1},
-        )
+        existing_links_cursor = data_services.get_sku_ids_by_links(links)
 
         existing_link_id_pairs = {doc.get(keys.LINK): doc.get(keys.SKU_ID)
                                   for doc in existing_links_cursor}
@@ -126,8 +120,9 @@ class MarketPipeline(BasePipeline):
 
     def close_spider(self, spider):
         stats = spider.crawler.stats.get_stats()
-        self.item_count_monitor.check_for_anomalies(spider.name, stats)
+        self.process_batch()
         self.mongo_sync.bulk_exec()
+        self.item_count_monitor.check_for_anomalies(spider.name, stats)
 
 
 if __name__ == "__main__":
