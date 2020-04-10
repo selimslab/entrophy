@@ -6,17 +6,18 @@ from data_services.elastic.main import Elastic
 
 def strip_debug_fields(skus):
     keys_to_sync = set(asdict(BasicSKU()).keys())
-    fresh_skus = [
-        {k: v for k, v in sku.items()
-         if k in keys_to_sync
-         }
-        for sku in skus
-    ]
+    fresh_skus = {
+        sku_id: {
+            k: v for k, v in sku.items()
+            if k in keys_to_sync
+        }
+        for sku_id, sku in skus.items()
+    }
 
     return fresh_skus
 
 
-def sync_the_new_matching(fresh_skus):
+def sync_elastic(fresh_skus):
     old_skus = data_services.get_id_product_pairs()
 
     ids_to_keep = set(fresh_skus.keys())
@@ -38,9 +39,15 @@ def sync_the_new_matching(fresh_skus):
 
     print("to_be_added", len(to_be_added))
     print("to_be_updated", len(to_be_updated))
+    print("ids_to_delete", len(ids_to_delete))
 
     elastic = Elastic()
     elastic.update_docs(to_be_added)
     elastic.replace_docs(to_be_updated)
     if ids_to_delete:
         elastic.delete_ids(ids_to_delete)
+
+
+def sync_the_new_matching(skus):
+    fresh_skus = strip_debug_fields(skus)
+    sync_elastic(fresh_skus)

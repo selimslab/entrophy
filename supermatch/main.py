@@ -50,11 +50,10 @@ def create_matching(
         for sku_id in sku_ids:
             skus[sku_id]["options"] = [id for id in sku_ids if id != sku_id]
 
-    skus = [
-        {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
-        for sku in skus.values()
-    ]
-    skus = [s for s in skus if s]
+    skus = {
+        sku_id: {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
+        for sku_id,sku in skus.items()
+    }
     logging.info(f"skus # {len(skus)}")
 
     return skus
