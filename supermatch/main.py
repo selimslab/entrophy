@@ -46,21 +46,9 @@ def create_matching(
 
     groups_of_sku_ids = sku_grouper.group_skus(skus)
 
-    used_product_ids = set()
     for sku_ids in groups_of_sku_ids:
-        product_id_counts = collections.Counter()
-
         for sku_id in sku_ids:
-            sku = skus.get(sku_id)
-            sku["options"] = [id for id in sku_ids if id != sku_id]
-            product_id_counts.update(sku.get("product_id_counts", {}))
-            skus[sku_id] = sku
-
-        product_id = select_unique_id(product_id_counts, used_product_ids, sku_ids)
-        for sku_id in sku_ids:
-            skus[sku_id]["product_id"] = product_id
-
-        used_product_ids.add(product_id)
+            skus[sku_id]["options"] = [id for id in sku_ids if id != sku_id]
 
     skus = [
         {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}

@@ -17,15 +17,15 @@ class InstantUpdater:
             self.old_docs = data_services.get_id_product_pairs()
 
     def produce_event(self, price_update, existing_doc):
-        product_id = existing_doc.get(keys.PRODUCT_ID)
-        old_doc = self.old_docs.get(product_id, {})
+        sku_id = existing_doc.get(keys.SKU_ID)
+        old_doc = self.old_docs.get(sku_id, {})
         old_prices = old_doc.get(keys.PRICES)
         update = dict()
 
         if old_doc and keys.PRICES in old_doc:
             update[keys.PRICES] = {**old_prices, **price_update}
-            if product_id:
-                update[keys.objectID] = str(product_id)
+            if sku_id:
+                update[keys.SKU_ID] = str(sku_id)
             self.batch.append(update)
 
         if len(self.batch) >= self.batch_size:

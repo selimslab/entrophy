@@ -18,7 +18,7 @@ class Elastic:
     @staticmethod
     def elastic_update_generator(docs: list):
         for doc in docs:
-            if keys.objectID not in doc:
+            if keys.SKU_ID not in doc:
                 print("no id in", doc)
                 continue
 
@@ -26,7 +26,7 @@ class Elastic:
                 "_index": "products",
                 "_op_type": "update",
                 "_type": "_doc",
-                "_id": doc.pop(keys.objectID),
+                "_id": doc.pop(keys.SKU_ID),
                 "doc_as_upsert": True,
                 "doc": doc,
             }
@@ -34,14 +34,14 @@ class Elastic:
     @staticmethod
     def elastic_replace_generator(docs: list):
         for doc in docs:
-            if keys.objectID not in doc:
+            if keys.SKU_ID not in doc:
                 print("no id in", doc)
                 continue
 
             yield {
                 "_index": "products",
                 "_type": "_doc",
-                "_id": doc.pop(keys.objectID),
+                "_id": doc.pop(keys.SKU_ID),
                 "_source": doc,
             }
 

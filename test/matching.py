@@ -4,10 +4,10 @@ from services import json_util
 from supermatch.main import create_matching
 from test.test_logs.paths import get_paths
 # from test.excel.excel import create_excel
-import data_services.mongo.collections as collections
 import logging
 import sys
-from supersync.syncer import strip_debug_fields
+from supermatch.syncer import strip_debug_fields
+
 
 def run_matcher(name, links, links_of_products=None):
     query = {keys.LINK: {"$in": links}}
@@ -18,7 +18,6 @@ def run_matcher(name, links, links_of_products=None):
     )
 
     basic_skus = strip_debug_fields(full_skus)
-
 
     paths = get_paths(name)
     # create_excel(cursor=docs, excel_path=paths.excel_path)

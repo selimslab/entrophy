@@ -1,5 +1,4 @@
 from bson import ObjectId
-import os
 import constants as keys
 import data_services.firebase.main as fire_sync
 import data_services.mongo.collections as collections
@@ -7,17 +6,6 @@ from data_services.elastic.main import Elastic
 from .mongo.mongo_sync import MongoSync
 import services
 from tqdm import tqdm
-import logging
-
-
-def sync_elastic(updates):
-    to_be_added, to_be_updated, ids_to_delete = updates
-    print("syncing products..")
-    elastic = Elastic()
-    elastic.update_docs(to_be_added)
-    elastic.replace_docs(to_be_updated)
-    if ids_to_delete:
-        elastic.delete_ids(ids_to_delete)
 
 
 def sync_firestore(updates):
@@ -27,7 +15,6 @@ def sync_firestore(updates):
     fire_sync.batch_update_firestore(to_be_updated)
     if ids_to_delete:
         fire_sync.delete_old_ids(ids_to_delete)
-
 
 
 def update_elastic_docs(docs):
@@ -68,14 +55,13 @@ def search_barcode(barcodes: list):
     body = {
         "query": {
             "bool": {
-                "must": [{"match_all": {}},],
-                "filter": [{"terms": {"barcodes": barcodes,}},],
+                "must": [{"match_all": {}}, ],
+                "filter": [{"terms": {"barcodes": barcodes, }}, ],
             }
         }
     }
 
     return el.search(body)
-
 
 
 def get_id_product_pairs():
@@ -97,16 +83,13 @@ def get_link_doc_pairs():
 
     item_cursor = collections.items_collection.find(
         {keys.LINK: {"$exists": True}},
-        {"_id": 0, keys.LINK: 1, keys.PRODUCT_ID: 1, keys.SKU_ID: 1},
+        {"_id": 0, keys.LINK: 1, keys.SKU_ID: 1},
     )
 
     link_doc_pairs = {
         doc.pop(keys.LINK): doc for doc in tqdm(item_cursor) if keys.LINK in doc
     }
     return link_doc_pairs
-
-
-
 
 
 def search_in_firestore(doc_id):
