@@ -17,29 +17,6 @@ def get_sku_ids_by_links(links):
     )
 
 
-def update_elastic_docs(docs):
-    el = Elastic()
-    el.update_docs(docs)
-
-
-def replace_elastic_docs(docs):
-    el = Elastic()
-    el.replace_docs(docs)
-
-
-def get_id_product_pairs():
-    el = Elastic()
-
-    pairs = dict()
-    for hit in tqdm(el.scroll()):
-        doc = hit.get("_source")
-        product_id = hit.get("_id")
-        doc[keys.objectID] = product_id
-        pairs[product_id] = doc
-
-    return pairs
-
-
 def sync_mongo(collection, item_updates):
     to_be_added, to_be_updated, ids_to_delete = item_updates
     mongosync = MongoSync(collection)

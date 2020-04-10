@@ -18,7 +18,11 @@ def strip_debug_fields(skus):
 
 
 def sync_elastic(fresh_skus):
-    old_skus = data_services.get_id_product_pairs()
+
+    old_skus = {
+        hit.get("_id"): hit.get("_source")
+        for hit in data_services.elastic.scroll()
+    }
 
     ids_to_keep = set(fresh_skus.keys())
     old_ids = set(old_skus.keys())

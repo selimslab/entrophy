@@ -59,7 +59,7 @@ class Elastic:
 
     def update_docs(self, docs: list):
         try:
-            batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size :]
+            batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
             helpers.bulk(self.es, self.elastic_update_generator(batch))
             if remaining_docs:
                 self.update_docs(remaining_docs)
@@ -70,7 +70,7 @@ class Elastic:
 
     def replace_docs(self, docs: list):
         try:
-            batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size :]
+            batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
             helpers.bulk(self.es, self.elastic_replace_generator(batch))
             if remaining_docs:
                 self.replace_docs(remaining_docs)
@@ -149,6 +149,8 @@ class Elastic:
             # Get the number of results that returned in the last scroll
             scroll_size = len(hits)
 
+
+elastic = Elastic()
 
 if __name__ == "__main__":
     pass

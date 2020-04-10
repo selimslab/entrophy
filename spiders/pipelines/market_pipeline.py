@@ -73,7 +73,7 @@ class MarketPipeline(BasePipeline):
                 }
                 instant_updates.append(update)
 
-        data_services.update_elastic_docs(instant_updates)
+        data_services.elastic.update_docs(instant_updates)
 
     def process_batch(self):
         links = [item.get(keys.LINK) for item in self.batch]
