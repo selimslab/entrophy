@@ -2,6 +2,7 @@ from data_services.firebase.main import firestore_client
 
 
 def sync_search():
+
     search_keyword = {
         "from": 0,
         "size": 30,
@@ -48,16 +49,12 @@ def sync_search():
 
     search_by_id = {
         "_source": {
-            "excludes": ["tags"]
+            "includes": ["prices",""]
         },
         "query": {
-            "bool": {
-                "must": [{"match_all": {}}],
-                "filter": [
-                    {"ids": {"values": ["5d7bdfa6525e36c343df0d8c", "5d7bdfa6525e36c343df0e4e"]
-                             }
-                     }
-                ]
+            "ids": {
+                "values":
+                    []
             }
         }
     }
