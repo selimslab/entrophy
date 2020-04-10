@@ -52,7 +52,7 @@ def create_matching(
 
         for sku_id in sku_ids:
             sku = skus.get(sku_id)
-            sku["options"] = sku_ids
+            sku["options"] = [id for id in sku_ids if id != sku_id]
             product_id_counts.update(sku.get("product_id_counts", {}))
             skus[sku_id] = sku
 
@@ -64,7 +64,7 @@ def create_matching(
 
     skus = [
         {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
-        for sku_id, sku in skus.items()
+        for sku in skus.values()
     ]
     skus = [s for s in skus if s]
     logging.info(f"skus # {len(skus)}")
