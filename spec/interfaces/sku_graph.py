@@ -23,7 +23,5 @@ class AbstractSKUGraphCreator(ABC):
         pass
 
     @abstractmethod
-    def create_graph(
-            self, id_doc_pairs: dict
-    ) -> nx.Graph:
+    def create_graph(self, id_doc_pairs: dict) -> nx.Graph:
         pass

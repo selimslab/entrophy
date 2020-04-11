@@ -8,9 +8,7 @@ from supermatch.doc_reducer import reduce_docs_to_sku
 
 
 def get_sku_groups(id_doc_pairs):
-    graph_of_raw_docs = sku_graph_creator.create_graph(
-        id_doc_pairs
-    )
+    graph_of_raw_docs = sku_graph_creator.create_graph(id_doc_pairs)
 
     groups_of_doc_ids: Iterator = sku_graph_creator.create_connected_component_groups(
         graph_of_raw_docs
@@ -18,10 +16,8 @@ def get_sku_groups(id_doc_pairs):
 
     return groups_of_doc_ids
 
-def create_matching(
-        docs_to_match: Iterator,
-        links_of_products: set = None
-):
+
+def create_matching(docs_to_match: Iterator, links_of_products: set = None):
     if links_of_products is None:
         links_of_products = set()
 
@@ -58,7 +54,7 @@ def create_matching(
 
     skus = {
         sku_id: {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
-        for sku_id,sku in skus.items()
+        for sku_id, sku in skus.items()
     }
     logging.info(f"skus # {len(skus)}")
 

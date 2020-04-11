@@ -3,6 +3,7 @@ import data_services
 from services import json_util
 from supermatch.main import create_matching
 from test.test_logs.paths import get_paths
+
 # from test.excel.excel import create_excel
 import data_services.mongo.collections as collections
 
@@ -59,12 +60,9 @@ def full():
         docs_to_match.append(doc)
 
     links_of_products = data_services.get_links_of_products()
-    matching_collection = create_matching(
-        docs_to_match, links_of_products
-    )
+    matching_collection = create_matching(docs_to_match, links_of_products)
     docs = get_docs_with_ids(matching_collection)
 
 
 if __name__ == "__main__":
     pass
-

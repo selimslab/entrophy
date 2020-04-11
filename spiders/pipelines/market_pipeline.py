@@ -17,9 +17,7 @@ class ItemContentException(Exception):
 
 class MarketPipeline(BasePipeline):
     def __init__(
-            self,
-            batch_size=128,
-            size_adder=SizeAdder(),
+        self, batch_size=128, size_adder=SizeAdder(),
     ):
         super().__init__(batch_size)
         self.size_adder = size_adder
@@ -62,9 +60,10 @@ class MarketPipeline(BasePipeline):
 
         existing_elastic_docs = data_services.search_elastic_by_ids(existing_ids)
 
-        id_price_pairs = {doc.get("_id"): doc.get("_source", {}).get("prices", {})
-                          for doc in existing_elastic_docs
-                          }
+        id_price_pairs = {
+            doc.get("_id"): doc.get("_source", {}).get("prices", {})
+            for doc in existing_elastic_docs
+        }
 
         instant_updates = []
 
@@ -74,10 +73,7 @@ class MarketPipeline(BasePipeline):
             if old_prices:
                 price_update = {item.get(keys.MARKET): item.get(keys.PRICE)}
                 new_prices = {**old_prices, **price_update}
-                update = {
-                    keys.SKU_ID: sku_id,
-                    keys.PRICES: new_prices
-                }
+                update = {keys.SKU_ID: sku_id, keys.PRICES: new_prices}
                 instant_updates.append(update)
 
         data_services.elastic.update_docs(instant_updates)
@@ -87,8 +83,9 @@ class MarketPipeline(BasePipeline):
         links = [item.get(keys.LINK) for item in self.batch]
         existing_links_cursor = data_services.get_sku_ids_by_links(links)
 
-        existing_link_id_pairs = {doc.get(keys.LINK): doc.get(keys.SKU_ID)
-                                  for doc in existing_links_cursor}
+        existing_link_id_pairs = {
+            doc.get(keys.LINK): doc.get(keys.SKU_ID) for doc in existing_links_cursor
+        }
 
         instant_update_batch = []
 
@@ -147,10 +144,12 @@ class MarketPipeline(BasePipeline):
         is_less_item = item_count < (count_items_in_stock / 5)
         is_problem = is_visible_name and is_less_item
         if is_problem:
-            raise ItemCountException(f"""
+            raise ItemCountException(
+                f"""
                 {spider_name} seen {item_count} out of {count_items_in_stock}
                 stats: {str(stats)}        
-            """)
+            """
+            )
 
 
 if __name__ == "__main__":

@@ -67,9 +67,7 @@ def group_skus(skus: dict) -> list:
     google_groups = get_google_groups(skus)
 
     gratis_product_links: set = data_services.get_links_of_products()
-    gratis_link_id_tuples = get_gratis_link_id_tuples(
-        skus, gratis_product_links
-    )
+    gratis_link_id_tuples = get_gratis_link_id_tuples(skus, gratis_product_links)
     gratis_groups = group_link_id_tuples(gratis_link_id_tuples)
 
     sku_groups = itertools.chain(google_groups, gratis_groups)

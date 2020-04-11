@@ -7,10 +7,7 @@ from data_services import elastic
 def strip_debug_fields(skus):
     keys_to_sync = set(asdict(BasicSKU()).keys())
     fresh_skus = {
-        sku_id: {
-            k: v for k, v in sku.items()
-            if k in keys_to_sync
-        }
+        sku_id: {k: v for k, v in sku.items() if k in keys_to_sync}
         for sku_id, sku in skus.items()
     }
 
@@ -19,8 +16,7 @@ def strip_debug_fields(skus):
 
 def sync_elastic(fresh_skus):
     old_skus = {
-        hit.get("_id"): hit.get("_source")
-        for hit in data_services.elastic.scroll()
+        hit.get("_id"): hit.get("_source") for hit in data_services.elastic.scroll()
     }
 
     ids_to_keep = set(fresh_skus.keys())

@@ -29,8 +29,8 @@ def push_cats():
         new_cat["name"] = cat
         new_cat["subcategories"] = tree[cat]
         new_cat["icon"] = (
-                "https://narmoni.s3.eu-central-1.amazonaws.com/market_logos/icons/"
-                + icons.get(cat)
+            "https://narmoni.s3.eu-central-1.amazonaws.com/market_logos/icons/"
+            + icons.get(cat)
         )
         cats.append(new_cat)
 

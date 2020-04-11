@@ -12,7 +12,7 @@ def sync_search():
                 "product_ids_count",
                 "sku_ids_count",
                 "links",
-                "barcodes"
+                "barcodes",
             ]
         },
         "query": {
@@ -34,29 +34,20 @@ def sync_search():
     search_barcode = {
         "from": 0,
         "size": 10,
-        "_source": {
-            "excludes": ["tags"]
-        },
+        "_source": {"excludes": ["tags"]},
         "query": {
             "bool": {
-                "must": [{"match_all": {}}, ],
+                "must": [{"match_all": {}},],
                 "filter": [
-                    {"terms": {"barcodes": ["8690506390907", "1825470015283"] }},
+                    {"terms": {"barcodes": ["8690506390907", "1825470015283"]}},
                 ],
             }
         },
     }
 
     search_by_id = {
-        "_source": {
-            "includes": ["prices"]
-        },
-        "query": {
-            "ids": {
-                "values":
-                    []
-            }
-        }
+        "_source": {"includes": ["prices"]},
+        "query": {"ids": {"values": []}},
     }
     """
     {"best_price": {"order": "asc"}},
@@ -65,7 +56,12 @@ def sync_search():
 
     url = "https://search-narmoni-sby3slciocpfo5f3ubqhplod7u.eu-central-1.es.amazonaws.com/products/_search"
     firestore_client.collection(u"config").document(u"search").set(
-        {"url": url, "query": search_keyword, "barcode_search": search_barcode, "search_by_id": search_by_id}
+        {
+            "url": url,
+            "query": search_keyword,
+            "barcode_search": search_barcode,
+            "search_by_id": search_by_id,
+        }
     )
 
 

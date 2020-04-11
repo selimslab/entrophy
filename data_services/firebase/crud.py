@@ -49,7 +49,7 @@ def delete_all():
     deleted = 0
     for doc in tqdm(docs):
         if doc.id.isdigit():
-            print(u"Deleting", doc.id)
+            print("Deleting", doc.id)
             doc.reference.delete()
             deleted = deleted + 1
 

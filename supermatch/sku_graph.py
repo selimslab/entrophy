@@ -98,9 +98,7 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
             edges = itertools.combinations(ids, 2)
             self.sku_graph.add_edges_from(edges)
 
-    def create_graph(
-            self, id_doc_pairs: dict
-    ) -> nx.Graph:
+    def create_graph(self, id_doc_pairs: dict) -> nx.Graph:
 
         self._init_sku_graph(id_doc_pairs)
         matched = set()
@@ -111,7 +109,9 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
         matched_using_promoted = self._add_edges_from_promoted_links(id_doc_pairs)
         matched.update(matched_using_promoted)
 
-        exact_match_groups = ExactNameMatcher.get_exact_match_groups(id_doc_pairs, matched)
+        exact_match_groups = ExactNameMatcher.get_exact_match_groups(
+            id_doc_pairs, matched
+        )
         self._add_edges_from_exact_name_match(exact_match_groups)
 
         return self.sku_graph
