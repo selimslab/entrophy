@@ -33,4 +33,4 @@ if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     # run_matcher(name="süt", links=sut)
-    run_matcher(name="cay", links=flatten(çaykur))
+    run_matcher(name="cay", links=flatten(çaykur+sut))

@@ -30,7 +30,7 @@ def batch_process(docs, collection, batch, func, id_key=None):
 
 def batch_update_firestore(docs, collection=None):
     if collection is None:
-        collection = skus_collection
+        collection = test_collection
     print(f"updating {len(docs)} docs")
     batch = firestore_client.batch()
     batch_process(docs, collection, batch, batch.update)
@@ -38,7 +38,7 @@ def batch_update_firestore(docs, collection=None):
 
 def batch_set_firestore(docs, collection=None):
     if collection is None:
-        collection = skus_collection
+        collection = test_collection
     print(f"replacing {len(docs)} docs")
     batch = firestore_client.batch()
     batch_process(docs, collection, batch, batch.set)
@@ -59,8 +59,7 @@ def delete_all():
 
 def firestore_delete_by_ids(ids_to_delete, collection=None):
     if collection is None:
-        collection = skus_collection
-
+        collection = test_collection
     print(f"deleting {len(ids_to_delete)} docs")
     batch = firestore_client.batch()
     count = 0

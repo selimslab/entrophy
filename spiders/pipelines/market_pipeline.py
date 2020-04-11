@@ -5,7 +5,7 @@ from services.barcode_cleaner import BarcodeCleaner
 from .base_pipeline import BasePipeline
 from .size_adder import SizeAdder
 import data_services
-
+from data_services.firebase.connect import skus_collection
 
 class ItemCountException(Exception):
     pass
@@ -17,7 +17,7 @@ class ItemContentException(Exception):
 
 class MarketPipeline(BasePipeline):
     def __init__(
-        self, batch_size=128, size_adder=SizeAdder(),
+            self, batch_size=128, size_adder=SizeAdder(),
     ):
         super().__init__(batch_size)
         self.size_adder = size_adder
@@ -76,8 +76,8 @@ class MarketPipeline(BasePipeline):
                 update = {keys.SKU_ID: sku_id, keys.PRICES: new_prices}
                 instant_updates.append(update)
 
-        data_services.elastic.update_docs(instant_updates)
-        data_services.batch_update_firestore(instant_updates)
+        data_services.elastic.update_docs(instant_updates, index="products")
+        data_services.batch_update_firestore(instant_updates, collection=skus_collection)
 
     def process_batch(self):
         links = [item.get(keys.LINK) for item in self.batch]

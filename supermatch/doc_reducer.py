@@ -69,14 +69,6 @@ def get_image(docs):
     return selected_image
 
 
-def get_tags(names):
-    tokens = token_util.get_tokens_of_a_group(list(names.values()))
-    most_common_tokens = token_util.get_n_most_common_tokens(tokens, 3).sort()
-    unique_tokens = list(set(tokens))
-    tags = " ".join(sorted(unique_tokens))
-    return tags, most_common_tokens
-
-
 def get_prices(docs):
     prices = {
         doc.get(keys.MARKET): doc.get(keys.PRICE)
@@ -172,7 +164,7 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
     sku_ids = [doc.get(keys.SKU_ID) for doc in docs]
     sku_ids = [p for p in sku_ids if p]
     sku_ids_count = dict(collections.Counter(sku_ids))
-    sku.sku_id = select_unique_id(sku_ids_count, used_sku_ids, sku.doc_ids)
+    sku.sku_id = select_unique_id(sku_ids_count, used_sku_ids)
 
     links = [doc.get(keys.LINK) for doc in docs]
     sku.links = list(set(links))
@@ -182,7 +174,9 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
     }
     sku.name = get_name(names)
 
-    sku.tags, sku.most_common_tokens = get_tags(names)
+    tokens = token_util.get_tokens_of_a_group(list(names.values()))
+    sku.most_common_tokens = sorted(token_util.get_n_most_common_tokens(tokens, 3))
+    sku.tags = " ".join(sorted(list(set(tokens))))
 
     sku.src = get_image(docs)
 

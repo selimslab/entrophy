@@ -2,6 +2,7 @@ import data_services
 from spec.model.sku import BasicSKU
 from dataclasses import asdict
 from data_services import elastic
+from data_services.firebase.connect import skus_collection
 
 
 def strip_debug_fields(skus):
@@ -35,15 +36,15 @@ def compare_and_sync(fresh_skus):
 
     sync_datastores(to_be_updated)
     if ids_to_delete:
-        elastic.delete_ids(ids_to_delete)
-        data_services.firestore_delete_by_ids(ids_to_delete)
+        elastic.delete_ids(ids_to_delete, index="products")
+        data_services.firestore_delete_by_ids(ids_to_delete, collection=skus_collection)
 
     data_services.mongo_sync_sku_ids(to_be_updated)
 
 
 def sync_datastores(to_be_updated):
-    elastic.replace_docs(to_be_updated)
-    data_services.batch_set_firestore(to_be_updated)
+    elastic.replace_docs(to_be_updated, index="products")
+    data_services.batch_set_firestore(to_be_updated, collection=skus_collection)
 
 
 def sync_the_new_matching(skus):

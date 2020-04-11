@@ -2,7 +2,6 @@ import logging
 from typing import Iterator
 import constants as keys
 from supermatch import id_doc_pairer, sku_grouper
-from supermatch.id_selector import select_unique_id
 from supermatch.sku_graph import sku_graph_creator
 from supermatch.doc_reducer import reduce_docs_to_sku
 
@@ -17,21 +16,7 @@ def get_sku_groups(id_doc_pairs):
     return groups_of_doc_ids
 
 
-def create_matching(docs_to_match: Iterator, links_of_products: set = None):
-    if links_of_products is None:
-        links_of_products = set()
-
-    id_doc_pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
-
-    # don't use gratis products for matching
-    id_doc_pairs = {
-        doc_id: doc
-        for doc_id, doc in id_doc_pairs.items()
-        if doc.get(keys.LINK) not in links_of_products
-    }
-
-    groups_of_doc_ids = get_sku_groups(id_doc_pairs)
-
+def reduce_docs(groups_of_doc_ids, id_doc_pairs):
     skus = dict()
     used_sku_ids = set()
     for doc_ids in groups_of_doc_ids:
@@ -56,6 +41,24 @@ def create_matching(docs_to_match: Iterator, links_of_products: set = None):
         sku_id: {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
         for sku_id, sku in skus.items()
     }
-    logging.info(f"skus # {len(skus)}")
 
+    return skus
+
+
+def create_matching(docs_to_match: Iterator, links_of_products: set = None):
+    if links_of_products is None:
+        links_of_products = set()
+
+    id_doc_pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
+
+    # don't use gratis products for matching
+    id_doc_pairs = {
+        doc_id: doc
+        for doc_id, doc in id_doc_pairs.items()
+        if doc.get(keys.LINK) not in links_of_products
+    }
+
+    groups_of_doc_ids = get_sku_groups(id_doc_pairs)
+    skus = reduce_docs(groups_of_doc_ids, id_doc_pairs)
+    logging.info(f"skus # {len(skus)}")
     return skus
