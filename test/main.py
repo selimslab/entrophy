@@ -23,16 +23,10 @@ def inspect_case(link):
         return
 
     sku_id = doc.get(keys.SKU_ID)
-    product_id = doc.get(keys.PRODUCT_ID)
     name = doc.get(keys.NAME)
-
-    print(name, sku_id, product_id)
-
-    print("PRODUCT")
+    print(name, sku_id)
     data_services.elastic.query_elastic.search_elastic(name)
 
-    print("SKU")
-    data_services.search_in_firestore(sku_id)
 
 def get_links_of_a_product(product_id):
     links = collections.items_collection.find(

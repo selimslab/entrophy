@@ -66,6 +66,5 @@ def full():
 
 
 if __name__ == "__main__":
+    pass
 
-# test_palette()
-# test_full()

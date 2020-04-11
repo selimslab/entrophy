@@ -5,7 +5,7 @@ from data_services.mongo.mongo_sync import MongoSync
 
 
 def get_in_stock(market):
-    collections.items_collection.count_documents(
+    return collections.items_collection.count_documents(
         {keys.MARKET: market, keys.OUT_OF_STOCK: {"$ne": True}}
     )
 
