@@ -135,7 +135,7 @@ class Elastic:
             for hit in hits:
                 yield hit
 
-            data = self.es.scroll(scroll_id=sid, scroll="5m", body=body)
+            data = self.es.scroll(scroll_id=sid, scroll="5m")
 
             # Update the scroll ID
             sid = data["_scroll_id"]
@@ -147,4 +147,4 @@ class Elastic:
 elastic = Elastic()
 
 if __name__ == "__main__":
-    elastic.reset_index("test")
+    elastic.search(body={}, index="test")

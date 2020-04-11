@@ -22,7 +22,7 @@ def run_matcher(name, links, links_of_products=None):
     )
 
     basic_skus = strip_debug_fields(full_skus)
-    compare_and_sync(basic_skus,is_test=True)
+    compare_and_sync(basic_skus, is_test=True)
 
     paths = get_paths(name)
     # create_excel(cursor=docs, excel_path=paths.excel_path)

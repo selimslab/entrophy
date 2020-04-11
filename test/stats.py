@@ -74,6 +74,8 @@ class Stats:
         print("baby and csm", len(set(bby).union(set(csm))))
 
 
+
 if __name__ == "__main__":
-    Stats.show_single_market_stats(keys.ALTUNBILEK)
+    # Stats.show_single_market_stats(keys.ALTUNBILEK)
     # Stats.show_all_market_stats()
+    pass

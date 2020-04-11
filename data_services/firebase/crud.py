@@ -76,5 +76,4 @@ def firestore_delete_by_ids(ids_to_delete, collection=None):
 
 
 if __name__ == "__main__":
-    batch_set_firestore([{"sku_id": "test", "name": "test"}], test_collection)
-    print(test_collection.document("test").get().to_dict())
+    pass
