@@ -27,32 +27,27 @@ def sync_elastic(fresh_skus):
     old_ids = set(old_skus.keys())
     ids_to_delete = list(old_ids - ids_to_keep)
 
-    to_be_added = list()
     to_be_updated = list()
 
     for doc_id, new_doc in fresh_skus.items():
         old_doc = old_skus.get(doc_id, {})
 
-        if not old_doc:
-            to_be_added.append(new_doc)
-            continue
-
-        if new_doc != old_doc:
+        if not old_doc or new_doc != old_doc:
             to_be_updated.append(new_doc)
 
-    print("to_be_added", len(to_be_added))
-    print("to_be_updated", len(to_be_updated))
-    print("ids_to_delete", len(ids_to_delete))
+        if len(to_be_updated) > 2048:
+            sync_datastores(to_be_updated)
+            to_be_updated = []
 
-    elastic.replace_docs(to_be_added)
-    elastic.replace_docs(to_be_updated)
+    sync_datastores(to_be_updated)
     if ids_to_delete:
         elastic.delete_ids(ids_to_delete)
-
-    data_services.batch_set_firestore(to_be_added)
-    data_services.batch_set_firestore(to_be_updated)
-    if ids_to_delete:
         data_services.delete_by_ids(ids_to_delete)
+
+
+def sync_datastores(to_be_updated):
+    elastic.replace_docs(to_be_updated)
+    data_services.batch_set_firestore(to_be_updated)
 
 
 def sync_the_new_matching(skus):
