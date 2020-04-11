@@ -28,8 +28,10 @@ def sync_elastic(fresh_skus):
     for doc_id, new_doc in fresh_skus.items():
         old_doc = old_skus.get(doc_id, {})
 
-        if not old_doc or new_doc != old_doc:
-            to_be_updated.append(new_doc)
+        if old_doc and new_doc == old_doc:
+            continue
+
+        to_be_updated.append(new_doc)
 
         if len(to_be_updated) > 2048:
             sync_datastores(to_be_updated)
