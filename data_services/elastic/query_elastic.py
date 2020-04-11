@@ -1,8 +1,8 @@
 from .main import elastic
 
 
-def search_elastic_by_ids(ids: list) -> list:
-    body = {"_source": {"includes": ["prices"]}, "query": {"ids": {"values": ids}}}
+def search_elastic_by_ids(ids: list, source) -> list:
+    body = {"_source": source, "query": {"ids": {"values": ids}}}
     return elastic.search(body)
 
 
@@ -29,8 +29,8 @@ def search_barcode(barcodes: list):
     body = {
         "query": {
             "bool": {
-                "must": [{"match_all": {}},],
-                "filter": [{"terms": {"barcodes": barcodes,}},],
+                "must": [{"match_all": {}}, ],
+                "filter": [{"terms": {"barcodes": barcodes, }}, ],
             }
         }
     }

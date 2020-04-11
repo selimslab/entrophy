@@ -18,7 +18,7 @@ class ItemContentException(Exception):
 
 class MarketPipeline(BasePipeline):
     def __init__(
-        self, batch_size=128, size_adder=SizeAdder(),
+            self, batch_size=128, size_adder=SizeAdder(),
     ):
         super().__init__(batch_size)
         self.size_adder = size_adder
@@ -59,7 +59,8 @@ class MarketPipeline(BasePipeline):
 
         existing_ids = list(existing_link_id_pairs.values())
 
-        existing_elastic_docs = data_services.search_elastic_by_ids(existing_ids)
+        existing_elastic_docs = data_services.search_elastic_by_ids(existing_ids,
+                                                                    source={"includes": ["prices"]})
 
         id_price_pairs = {
             doc.get("_id"): doc.get("_source", {}).get("prices", {})
