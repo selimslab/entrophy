@@ -7,7 +7,7 @@ from test.test_logs.paths import get_paths
 # from test.excel.excel import create_excel
 import logging
 import sys
-from supermatch.syncer import strip_debug_fields
+from supermatch.syncer import strip_debug_fields, compare_and_sync
 
 from test.test_links import *
 from services import flatten
@@ -22,6 +22,7 @@ def run_matcher(name, links, links_of_products=None):
     )
 
     basic_skus = strip_debug_fields(full_skus)
+    compare_and_sync(basic_skus,is_test=True)
 
     paths = get_paths(name)
     # create_excel(cursor=docs, excel_path=paths.excel_path)

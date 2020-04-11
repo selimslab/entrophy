@@ -36,7 +36,7 @@ def get_updates(ids, fresh_skus):
     return to_be_updated, ids_seen
 
 
-def compare_and_sync(fresh_skus):
+def compare_and_sync(fresh_skus, is_test=True):
     ids_to_keep = set(fresh_skus.keys())
     old_ids = set()
 
@@ -48,21 +48,26 @@ def compare_and_sync(fresh_skus):
         if len(ids) > batch_size:
             to_be_updated, ids_seen = get_updates(ids, fresh_skus)
             old_ids.update(ids_seen)
-            sync_datastores(to_be_updated)
+            sync_datastores(to_be_updated, is_test)
             ids = []
 
-    ids_to_delete = list(old_ids - ids_to_keep)
-    if ids_to_delete:
-        elastic.delete_ids(ids_to_delete, index="products")
-        # data_services.firestore_delete_by_ids(ids_to_delete, collection=skus_collection)
+    if not is_test:
+        ids_to_delete = list(old_ids - ids_to_keep)
+        if ids_to_delete:
+            elastic.delete_ids(ids_to_delete, index="products")
+            # data_services.firestore_delete_by_ids(ids_to_delete, collection=skus_collection)
 
 
-def sync_datastores(to_be_updated):
-    elastic.replace_docs(to_be_updated, index="products")
-    data_services.batch_set_firestore(to_be_updated, collection=skus_collection)
-    data_services.mongo_sync_sku_ids(to_be_updated)
+def sync_datastores(to_be_updated, is_test=True):
+    if is_test:
+        elastic.replace_docs(to_be_updated, index="test")
+        data_services.batch_set_firestore(to_be_updated)
+    else:
+        elastic.replace_docs(to_be_updated, index="products")
+        data_services.batch_set_firestore(to_be_updated, collection=skus_collection)
+        data_services.mongo_sync_sku_ids(to_be_updated)
 
 
 def sync_the_new_matching(skus):
     fresh_skus = strip_debug_fields(skus)
-    compare_and_sync(fresh_skus)
+    compare_and_sync(fresh_skus, is_test=False)
