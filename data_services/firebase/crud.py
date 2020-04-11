@@ -57,7 +57,7 @@ def delete_all():
         return delete_all()
 
 
-def delete_by_ids(ids_to_delete, collection=None):
+def firestore_delete_by_ids(ids_to_delete, collection=None):
     if collection is None:
         collection = skus_collection
 

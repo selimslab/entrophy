@@ -14,7 +14,7 @@ def strip_debug_fields(skus):
     return fresh_skus
 
 
-def sync_elastic(fresh_skus):
+def compare_and_sync(fresh_skus):
     old_skus = {
         hit.get("_id"): hit.get("_source") for hit in data_services.elastic.scroll()
     }
@@ -36,9 +36,9 @@ def sync_elastic(fresh_skus):
     sync_datastores(to_be_updated)
     if ids_to_delete:
         elastic.delete_ids(ids_to_delete)
-        data_services.delete_by_ids(ids_to_delete)
+        data_services.firestore_delete_by_ids(ids_to_delete)
 
-    data_services.sync_sku_ids(to_be_updated)
+    data_services.mongo_sync_sku_ids(to_be_updated)
 
 
 def sync_datastores(to_be_updated):
@@ -48,4 +48,4 @@ def sync_datastores(to_be_updated):
 
 def sync_the_new_matching(skus):
     fresh_skus = strip_debug_fields(skus)
-    sync_elastic(fresh_skus)
+    compare_and_sync(fresh_skus)

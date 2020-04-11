@@ -1,7 +1,7 @@
 from pymongo import UpdateOne, InsertOne, UpdateMany, ReplaceOne
 from pymongo.errors import BulkWriteError
 from tqdm import tqdm
-
+import logging
 import constants as keys
 
 
@@ -22,8 +22,8 @@ class MongoSync:
                 if debug:
                     print("bulk write successful!", "written", len(self.ops), "items")
                 self.ops = list()
-            except BulkWriteError as bwe:
-                print(bwe.details)
+            except BulkWriteError as e:
+                logging.error(e)
                 # clear ops to prevent cascading failure
                 self.ops = list()
                 raise
@@ -35,10 +35,11 @@ class MongoSync:
         if len(self.ops) >= self.write_interval:
             self.bulk_exec()
 
-    def add_multiple_update(self, selector, command):
+    def add_multiple_updates(self, selector, command):
         new_op = UpdateMany(selector, command, upsert=True)
         self.ops.append(new_op)
-        self.bulk_exec()
+        if len(self.ops) >= self.write_interval:
+            self.bulk_exec()
 
     def batch_insert(self, docs):
         if not docs:

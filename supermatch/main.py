@@ -50,7 +50,7 @@ def create_matching(docs_to_match: Iterator, links_of_products: set = None):
 
     for sku_ids in groups_of_sku_ids:
         for sku_id in sku_ids:
-            skus[sku_id]["variants"] = sku_ids
+            skus[sku_id][keys.VARIANTS] = sku_ids
 
     skus = {
         sku_id: {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
