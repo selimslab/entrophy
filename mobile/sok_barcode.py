@@ -14,4 +14,3 @@ def doc_generator():
 def push():
     to_be_updated = [doc for doc in doc_generator()]
     print(to_be_updated)
-    # syncer.sync_mongo(collections.items_collection, [[], to_be_updated, []])

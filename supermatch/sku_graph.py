@@ -21,12 +21,12 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
     def _init_sku_graph(self, id_doc_pairs):
         # add all items as nodes
         print("creating sku graph..")
-        for doc_id, doc in id_doc_pairs.items():
+        for doc_id in id_doc_pairs.keys():
             self.sku_graph.add_node(doc_id)
 
     def _add_edges_from_barcodes(self, barcode_id_pairs: dict):
         print("adding_edges_from_barcodes..")
-        for barcodes, ids in barcode_id_pairs.items():
+        for ids in barcode_id_pairs.values():
             edges = itertools.combinations(ids, 2)
             self.sku_graph.add_edges_from(edges)
 

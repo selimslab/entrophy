@@ -28,7 +28,5 @@ def inspect_case(link):
     data_services.elastic.query_elastic.search_elastic(name)
 
 
-
-
 if __name__ == "__main__":
     pass

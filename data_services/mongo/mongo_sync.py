@@ -50,8 +50,8 @@ class MongoSync:
         if len(self.ops) >= self.write_interval:
             self.bulk_exec()
 
-    def add_replace(self, filter, replacement):
-        self.ops.append(ReplaceOne(filter=filter, replacement=replacement))
+    def add_replace(self, selector, replacement):
+        self.ops.append(ReplaceOne(filter=selector, replacement=replacement))
         if len(self.ops) >= self.write_interval:
             self.bulk_exec()
 

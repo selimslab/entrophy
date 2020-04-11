@@ -1,6 +1,5 @@
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
-from elasticsearch.exceptions import ElasticsearchException
 from tqdm import tqdm
 import logging
 import constants as keys
@@ -49,12 +48,12 @@ class Elastic:
     def elastic_delete_generator(ids: list, index):
         ids = [id for id in ids if id]
         print("deleting", len(ids), "docs from elastic")
-        for id in tqdm(ids):
+        for doc_id in tqdm(ids):
             yield {
                 "_op_type": "delete",
                 "_index": index,
                 "_type": "_doc",
-                "_id": id,
+                "_id": doc_id,
             }
 
     def update_docs(self, docs: list, index):
@@ -131,8 +130,6 @@ class Elastic:
         scroll_size = len(hits)
 
         while scroll_size > 0:
-            "Scrolling..."
-
             # Before scroll, process current batch of hits
             hits = data["hits"]["hits"]
             for hit in hits:

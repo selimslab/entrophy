@@ -44,7 +44,7 @@ def sync_search():
         },
         "query": {
             "bool": {
-                "must": [{"match_all": {}}, ],
+                "must": [{"match_all": {}},],
                 "filter": [
                     {"terms": {"barcodes": ["8690506390907", "1825470015283"]}},
                 ],
@@ -65,11 +65,7 @@ def sync_search():
 
     url = "https://search-narmoni-sby3slciocpfo5f3ubqhplod7u.eu-central-1.es.amazonaws.com/products/_search"
     firestore_client.collection(u"config").document(u"search").set(
-        {
-            "url": url,
-            "query": search_keyword,
-            "barcode_search": barcode_search
-        }
+        {"url": url, "query": search_keyword, "barcode_search": barcode_search}
     )
 
 

@@ -28,8 +28,8 @@ class TopLocalSpider(BaseSpider):
 
     def start_requests(self):
         base = "https://www.ozdilekteyim.com/shop/OHProductListingView?&resultsPerPage=36&storeId=10153&categoryId="
-        for id in TopLocalHelper.get_category_ids():
-            url = base + id
+        for cat_id in TopLocalHelper.get_category_ids():
+            url = base + cat_id
             yield scrapy.Request(
                 url,
                 callback=self.parse,

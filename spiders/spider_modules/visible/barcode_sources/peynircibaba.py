@@ -1,6 +1,4 @@
 import re
-from pprint import pprint
-
 import scrapy
 
 import constants as keys
@@ -36,7 +34,7 @@ class TopLocalSpider(BaseSpider):
             )
 
     @staticmethod
-    def extract_product_info(product_div, base_url):
+    def extract_product_info(product_div):
         name = product_div.css(".product-name::text").extract_first().strip()
 
         # handle price
@@ -75,7 +73,7 @@ class TopLocalSpider(BaseSpider):
         products = grid.css(".one-product")
 
         for product_div in products:
-            product = self.extract_product_info(product_div, self.base_url)
+            product = self.extract_product_info(product_div)
             if product:
                 self.links_seen.add(product.get(keys.LINK))
                 yield product

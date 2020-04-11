@@ -62,13 +62,13 @@ class MarketyoSpider(BaseSpider):
         for cat in cats:
             parent = cat.get("idParent")
             parents.add(parent)
-            id = cat.get("id")
+            cat_id = cat.get("id")
             name = cat.get("name")
-            ids[id] = name
+            ids[cat_id] = name
 
-        categoryIds = set(ids.keys()) - parents
-        for id in categoryIds:
-            yield id
+        category_ids = set(ids.keys()) - parents
+        for cat_id in category_ids:
+            yield cat_id
 
 
 def test_cats():
