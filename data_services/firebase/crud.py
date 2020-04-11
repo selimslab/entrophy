@@ -10,11 +10,13 @@ def commit_batch(batch):
         return firestore_client.batch()
 
 
-def batch_process(docs, collection, batch, func):
+def batch_process(docs, collection, batch, func, id_key=None):
+    if id_key is None:
+        id_key = keys.SKU_ID
     count = 0
 
     for doc in docs:
-        doc_id = doc.get(keys.SKU_ID)
+        doc_id = doc.get(id_key)
         doc_ref = collection.document(doc_id)
         func(doc_ref, doc)
         # batch.set(doc_ref, doc)
@@ -29,13 +31,12 @@ def batch_process(docs, collection, batch, func):
 def batch_update_firestore(docs, collection=None):
     if collection is None:
         collection = skus_collection
-
     print(f"updating {len(docs)} docs")
     batch = firestore_client.batch()
     batch_process(docs, collection, batch, batch.update)
 
 
-def batch_replace_firestore(docs, collection=None):
+def batch_set_firestore(docs, collection=None):
     if collection is None:
         collection = skus_collection
     print(f"replacing {len(docs)} docs")
@@ -76,5 +77,5 @@ def delete_by_ids(ids_to_delete, collection=None):
 
 
 if __name__ == "__main__":
-    # print(collection.document(doc_id).get().to_dict())
-    pass
+    batch_set_firestore([{"sku_id": "test", "name": "test"}], test_collection)
+    print(test_collection.document("test").get().to_dict())
