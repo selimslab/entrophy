@@ -1,6 +1,5 @@
 PRICES = "prices"
 SUBS = "subs"
-objectID = "objectID"
 
 BEST_PRICE = "best_price"
 MARKETS = "markets"
