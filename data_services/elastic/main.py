@@ -79,8 +79,7 @@ class Elastic:
         helpers.bulk(self.es, self.elastic_delete_generator(ids, index))
 
     def reset_index(self, index):
-        if index in self.es.indices:
-            self.es.indices.delete(index)
+        # self.es.indices.delete(index)
         mapping = {
             "mappings": {
                 "dynamic": False,
@@ -151,4 +150,4 @@ class Elastic:
 elastic = Elastic()
 
 if __name__ == "__main__":
-    pass
+    elastic.reset_index("test")

@@ -7,6 +7,17 @@ from supermatch.sku_graph import sku_graph_creator
 from supermatch.doc_reducer import reduce_docs_to_sku
 
 
+def get_sku_groups(id_doc_pairs):
+    graph_of_raw_docs = sku_graph_creator.create_graph(
+        id_doc_pairs
+    )
+
+    groups_of_doc_ids: Iterator = sku_graph_creator.create_connected_component_groups(
+        graph_of_raw_docs
+    )
+
+    return groups_of_doc_ids
+
 def create_matching(
         docs_to_match: Iterator,
         links_of_products: set = None
@@ -23,13 +34,7 @@ def create_matching(
         if doc.get(keys.LINK) not in links_of_products
     }
 
-    graph_of_raw_docs = sku_graph_creator.create_graph(
-        id_doc_pairs
-    )
-
-    groups_of_doc_ids: Iterator = sku_graph_creator.create_connected_component_groups(
-        graph_of_raw_docs
-    )
+    groups_of_doc_ids = get_sku_groups(id_doc_pairs)
 
     skus = dict()
     used_sku_ids = set()

@@ -124,6 +124,29 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
+def get_size(name, docs):
+    size = None
+    digits = None
+    unit = None
+    variant_name = get_variant_name(docs)
+    if variant_name:
+        size = variant_name
+    else:
+        size_info = [
+            (doc.get(keys.DIGITS), doc.get(keys.UNIT), doc.get(keys.SIZE))
+            for doc in docs
+        ]
+        size_info = [(d, u, s) for (d, u, s) in size_info if d and u and s]
+        for (d, u, s) in size_info:
+            if str(d) in name:
+                digits, unit, size = (d, u, s)
+                break
+        if size_info and not digits:
+            digits, unit, size = size_info[0]
+
+    return digits, unit, size
+
+
 def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
     if not docs:
         return {}
@@ -149,7 +172,7 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
     sku_ids = [doc.get(keys.SKU_ID) for doc in docs]
     sku_ids = [p for p in sku_ids if p]
     sku_ids_count = dict(collections.Counter(sku_ids))
-    sku.sku_id = select_unique_id(sku_ids_count, used_sku_ids, sku.doc_ids)
+    sku.sku_id =  select_unique_id(sku_ids_count, used_sku_ids, sku.doc_ids)
 
     links = [doc.get(keys.LINK) for doc in docs]
     sku.links = list(set(links))
@@ -163,28 +186,9 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
 
     sku.src = get_image(docs)
 
-    size = None
-    digits = None
-    unit = None
-    variant_name = get_variant_name(docs)
-    if variant_name:
-        size = variant_name
-    else:
-        size_info = [
-            (doc.get(keys.DIGITS), doc.get(keys.UNIT), doc.get(keys.SIZE))
-            for doc in docs
-        ]
-        size_info = [(d, u, s) for (d, u, s) in size_info if d and u and s]
-        for (d, u, s) in size_info:
-            if str(d) in sku.name:
-                digits, unit, size = (d, u, s)
-                break
-        if size_info and not digits:
-            digits, unit, size = size_info[0]
+    sku.digits, sku.unit, sku.size = get_size(sku.name, docs)
 
-    sku.digits, sku.unit, sku.size = digits, unit, size
-
-    if digits:
-        sku.unit_price = round(sku.best_price / digits, 2)
+    if sku.digits:
+        sku.unit_price = round(sku.best_price / sku.digits, 2)
 
     return asdict(sku)

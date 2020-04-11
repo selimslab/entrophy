@@ -11,6 +11,7 @@ from supermatch.syncer import strip_debug_fields
 from test.test_links import *
 from services import flatten
 
+
 def run_matcher(name, links, links_of_products=None):
     query = {keys.LINK: {"$in": links}}
     docs_to_match = data_services.get_docs_to_match(query)
