@@ -28,13 +28,6 @@ def inspect_case(link):
     data_services.elastic.query_elastic.search_elastic(name)
 
 
-def get_links_of_a_product(product_id):
-    links = collections.items_collection.find(
-        {keys.objectID: product_id}, {"_id": 0, keys.LINK: 1}
-    )
-    links = list(links)
-    pprint(links)
-    return links
 
 
 if __name__ == "__main__":
