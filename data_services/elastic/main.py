@@ -26,7 +26,7 @@ class Elastic:
                 "_index": "products",
                 "_op_type": "update",
                 "_type": "_doc",
-                "_id": doc.pop(keys.SKU_ID),
+                "_id": doc.get(keys.SKU_ID),
                 "doc_as_upsert": True,
                 "doc": doc,
             }
@@ -41,7 +41,7 @@ class Elastic:
             yield {
                 "_index": "products",
                 "_type": "_doc",
-                "_id": doc.pop(keys.SKU_ID),
+                "_id": doc.get(keys.SKU_ID),
                 "_source": doc,
             }
 
@@ -58,32 +58,19 @@ class Elastic:
             }
 
     def update_docs(self, docs: list):
-        try:
-            batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
-            helpers.bulk(self.es, self.elastic_update_generator(batch))
-            if remaining_docs:
-                self.update_docs(remaining_docs)
-        except ElasticsearchException as e:
-            print(e)
-            logging.error(e)
-            raise
+        batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
+        helpers.bulk(self.es, self.elastic_update_generator(batch))
+        if remaining_docs:
+            self.update_docs(remaining_docs)
 
     def replace_docs(self, docs: list):
-        try:
-            batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
-            helpers.bulk(self.es, self.elastic_replace_generator(batch))
-            if remaining_docs:
-                self.replace_docs(remaining_docs)
-        except ElasticsearchException as e:
-            print(e)
-            raise
+        batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
+        helpers.bulk(self.es, self.elastic_replace_generator(batch))
+        if remaining_docs:
+            self.replace_docs(remaining_docs)
 
     def delete_ids(self, ids: list):
-        try:
-            helpers.bulk(self.es, self.elastic_delete_generator(ids))
-        except ElasticsearchException as e:
-            print(e)
-            raise
+        helpers.bulk(self.es, self.elastic_delete_generator(ids))
 
     def reset_index(self):
         self.es.indices.delete("products")

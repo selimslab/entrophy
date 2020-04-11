@@ -1,6 +1,5 @@
 import logging
 from typing import Iterator
-import collections
 import constants as keys
 from supermatch import id_doc_pairer, sku_grouper
 from supermatch.id_selector import select_unique_id

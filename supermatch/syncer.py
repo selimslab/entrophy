@@ -18,7 +18,6 @@ def strip_debug_fields(skus):
 
 
 def sync_elastic(fresh_skus):
-
     old_skus = {
         hit.get("_id"): hit.get("_source")
         for hit in data_services.elastic.scroll()

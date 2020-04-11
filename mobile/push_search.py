@@ -5,21 +5,21 @@ def sync_search():
 
     search_keyword = {
         "from": 0,
-        "size": 30,
+        "size": 24,
         "_source": {
             "excludes": [
                 "tags",
                 "product_ids_count",
                 "sku_ids_count",
                 "links",
-                "barcodes",
+                "barcodes"
             ]
         },
         "query": {
             "bool": {
                 "must": {
                     "multi_match": {
-                        "query": "milka",
+                        "query": "",
                         "fields": ["name^2", "tags"],
                         "fuzziness": "AUTO",
                         "operator": "and",

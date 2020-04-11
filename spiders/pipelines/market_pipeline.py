@@ -3,24 +3,31 @@ from datetime import datetime
 import constants as keys
 from services.barcode_cleaner import BarcodeCleaner
 from .base_pipeline import BasePipeline
-from .item_count_monitor import ItemCountMonitor
 from .size_adder import SizeAdder
 import data_services
+
+
+class ItemCountException(Exception):
+    pass
+
+
+class ItemContentException(Exception):
+    pass
 
 
 class MarketPipeline(BasePipeline):
     def __init__(
             self,
-            batch_size=64,
+            batch_size=128,
             size_adder=SizeAdder(),
-            item_count_monitor=ItemCountMonitor(),
     ):
         super().__init__(batch_size)
         self.size_adder = size_adder
         self.instant_update_active = True
-        self.item_count_monitor = item_count_monitor
         self.batch = []
         self.batch_size = batch_size
+        self.important_keys = {keys.LINK, keys.NAME, keys.PRICE, keys.MARKET, keys.SRC}
+        self.bad_item_count = 0
 
     def log_historical_price(self, item):
         price = item.get(keys.PRICE)
@@ -55,7 +62,7 @@ class MarketPipeline(BasePipeline):
 
         existing_elastic_docs = data_services.search_elastic_by_ids(existing_ids)
 
-        id_price_pairs = {doc.get("_id"): doc.get("_source").get("prices", {})
+        id_price_pairs = {doc.get("_id"): doc.get("_source", {}).get("prices", {})
                           for doc in existing_elastic_docs
                           }
 
@@ -110,6 +117,9 @@ class MarketPipeline(BasePipeline):
 
         # remove empty and None values
         item = self.clean_item(item)
+        if any(key not in item for key in self.important_keys):
+            self.bad_item_count += 1
+            return item
 
         self.batch.append(item)
         if len(self.batch) > self.batch_size:
@@ -119,10 +129,29 @@ class MarketPipeline(BasePipeline):
         return item
 
     def close_spider(self, spider):
+        if self.bad_item_count > 100:
+            raise ItemContentException(f"{self.bad_item_count} bad items")
+
         stats = spider.crawler.stats.get_stats()
+        self.check_count(spider.name, stats)
+
         self.process_batch()
         self.mongo_sync.bulk_exec()
-        self.item_count_monitor.check_for_anomalies(spider.name, stats)
+
+    @staticmethod
+    def check_count(spider_name, stats):
+        existing_item_count = data_services.items_collection.count_documents(
+            {keys.MARKET: spider_name, keys.OUT_OF_STOCK: {"$ne": True}}
+        )
+        item_count = stats.get("item_scraped_count", 0)
+        is_visible_name = spider_name in keys.VISIBLE_MARKETS
+        is_less_item = item_count < (existing_item_count / 5)
+        is_problem = is_visible_name and is_less_item
+        if is_problem:
+            raise ItemCountException(f"""
+                {spider_name} seen {item_count} out of {existing_item_count}
+                stats: {str(stats)}        
+            """)
 
 
 if __name__ == "__main__":
