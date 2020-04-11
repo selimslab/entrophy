@@ -28,7 +28,7 @@ class BasicSKU:
     tags: str = None
 
     barcodes: list = None
-    options: list = None
+    variants: list = None
 
 
 @dataclass

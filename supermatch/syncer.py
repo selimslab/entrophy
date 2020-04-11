@@ -44,7 +44,7 @@ def sync_elastic(fresh_skus):
     print("to_be_updated", len(to_be_updated))
     print("ids_to_delete", len(ids_to_delete))
 
-    elastic.update_docs(to_be_added)
+    elastic.replace_docs(to_be_added)
     elastic.replace_docs(to_be_updated)
     if ids_to_delete:
         elastic.delete_ids(ids_to_delete)

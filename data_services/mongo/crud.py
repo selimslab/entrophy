@@ -4,6 +4,12 @@ import data_services.mongo.collections as collections
 from data_services.mongo.mongo_sync import MongoSync
 
 
+def get_in_stock(market):
+    collections.items_collection.count_documents(
+        {keys.MARKET: market, keys.OUT_OF_STOCK: {"$ne": True}}
+    )
+
+
 def get_sku_ids_by_links(links):
     return collections.items_collection.find(
         {
@@ -29,6 +35,3 @@ def sync_sku_and_product_ids(id_tree):
         command = {"$set": updates}
         mongosync.add_update(selector, command)
     mongosync.bulk_exec()
-
-
-

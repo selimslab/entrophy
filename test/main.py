@@ -2,7 +2,7 @@ from pprint import pprint
 
 import constants as keys
 import data_services
-import data_services.firebase.main
+import data_services.firebase.connect
 import data_services.mongo.collections as collections
 import data_services.elastic.query_elastic
 

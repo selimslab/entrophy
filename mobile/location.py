@@ -2,7 +2,7 @@ from pprint import pprint
 
 import pandas as pd
 
-from data_services.firebase.main import firestore_client
+from data_services.firebase.connect import firestore_client
 
 
 def read_location():

@@ -1,4 +1,4 @@
-from data_services.firebase.main import firestore_client
+from data_services.firebase.connect import firestore_client
 
 
 def sync_search():
@@ -41,7 +41,7 @@ def sync_search():
             "bool": {
                 "must": [{"match_all": {}}, ],
                 "filter": [
-                    {"terms": {"barcodes": ["8690506390907", "1825470015283"], }},
+                    {"terms": {"barcodes": ["8690506390907", "1825470015283"] }},
                 ],
             }
         },
@@ -49,7 +49,7 @@ def sync_search():
 
     search_by_id = {
         "_source": {
-            "includes": ["prices",""]
+            "includes": ["prices"]
         },
         "query": {
             "ids": {

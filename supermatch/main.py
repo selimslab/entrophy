@@ -39,15 +39,17 @@ def create_matching(
         if sku:
             sku["doc_ids"] = doc_ids
             sku["docs"] = docs
+
             sku_id = sku.get("sku_id")
             skus[sku_id] = sku
+
             used_sku_ids.add(sku_id)
 
     groups_of_sku_ids = sku_grouper.group_skus(skus)
 
     for sku_ids in groups_of_sku_ids:
         for sku_id in sku_ids:
-            skus[sku_id]["options"] = [id for id in sku_ids if id != sku_id]
+            skus[sku_id]["variants"] = sku_ids
 
     skus = {
         sku_id: {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}

@@ -1,4 +1,4 @@
-from data_services.firebase.main import firestore_client
+from data_services.firebase.connect import firestore_client
 
 from mobile.cat import raw_cats
 

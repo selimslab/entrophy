@@ -140,16 +140,14 @@ class MarketPipeline(BasePipeline):
 
     @staticmethod
     def check_count(spider_name, stats):
-        existing_item_count = data_services.items_collection.count_documents(
-            {keys.MARKET: spider_name, keys.OUT_OF_STOCK: {"$ne": True}}
-        )
+        count_items_in_stock = data_services.get_in_stock(market=spider_name)
         item_count = stats.get("item_scraped_count", 0)
         is_visible_name = spider_name in keys.VISIBLE_MARKETS
-        is_less_item = item_count < (existing_item_count / 5)
+        is_less_item = item_count < (count_items_in_stock / 5)
         is_problem = is_visible_name and is_less_item
         if is_problem:
             raise ItemCountException(f"""
-                {spider_name} seen {item_count} out of {existing_item_count}
+                {spider_name} seen {item_count} out of {count_items_in_stock}
                 stats: {str(stats)}        
             """)
 
