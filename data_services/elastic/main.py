@@ -16,14 +16,14 @@ class Elastic:
     batch_size = 2048
 
     @staticmethod
-    def elastic_update_generator(docs: list):
+    def elastic_update_generator(docs: list, index):
         for doc in docs:
             if keys.SKU_ID not in doc:
                 print("no id in", doc)
                 continue
 
             yield {
-                "_index": "products",
+                "_index": index,
                 "_op_type": "update",
                 "_type": "_doc",
                 "_id": doc.get(keys.SKU_ID),
@@ -32,48 +32,55 @@ class Elastic:
             }
 
     @staticmethod
-    def elastic_replace_generator(docs: list):
+    def elastic_replace_generator(docs: list, index):
         for doc in docs:
             if keys.SKU_ID not in doc:
                 print("no id in", doc)
                 continue
 
             yield {
-                "_index": "products",
+                "_index": index,
                 "_type": "_doc",
                 "_id": doc.get(keys.SKU_ID),
                 "_source": doc,
             }
 
     @staticmethod
-    def elastic_delete_generator(ids: list):
+    def elastic_delete_generator(ids: list, index):
         ids = [id for id in ids if id]
         print("deleting", len(ids), "docs from elastic")
         for id in tqdm(ids):
             yield {
                 "_op_type": "delete",
-                "_index": "products",
+                "_index": index,
                 "_type": "_doc",
                 "_id": id,
             }
 
-    def update_docs(self, docs: list):
+    def update_docs(self, docs: list, index):
+        if index is None:
+            index = "test"
         batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
-        helpers.bulk(self.es, self.elastic_update_generator(batch))
+        helpers.bulk(self.es, self.elastic_update_generator(batch, index))
         if remaining_docs:
-            self.update_docs(remaining_docs)
+            self.update_docs(remaining_docs, index)
 
-    def replace_docs(self, docs: list):
+    def replace_docs(self, docs: list, index):
+        if index is None:
+            index = "test"
         batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
-        helpers.bulk(self.es, self.elastic_replace_generator(batch))
+        helpers.bulk(self.es, self.elastic_replace_generator(batch, index))
         if remaining_docs:
-            self.replace_docs(remaining_docs)
+            self.replace_docs(remaining_docs, index)
 
-    def delete_ids(self, ids: list):
-        helpers.bulk(self.es, self.elastic_delete_generator(ids))
+    def delete_ids(self, ids: list, index):
+        if index is None:
+            index = "test"
+        helpers.bulk(self.es, self.elastic_delete_generator(ids, index))
 
-    def reset_index(self):
-        self.es.indices.delete("products")
+    def reset_index(self, index):
+        if index in self.es.indices:
+            self.es.indices.delete(index)
         mapping = {
             "mappings": {
                 "dynamic": False,
@@ -94,12 +101,14 @@ class Elastic:
         # make an API call to the Elasticsearch cluster
         # and have it return a response:
         response = self.es.indices.create(
-            index="products", body=mapping, ignore=400  # ignore 400 already exists code
+            index=index, body=mapping, ignore=400  # ignore 400 already exists code
         )
         print(response)
 
-    def search(self, body):
-        res = self.es.search(index="products", body=body)
+    def search(self, body, index=None):
+        if index is None:
+            index = "products"
+        res = self.es.search(index=index, body=body)
 
         print("Got %d Hits:" % res["hits"]["total"]["value"])
         hits = res["hits"]["hits"]
@@ -108,12 +117,14 @@ class Elastic:
 
         return hits
 
-    def scroll(self, body=None):
+    def scroll(self, body=None, index=None):
+        if index is None:
+            index = "products"
         if body is None:
             body = {}
         # Initialize the scroll
         # Init scroll by search
-        data = self.es.search(index="products", scroll="5m", size=300, body=body)
+        data = self.es.search(index=index, scroll="5m", size=300, body=body)
 
         # Get the scroll ID
         sid = data["_scroll_id"]
