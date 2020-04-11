@@ -81,6 +81,7 @@ class MarketPipeline(BasePipeline):
                 instant_updates.append(update)
 
         data_services.elastic.update_docs(instant_updates)
+        data_services.batch_update_firestore(instant_updates)
 
     def process_batch(self):
         links = [item.get(keys.LINK) for item in self.batch]

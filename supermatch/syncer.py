@@ -49,6 +49,11 @@ def sync_elastic(fresh_skus):
     if ids_to_delete:
         elastic.delete_ids(ids_to_delete)
 
+    data_services.batch_replace_firestore(to_be_added)
+    data_services.batch_replace_firestore(to_be_updated)
+    if ids_to_delete:
+        data_services.delete_by_ids(ids_to_delete)
+
 
 def sync_the_new_matching(skus):
     fresh_skus = strip_debug_fields(skus)
