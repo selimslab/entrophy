@@ -26,7 +26,7 @@ def sync_mongo(collection, item_updates):
         collection.delete_many({"objectID": {"$in": ids_to_delete}})
 
 
-def sync_sku_id(skus):
+def sync_sku_ids(skus):
     for sku in skus:
         doc_ids = [ObjectId(id) for id in sku.get("doc_ids", [])]
         selector = {"_id": {"$in": doc_ids}}

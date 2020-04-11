@@ -33,14 +33,12 @@ def sync_elastic(fresh_skus):
 
         to_be_updated.append(new_doc)
 
-        if len(to_be_updated) > 2048:
-            sync_datastores(to_be_updated)
-            to_be_updated = []
-
     sync_datastores(to_be_updated)
     if ids_to_delete:
         elastic.delete_ids(ids_to_delete)
         data_services.delete_by_ids(ids_to_delete)
+
+    data_services.sync_sku_ids(to_be_updated)
 
 
 def sync_datastores(to_be_updated):
