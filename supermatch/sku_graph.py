@@ -30,24 +30,6 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
             edges = itertools.combinations(ids, 2)
             self.sku_graph.add_edges_from(edges)
 
-    def get_digits_list_of_referenced_docs(self, id_doc_pairs, referenced_ids):
-        ref_digits = [
-            id_doc_pairs.get(ref_id, {}).get(keys.DIGITS) for ref_id in referenced_ids
-        ]
-        ref_digits = [s for s in ref_digits if s]
-        ref_digits = [
-            str(int(s)) if float(s).is_integer() else str(round(s, 2))
-            for s in ref_digits
-        ]
-        return ref_digits
-
-    def check_size_consistency(self, id_doc_pairs, filtered_referenced_ids):
-        ref_digits = self.get_digits_list_of_referenced_docs(
-            id_doc_pairs, filtered_referenced_ids
-        )
-        # max 3 sizes enforced in an sku
-        return len(set(ref_digits)) <= 3
-
     def _add_edges_from_promoted_links(self, id_doc_pairs):
         print("addding_edges_from_promoted_links..")
 
