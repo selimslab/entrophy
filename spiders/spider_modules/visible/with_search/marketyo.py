@@ -12,7 +12,6 @@ from spiders.test_spider import debug_spider
 
 class MarketyoSpider(BaseSpider):
     name = "marketyo"
-    custom_settings = {"DOWNLOAD_DELAY": 2}
 
     def __init__(self, *args, **kwargs):
         super(MarketyoSpider, self).__init__(base_domain="marketyo.net")

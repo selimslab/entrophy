@@ -12,3 +12,5 @@ MOST_COMMON_TOKENS = "most_common_tokens"
 
 SKU_ID = "sku_id"
 PRODUCT_ID = "product_id"
+
+LAST_UPDATED = "last_updated"

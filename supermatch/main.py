@@ -33,6 +33,8 @@ def reduce_docs(groups_of_doc_ids, id_doc_pairs):
 
     groups_of_sku_ids = sku_grouper.group_skus(skus)
 
+    # TODO give unique product ids
+    used_product_ids = set()
     for sku_ids in groups_of_sku_ids:
         for sku_id in sku_ids:
             skus[sku_id][keys.VARIANTS] = sku_ids

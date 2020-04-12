@@ -6,6 +6,7 @@ from .base_pipeline import BasePipeline
 from .size_adder import SizeAdder
 import data_services
 from data_services.firebase.connect import skus_collection
+from datetime import datetime
 
 
 class ItemCountException(Exception):
@@ -75,6 +76,7 @@ class MarketPipeline(BasePipeline):
             if old_prices:
                 price_update = {item.get(keys.MARKET): item.get(keys.PRICE)}
                 new_prices = {**old_prices, **price_update}
+                # TODO LAST_UPDATED, but will you show a time besides every price
                 update = {keys.SKU_ID: sku_id, keys.PRICES: new_prices}
                 instant_updates.append(update)
 
@@ -142,18 +144,21 @@ class MarketPipeline(BasePipeline):
 
     @staticmethod
     def check_count(spider_name, stats):
-        count_items_in_stock = data_services.get_in_stock(market=spider_name)
+        if spider_name == "marketyo":
+            market = {"$in": keys.MARKETYO_MARKET_NAMES}
+        else:
+            market = spider_name
+        count_items_in_stock = data_services.get_in_stock(market=market)
         item_count = stats.get("item_scraped_count", 0)
         is_visible_name = spider_name in keys.VISIBLE_MARKETS
-        is_less_item = item_count < (count_items_in_stock / 5)
+        is_less_item = item_count < (count_items_in_stock / 4)
         is_problem = is_visible_name and is_less_item
         if is_problem:
-            raise ItemCountException(
-                f"""
+            message = f"""
                 {spider_name} seen {item_count} out of {count_items_in_stock}
                 stats: {str(stats)}        
             """
-            )
+            raise ItemCountException(message)
 
 
 if __name__ == "__main__":
