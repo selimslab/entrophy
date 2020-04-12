@@ -20,4 +20,4 @@ def debug_visit_all():
 
 
 if __name__ == "__main__":
-    debug_visit_all()
+    visit_all()
