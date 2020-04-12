@@ -6,15 +6,12 @@ from .size_adder import SizeAdder
 from datetime import datetime
 from .instant_update import instant_price_update
 from .check_count import check_count
-
-
-class ItemContentException(Exception):
-    pass
+from spec.exceptions import ItemContentException
 
 
 class MarketPipeline(BasePipeline):
     def __init__(
-            self, batch_size=128, size_adder=SizeAdder(),
+        self, batch_size=128, size_adder=SizeAdder(),
     ):
         super().__init__(batch_size)
         self.size_adder = size_adder

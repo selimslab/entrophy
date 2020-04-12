@@ -6,7 +6,10 @@ from data_services.firebase.connect import skus_collection
 def instant_price_update(existing_link_id_pairs, instant_update_batch):
     existing_ids = list(existing_link_id_pairs.values())
 
-    body = {"_source": {"includes": ["prices"]}, "query": {"ids": {"values": existing_ids}}}
+    body = {
+        "_source": {"includes": ["prices"]},
+        "query": {"ids": {"values": existing_ids}},
+    }
 
     existing_elastic_docs = data_services.elastic.scroll(body=body)
 
@@ -23,11 +26,9 @@ def instant_price_update(existing_link_id_pairs, instant_update_batch):
         if old_prices:
             price_update = {item.get(keys.MARKET): item.get(keys.PRICE)}
             new_prices = {**old_prices, **price_update}
-            # TODO LAST_UPDATED, but will you show a time besides every price
+            # TODO LAST_UPDATED, but will you show a time besides every price?
             update = {keys.SKU_ID: sku_id, keys.PRICES: new_prices}
             instant_updates.append(update)
 
     data_services.elastic.update_docs(instant_updates, index="products")
-    data_services.batch_update_firestore(
-        instant_updates, collection=skus_collection
-    )
+    data_services.batch_update_firestore(instant_updates, collection=skus_collection)

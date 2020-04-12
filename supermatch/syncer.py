@@ -32,7 +32,8 @@ def sync_datastores(to_be_updated, is_test=True):
 def sync_updates(ids, fresh_skus, is_test):
     body = {"query": {"ids": {"values": ids}}}
     old_skus = {
-        hit.get("_id"): hit.get("_source") for hit in data_services.elastic.scroll(body=body)
+        hit.get("_id"): hit.get("_source")
+        for hit in data_services.elastic.scroll(body=body)
     }
     to_be_updated = list()
     for sku_id in ids:
@@ -49,9 +50,7 @@ def compare_and_sync(fresh_skus, is_test=True):
     print(len(ids_to_keep), "ids_to_keep")
     ids_to_delete = []
     if not is_test:
-        body = {
-            "stored_fields": []
-        }
+        body = {"stored_fields": []}
         all_ids = (hit.get("_id") for hit in data_services.elastic.scroll(body=body))
         ids_to_delete = list(set(all_ids) - ids_to_keep)
         print(len(ids_to_delete), "ids_to_delete")

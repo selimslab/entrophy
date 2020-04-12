@@ -4,3 +4,7 @@ class MatchingException(Exception):
 
 class LowItemCount(Exception):
     pass
+
+
+class ItemContentException(Exception):
+    pass

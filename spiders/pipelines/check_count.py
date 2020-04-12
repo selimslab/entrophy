@@ -1,9 +1,6 @@
 import constants as keys
 import data_services
-
-
-class ItemCountException(Exception):
-    pass
+from spec.exceptions import LowItemCount
 
 
 def check_count(spider_name, stats):
@@ -21,4 +18,4 @@ def check_count(spider_name, stats):
             {spider_name} seen {item_count} out of {count_items_in_stock}
             stats: {str(stats)}        
         """
-        raise ItemCountException(message)
+        raise LowItemCount(message)

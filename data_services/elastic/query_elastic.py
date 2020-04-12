@@ -24,8 +24,8 @@ def search_barcode(barcodes: list):
     body = {
         "query": {
             "bool": {
-                "must": [{"match_all": {}}, ],
-                "filter": [{"terms": {"barcodes": barcodes, }}, ],
+                "must": [{"match_all": {}},],
+                "filter": [{"terms": {"barcodes": barcodes,}},],
             }
         }
     }
