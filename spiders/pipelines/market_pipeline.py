@@ -1,16 +1,11 @@
-from datetime import datetime
-
 import constants as keys
+import data_services
 from services.barcode_cleaner import BarcodeCleaner
 from .base_pipeline import BasePipeline
 from .size_adder import SizeAdder
-import data_services
-from data_services.firebase.connect import skus_collection
 from datetime import datetime
-
-
-class ItemCountException(Exception):
-    pass
+from .instant_update import instant_price_update
+from .check_count import check_count
 
 
 class ItemContentException(Exception):
@@ -29,7 +24,8 @@ class MarketPipeline(BasePipeline):
         self.important_keys = {keys.LINK, keys.NAME, keys.PRICE, keys.MARKET, keys.SRC}
         self.bad_item_count = 0
 
-    def log_historical_price(self, item):
+    @staticmethod
+    def log_historical_price(item):
         price = item.get(keys.PRICE)
         if price:
             # replace dots because it will be used in mongo dot notation
@@ -55,36 +51,6 @@ class MarketPipeline(BasePipeline):
 
         return selector, command
 
-    @staticmethod
-    def instant_price_update(existing_link_id_pairs, instant_update_batch):
-
-        existing_ids = list(existing_link_id_pairs.values())
-
-        existing_elastic_docs = data_services.search_elastic_by_ids(existing_ids,
-                                                                    source={"includes": ["prices"]})
-
-        id_price_pairs = {
-            doc.get("_id"): doc.get("_source", {}).get("prices", {})
-            for doc in existing_elastic_docs
-        }
-
-        instant_updates = []
-
-        for link, item in instant_update_batch:
-            sku_id = existing_link_id_pairs.get(link)
-            old_prices = id_price_pairs.get(sku_id)
-            if old_prices:
-                price_update = {item.get(keys.MARKET): item.get(keys.PRICE)}
-                new_prices = {**old_prices, **price_update}
-                # TODO LAST_UPDATED, but will you show a time besides every price
-                update = {keys.SKU_ID: sku_id, keys.PRICES: new_prices}
-                instant_updates.append(update)
-
-        data_services.elastic.update_docs(instant_updates, index="products")
-        data_services.batch_update_firestore(
-            instant_updates, collection=skus_collection
-        )
-
     def process_batch(self):
         links = [item.get(keys.LINK) for item in self.batch]
         existing_links_cursor = data_services.get_sku_ids_by_links(links)
@@ -107,7 +73,7 @@ class MarketPipeline(BasePipeline):
                 command = {"$set": item}
                 self.mongo_sync.add_update(selector, command)
 
-        self.instant_price_update(existing_link_id_pairs, instant_update_batch)
+        instant_price_update(existing_link_id_pairs, instant_update_batch)
 
     def process_item(self, item, spider):
         item = self.clean_item(item)
@@ -133,32 +99,13 @@ class MarketPipeline(BasePipeline):
         return item
 
     def close_spider(self, spider):
-        if self.bad_item_count > 100:
-            raise ItemContentException(f"{self.bad_item_count} bad items")
-
         stats = spider.crawler.stats.get_stats()
-        self.check_count(spider.name, stats)
-
         self.process_batch()
         self.mongo_sync.bulk_exec()
 
-    @staticmethod
-    def check_count(spider_name, stats):
-        if spider_name == "marketyo":
-            market = {"$in": keys.MARKETYO_MARKET_NAMES}
-        else:
-            market = spider_name
-        count_items_in_stock = data_services.get_in_stock(market=market)
-        item_count = stats.get("item_scraped_count", 0)
-        is_visible_name = spider_name in keys.VISIBLE_MARKETS
-        is_less_item = item_count < (count_items_in_stock / 4)
-        is_problem = is_visible_name and is_less_item
-        if is_problem:
-            message = f"""
-                {spider_name} seen {item_count} out of {count_items_in_stock}
-                stats: {str(stats)}        
-            """
-            raise ItemCountException(message)
+        check_count(spider.name, stats)
+        if self.bad_item_count > 100:
+            raise ItemContentException(f"{self.bad_item_count} bad items")
 
 
 if __name__ == "__main__":

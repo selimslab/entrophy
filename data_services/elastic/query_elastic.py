@@ -1,11 +1,6 @@
 from .main import elastic
 
 
-def search_elastic_by_ids(ids: list, source) -> list:
-    body = {"_source": source, "query": {"ids": {"values": ids}}}
-    return elastic.search(body)
-
-
 def search_elastic(query):
     body = {
         "query": {

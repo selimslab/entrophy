@@ -22,11 +22,8 @@ class BaseSpider(scrapy.Spider):
 
         self.next_page = True
         self.links_seen = set()
-        self.instant_update_active = True
 
-        self.debug = kwargs.get("debug")
-        if self.debug:
-            self.instant_update_active = False
+        self.debug = kwargs.get("debug", False)
 
     def parse(self, response):
         if self.config:
