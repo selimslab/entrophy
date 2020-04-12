@@ -10,7 +10,6 @@ def strip_debug_fields(skus):
     fresh_skus = {
         sku_id: {k: v for k, v in sku.items() if k in keys_to_sync}
         for sku_id, sku in skus.items()
-
     }
     return fresh_skus
 

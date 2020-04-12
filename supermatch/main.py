@@ -4,23 +4,24 @@ import constants as keys
 from supermatch import id_doc_pairer, sku_grouper
 from supermatch.sku_graph import sku_graph_creator
 from supermatch.doc_reducer import reduce_docs_to_sku
+import uuid
 
 
 def get_sku_groups(id_doc_pairs):
     graph_of_raw_docs = sku_graph_creator.create_graph(id_doc_pairs)
 
-    groups_of_doc_ids: Iterator = sku_graph_creator.create_connected_component_groups(
+    groups_of_doc_ids = sku_graph_creator.create_connected_component_groups(
         graph_of_raw_docs
     )
 
     return groups_of_doc_ids
 
 
-def reduce_docs(groups_of_doc_ids, id_doc_pairs):
+def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
     skus = dict()
     used_sku_ids = set()
     for doc_ids in groups_of_doc_ids:
-        docs = [id_doc_pairs.get(doc_id) for doc_id in doc_ids]
+        docs = [id_doc_pairs.get(doc_id, {}) for doc_id in doc_ids]
         sku = reduce_docs_to_sku(docs, used_sku_ids)
         if sku:
             sku_id = sku.get("sku_id")
@@ -29,16 +30,23 @@ def reduce_docs(groups_of_doc_ids, id_doc_pairs):
 
             for doc in docs:
                 doc[keys.SKU_ID] = sku_id
+                doc[keys.PRODUCT_ID] = sku_id
+
             sku["docs"] = docs
             sku["doc_ids"] = doc_ids
 
     groups_of_sku_ids = sku_grouper.group_skus(skus)
-
-    # TODO give unique product ids
-    used_product_ids = set()
     for sku_ids in groups_of_sku_ids:
+        product_id = str(uuid.uuid4())
         for sku_id in sku_ids:
             skus[sku_id][keys.VARIANTS] = sku_ids
+            skus[sku_id][keys.PRODUCT_ID] = product_id
+            skus[sku_id][keys.SKU_ID] = sku_id
+
+            docs = skus[sku_id]["docs"]
+            for doc in docs:
+                doc[keys.PRODUCT_ID] = product_id
+            skus[sku_id]["docs"] = docs
 
     skus = {
         sku_id: {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
@@ -48,7 +56,7 @@ def reduce_docs(groups_of_doc_ids, id_doc_pairs):
     return skus
 
 
-def create_matching(docs_to_match: Iterator, links_of_products: set = None):
+def create_matching(docs_to_match: Iterator, links_of_products: set = None) -> dict:
     if links_of_products is None:
         links_of_products = set()
 
