@@ -23,13 +23,14 @@ def reduce_docs(groups_of_doc_ids, id_doc_pairs):
         docs = [id_doc_pairs.get(doc_id) for doc_id in doc_ids]
         sku = reduce_docs_to_sku(docs, used_sku_ids)
         if sku:
-            sku["doc_ids"] = doc_ids
-            sku["docs"] = docs
-
             sku_id = sku.get("sku_id")
             skus[sku_id] = sku
-
             used_sku_ids.add(sku_id)
+
+            for doc in docs:
+                doc[keys.SKU_ID] = sku_id
+            sku["docs"] = docs
+            sku["doc_ids"] = doc_ids
 
     groups_of_sku_ids = sku_grouper.group_skus(skus)
 
