@@ -1,0 +1,28 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+pylint = "*"
+
+[packages]
+rsa = "<=3.5.0,>=3.1.2"
+dnspython = "*"
+pymongo = "*"
+sentry-sdk = "==0.14.3"
+tqdm = "*"
+bs4 = "*"
+networkx = "*"
+setuptools = "*"
+shub = "*"
+scrapy = "*"
+firebase-admin = "*"
+elasticsearch = "*"
+pandas = "*"
+openpyxl = "*"
+xlrd = "*"
+
+[requires]
+python_version = "3.7"
