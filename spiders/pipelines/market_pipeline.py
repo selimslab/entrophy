@@ -75,7 +75,7 @@ class MarketPipeline(BasePipeline):
     def process_item(self, item, spider):
         item = self.clean_item(item)
         if not item:
-            return
+            return {}
         item = self.size_adder.add_size(item)
 
         item[keys.BARCODES] = BarcodeCleaner.get_clean_barcodes(

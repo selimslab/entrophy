@@ -14,7 +14,7 @@ class BarcodeSearchHelper:
             if str(barcode[0]) == "0":
                 if len(barcode) == 8:
                     continue
-                if len(barcode) == 14:
+                elif len(barcode) == 14:
                     if str(barcode[1]) == "0":
                         continue
                     else:

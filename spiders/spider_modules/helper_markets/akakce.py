@@ -54,7 +54,8 @@ class AkakceSearcher(BaseSpider):
             p[keys.BARCODES] = [response.meta.get(keys.BARCODES)]
             yield scrapy.Request(link, callback=self.visit_detail, meta={"product": p})
 
-    def visit_detail(self, response):
+    @staticmethod
+    def visit_detail(response):
         ul = response.css("#MP_h")
         lis = ul.css("li")
         base = "https://www.akakce.com/c/?"

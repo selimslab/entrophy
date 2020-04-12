@@ -12,5 +12,4 @@ def doc_generator():
 
 
 def push():
-    to_be_updated = [doc for doc in doc_generator()]
-    print(to_be_updated)
+    print(list(doc_generator()))

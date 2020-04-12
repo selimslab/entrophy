@@ -6,7 +6,7 @@ from data_services import mark_out_of_stock
 
 class BaseSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
-        scrapy.Spider.__init__(self)
+        super().__init__()
 
         self.config = kwargs.get("config")
         if self.config:

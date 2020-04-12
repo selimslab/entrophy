@@ -97,9 +97,6 @@ class GoogleDetailSpider(BaseSpider):
         variants_div = response.css("#variants")
         option_divs = variants_div.css("option")
         variants = dict()
-        """
-        make sure to not overwrite 
-        """
         for option in option_divs:
             is_selected = option.css("::attr(selected)").extract_first()
             name = option.css("::text").extract_first()
