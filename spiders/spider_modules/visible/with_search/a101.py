@@ -13,12 +13,9 @@ class A101Spider(BaseSpider):
     def __init__(self, *args, **kwargs):
         super(A101Spider, self).__init__(*args, base_domain="a101.com.tr")
         if kwargs.get("debug"):
-            # "/kozmetik-kisisel-bakim/vucut-bakim/"
             self.start_urls = {"/kozmetik-kisisel-bakim/sampuan/"}
         else:
             self.start_urls = A101Helper.get_category_urls()
-
-        print(self.start_urls)
 
     def start_requests(self):
         for url in self.start_urls:
