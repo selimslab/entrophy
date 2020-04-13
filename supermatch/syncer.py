@@ -61,18 +61,6 @@ class Syncer:
             self.sync_datastores(to_be_updated, all_doc_ids)
 
     def compare_and_sync(self, skus):
-        ids_to_keep = set(skus.keys())
-        print(len(ids_to_keep), "ids_to_keep")
-        ids_to_delete = []
-
-        if not self.is_test:
-            body = {"stored_fields": []}
-            all_ids = (
-                hit.get("_id")
-                for hit in data_services.elastic.scroll(body=body, duration="3m")
-            )
-            ids_to_delete = list(set(all_ids) - ids_to_keep)
-            print(len(ids_to_delete), "ids_to_delete")
 
         ids = []
         for sku_id, new_doc in skus.items():
@@ -83,12 +71,22 @@ class Syncer:
 
         self.create_updates(ids, skus)
 
-        if not self.is_test and ids_to_delete:
-            elastic.delete_ids(ids_to_delete, index="products")
-            # TODO why sync to fs?
-            data_services.firestore_delete_by_ids(
-                ids_to_delete, collection=firebase_collections.skus_collection
+        if not self.is_test:
+            body = {"stored_fields": []}
+            all_ids = (
+                hit.get("_id")
+                for hit in data_services.elastic.scroll(body=body, duration="3m")
             )
+
+            ids_to_keep = set(skus.keys())
+            print(len(ids_to_keep), "ids_to_keep")
+            ids_to_delete = list(set(all_ids) - ids_to_keep)
+            print(len(ids_to_delete), "ids_to_delete")
+
+            if ids_to_delete:
+                elastic.delete_ids(ids_to_delete, index="products")
+                # TODO why sync to fs?
+                # data_services.firestore_delete_by_ids(ids_to_delete, collection=firebase_collections.skus_collection)
 
     def sync_the_new_matching(self, skus):
         fresh_skus = self.strip_debug_fields(skus)

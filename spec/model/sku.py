@@ -29,7 +29,6 @@ class BasicSKU:
     tags: str = None
 
     barcodes: list = None
-    variants: list = None
 
 
 @dataclass
@@ -39,3 +38,4 @@ class SKU(BasicSKU):
     docs: list = None
     links: list = None
     most_common_tokens: list = None
+    variants: list = None

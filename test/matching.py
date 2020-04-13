@@ -47,9 +47,11 @@ def check_matching():
 def check_sync():
     paths = get_paths("end_to_end")
     full_skus = json_util.read_json(paths.full_skus)
-    syncer = Syncer(is_test=True)
-    syncer.sync_the_new_matching(dict(itertools.islice(full_skus.items(), 10)))
+    syncer = Syncer(is_test=False)
+    syncer.sync_the_new_matching(full_skus)
+    # syncer.sync_the_new_matching(dict(itertools.islice(full_skus.items(), 1000)))
 
 
 if __name__ == "__main__":
-    check_matching()
+    check_sync()
+
