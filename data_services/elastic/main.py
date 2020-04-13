@@ -115,14 +115,16 @@ class Elastic:
 
         return hits
 
-    def scroll(self, body=None, index=None):
+    def scroll(self, body=None, index=None, duration=None):
         if index is None:
             index = "products"
         if body is None:
             body = {}
+        if duration is None:
+            duration = "1m"
         # Initialize the scroll
         # Init scroll by search
-        data = self.es.search(index=index, scroll="1m", size=300, body=body)
+        data = self.es.search(index=index, scroll=duration, size=300, body=body)
 
         # Get the scroll ID
         sid = data["_scroll_id"]
@@ -135,7 +137,7 @@ class Elastic:
             for hit in hits:
                 yield hit
 
-            data = self.es.scroll(scroll_id=sid, scroll="1m")
+            data = self.es.scroll(scroll_id=sid, scroll=duration)
 
             # Update the scroll ID
             sid = data["_scroll_id"]
