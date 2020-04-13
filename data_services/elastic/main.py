@@ -59,7 +59,7 @@ class Elastic:
     def update_docs(self, docs: list, index):
         if index is None:
             index = "test"
-        batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size :]
+        batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
         helpers.bulk(self.es, self.elastic_update_generator(batch, index))
         if remaining_docs:
             self.update_docs(remaining_docs, index)
@@ -67,7 +67,7 @@ class Elastic:
     def replace_docs(self, docs: list, index):
         if index is None:
             index = "test"
-        batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size :]
+        batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
         helpers.bulk(self.es, self.elastic_replace_generator(batch, index))
         if remaining_docs:
             self.replace_docs(remaining_docs, index)
@@ -122,7 +122,7 @@ class Elastic:
             body = {}
         # Initialize the scroll
         # Init scroll by search
-        data = self.es.search(index=index, scroll="5m", size=300, body=body)
+        data = self.es.search(index=index, scroll="1m", size=300, body=body)
 
         # Get the scroll ID
         sid = data["_scroll_id"]
@@ -135,7 +135,7 @@ class Elastic:
             for hit in hits:
                 yield hit
 
-            data = self.es.scroll(scroll_id=sid, scroll="5m")
+            data = self.es.scroll(scroll_id=sid, scroll="1m")
 
             # Update the scroll ID
             sid = data["_scroll_id"]

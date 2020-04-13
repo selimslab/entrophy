@@ -68,6 +68,7 @@ def compare_and_sync(fresh_skus, is_test=True):
 
     if not is_test and ids_to_delete:
         elastic.delete_ids(ids_to_delete, index="products")
+        # TODO to be or not to be?
         # data_services.firestore_delete_by_ids(ids_to_delete, collection=skus_collection)
 
 
