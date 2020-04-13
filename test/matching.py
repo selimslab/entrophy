@@ -44,9 +44,12 @@ def check_matching():
     run_matcher(name="basic", query=query)
 
 
-if __name__ == "__main__":
+def check_sync():
     paths = get_paths("end_to_end")
     full_skus = json_util.read_json(paths.full_skus)
     syncer = Syncer(is_test=True)
-    syncer.sync_the_new_matching(dict(itertools.islice(full_skus.items(), 2))
-)
+    syncer.sync_the_new_matching(dict(itertools.islice(full_skus.items(), 10)))
+
+
+if __name__ == "__main__":
+    check_matching()

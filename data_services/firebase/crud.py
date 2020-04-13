@@ -39,7 +39,7 @@ def batch_update_firestore(docs, collection=None):
 def batch_set_firestore(docs, collection=None):
     if collection is None:
         collection = test_collection
-    print(f"replacing {len(docs)} docs")
+    print(f"replacing {len(docs)} fs docs")
     batch = firestore_client.batch()
     batch_process(docs, collection, batch, batch.set)
 

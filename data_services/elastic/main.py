@@ -68,7 +68,7 @@ class Elastic:
         if index is None:
             index = "test"
         batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size :]
-        print(f"replacing {len(batch)} docs")
+        print(f"replacing {len(batch)} elastic docs")
         helpers.bulk(self.es, self.elastic_replace_generator(batch, index))
         if remaining_docs:
             self.replace_docs(remaining_docs, index)
