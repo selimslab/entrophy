@@ -43,7 +43,7 @@ class Syncer:
 
         old_skus = {
             hit.get("_id"): hit.get("_source")
-            for hit in data_services.elastic.scroll(body=body, duration="5m")
+            for hit in data_services.elastic.scroll(body=body, duration="15m")
         }
         to_be_updated = list()
         all_doc_ids = list()
