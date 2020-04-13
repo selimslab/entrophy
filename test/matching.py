@@ -11,10 +11,10 @@ from test.test_logs.paths import get_paths
 from supermatch.syncer import strip_debug_fields, compare_and_sync
 
 
-def run_matcher(name, links, links_of_products=None):
+def run_matcher(name, query, links_of_products=None):
     paths = get_paths(name)
 
-    query = {keys.LINK: {"$in": links}}
+
     docs_to_match = data_services.get_docs_to_match(query)
 
     full_skus = create_matching(
@@ -37,4 +37,6 @@ if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     links = json_util.read_json("links.json")
     # run_matcher(name="süt", links=sut)
-    run_matcher(name="end_to_end", links=flatten(links))
+    # query = {keys.LINK: {"$in": flatten(links)}}
+    query = {}
+    run_matcher(name="end_to_end", query=query)

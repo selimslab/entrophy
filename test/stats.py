@@ -46,7 +46,7 @@ class Stats:
     @staticmethod
     def show_all_market_stats():
         print("total", collections.items_collection.count_documents({}))
-        for name in keys.ALL_MARKETS + ["şok"]:
+        for name in keys.ALL_MARKETS:
             Stats.show_single_market_stats(name)
 
     @staticmethod
@@ -76,5 +76,5 @@ class Stats:
 
 if __name__ == "__main__":
     # Stats.show_single_market_stats(keys.ALTUNBILEK)
-    # Stats.show_all_market_stats()
-    pass
+    Stats.show_all_market_stats()
+
