@@ -62,12 +62,12 @@ class MarketPipeline(BasePipeline):
             if link in existing_link_id_pairs:
                 instant_update_batch.append((link, item))
                 selector, command = self.get_updates_for_existing_item(item)
-                self.mongo_sync.add_update(selector, command)
+                self.mongo_sync.add_update_one(selector, command)
             else:
                 # new doc
                 selector = {keys.LINK: item.get(keys.LINK)}
                 command = {"$set": item}
-                self.mongo_sync.add_update(selector, command)
+                self.mongo_sync.add_update_one(selector, command)
 
         if instant_update_batch:
             instant_price_update(existing_link_id_pairs, instant_update_batch)

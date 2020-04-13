@@ -52,7 +52,7 @@ class SearchPipeline(BasePipeline):
 
     def sync_item(self, item: dict):
         selector, command = self.get_updates_for_existing_item(item.copy())
-        self.mongo_sync.add_update(selector, command)
+        self.mongo_sync.add_update_one(selector, command)
         return item
 
     def process_item(self, item, spider):

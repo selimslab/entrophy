@@ -26,28 +26,18 @@ def sync_mongo(collection, item_updates):
         collection.delete_many({"objectID": {"$in": ids_to_delete}})
 
 
-def sync_sku_ids(skus, coll):
+def sync_sku_ids(skus, all_doc_ids, coll):
     mongosync = MongoSync(collection=coll, write_interval=128)
 
-    for sku in skus:
-        doc_ids = sku.get("doc_ids", [])
+    for sku, doc_ids in zip(skus, all_doc_ids):
         doc_ids = [ObjectId(id) for id in doc_ids]
         selector = {"_id": {"$in": doc_ids}}
         update = {keys.SKU_ID: sku.get(keys.SKU_ID)}
         command = {"$set": update}
-        mongosync.add_multiple_updates(selector, command)
+        mongosync.add_update_many(selector, command)
 
     mongosync.bulk_exec()
 
 
 if __name__ == "__main__":
-    mongosync = MongoSync(collections.test_collection, write_interval=128)
-    for sku in skus:
-        doc_ids = sku.get("doc_ids", [])
-        doc_ids = [ObjectId(id) for id in doc_ids]
-        selector = {"_id": {"$in": doc_ids}}
-        update = {keys.SKU_ID: sku.get(keys.SKU_ID)}
-        command = {"$set": update}
-        mongosync.add_update(selector, command)
-
-    mongosync.bulk_exec()
+    pass

@@ -15,7 +15,7 @@ def strip_debug_fields(skus):
     return fresh_skus
 
 
-def sync_datastores(to_be_updated, is_test=True):
+def sync_datastores(to_be_updated, all_doc_ids, is_test=True):
     if is_test:
         index = "test"
         collection = firebase_collections.test_collection
@@ -27,29 +27,33 @@ def sync_datastores(to_be_updated, is_test=True):
 
     elastic.replace_docs(to_be_updated, index=index)
     data_services.batch_set_firestore(to_be_updated, collection=collection)
-    data_services.sync_sku_ids(to_be_updated, mongo_coll)
+    data_services.sync_sku_ids(to_be_updated, all_doc_ids, mongo_coll)
 
 
-def sync_updates(ids, fresh_skus, is_test):
+def create_updates(ids, fresh_skus, is_test):
     body = {"query": {"ids": {"values": ids}}}
     old_skus = {
         hit.get("_id"): hit.get("_source")
         for hit in data_services.elastic.scroll(body=body)
     }
     to_be_updated = list()
+    all_doc_ids = list()
     for sku_id in ids:
-        old_doc = old_skus.get(sku_id, {})
-        new_doc = fresh_skus.get(sku_id, {})
-        if old_doc and new_doc == old_doc:
+        old_sku = old_skus.get(sku_id, {})
+        new_sku = fresh_skus.get(sku_id, {})
+        doc_ids = new_sku.pop("doc_ids")
+        if old_sku and new_sku == old_sku:
             continue
-        to_be_updated.append(new_doc)
+        to_be_updated.append(new_sku)
+        doc_ids = [id for id in doc_ids if "clone" not in id]
+        all_doc_ids.append(doc_ids)
 
     if to_be_updated:
-        sync_datastores(to_be_updated, is_test)
+        sync_datastores(to_be_updated, all_doc_ids, is_test)
 
 
-def compare_and_sync(fresh_skus, is_test=True):
-    ids_to_keep = set(fresh_skus.keys())
+def compare_and_sync(skus, is_test=True):
+    ids_to_keep = set(skus.keys())
     print(len(ids_to_keep), "ids_to_keep")
     ids_to_delete = []
     if not is_test:
@@ -61,13 +65,13 @@ def compare_and_sync(fresh_skus, is_test=True):
     batch_size = 1024
 
     ids = []
-    for sku_id, new_doc in fresh_skus.items():
+    for sku_id, new_doc in skus.items():
         ids.append(sku_id)
         if len(ids) > batch_size:
-            sync_updates(ids, fresh_skus, is_test)
+            create_updates(ids, skus, is_test)
             ids = []
 
-    sync_updates(ids, fresh_skus, is_test)
+    create_updates(ids, skus, is_test)
 
     if not is_test and ids_to_delete:
         elastic.delete_ids(ids_to_delete, index="products")

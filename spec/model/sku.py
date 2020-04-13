@@ -4,6 +4,7 @@ from typing import Union
 
 @dataclass
 class BasicSKU:
+    doc_ids: list = None
     sku_id: str = None
     product_id: str = None
 
@@ -36,6 +37,5 @@ class SKU(BasicSKU):
     product_ids_count: dict = None
     sku_ids_count: dict = None
     docs: list = None
-    doc_ids: list = None
     links: list = None
     most_common_tokens: list = None

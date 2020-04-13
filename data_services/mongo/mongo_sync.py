@@ -26,14 +26,14 @@ class MongoSync:
                 # clear ops to prevent cascading failure
                 self.ops = list()
 
-    def add_update(self, selector, command):
+    def add_update_one(self, selector, command):
         new_op = UpdateOne(selector, command, upsert=True)
         self.ops.append(new_op)
 
         if len(self.ops) >= self.write_interval:
             self.bulk_exec()
 
-    def add_multiple_updates(self, selector, command):
+    def add_update_many(self, selector, command):
         new_op = UpdateMany(selector, command, upsert=True)
         self.ops.append(new_op)
         if len(self.ops) >= self.write_interval:
@@ -65,6 +65,6 @@ class MongoSync:
                 continue
             selector = {keys.LINK: link}
             command = {"$set": doc}
-            self.add_update(selector, command)
+            self.add_update_one(selector, command)
 
         self.bulk_exec()
