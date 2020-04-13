@@ -1,3 +1,6 @@
+import logging
+
+
 def convert_price(price: str):
     dot_split = str(price).split(".")
     if len(dot_split) == 3:
@@ -5,7 +8,7 @@ def convert_price(price: str):
     try:
         price = float(price)
     except (ValueError, TypeError) as e:
-        print(e)
+        logging.error(e)
         raise
 
     price = round(price, 2)
