@@ -17,9 +17,4 @@ import constants as keys
             },
 """
 if __name__ == "__main__":
-    items_collection.aggregate(
-        [
-            {'$match': {}},
-            {'$out': 'items_backup'}
-        ]
-    )
+    items_collection.aggregate([{"$match": {}}, {"$out": "items_backup"}])

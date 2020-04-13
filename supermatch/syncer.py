@@ -15,10 +15,12 @@ class Syncer:
             mongo_coll = mongo_collections.test_collection
             self.index = "test"
             self.fs_collection = firebase_collections.test_collection
+            self.batch_size = 16
         else:
             mongo_coll = mongo_collections.items_collection
             self.index = "products"
             self.fs_collection = firebase_collections.skus_collection
+            self.batch_size = 256
 
         self.mongo_sync = MongoSync(collection=mongo_coll, write_interval=128)
 
@@ -36,7 +38,7 @@ class Syncer:
         data_services.batch_set_firestore(to_be_updated, collection=self.fs_collection)
         data_services.sync_sku_ids(self.mongo_sync, to_be_updated, all_doc_ids)
 
-    def create_updates(self, ids, fresh_skus):
+    def create_updates(self, ids, skus):
         body = {"query": {"ids": {"values": ids}}}
         old_skus = {
             hit.get("_id"): hit.get("_source")
@@ -46,7 +48,7 @@ class Syncer:
         all_doc_ids = list()
         for sku_id in ids:
             old_sku = old_skus.get(sku_id, {})
-            new_sku = fresh_skus.get(sku_id, {})
+            new_sku = skus.get(sku_id, {})
             doc_ids = new_sku.pop("doc_ids")
             if old_sku and new_sku == old_sku:
                 continue
@@ -61,6 +63,7 @@ class Syncer:
         ids_to_keep = set(skus.keys())
         print(len(ids_to_keep), "ids_to_keep")
         ids_to_delete = []
+
         if not self.is_test:
             body = {"stored_fields": []}
             all_ids = (
@@ -70,12 +73,10 @@ class Syncer:
             ids_to_delete = list(set(all_ids) - ids_to_keep)
             print(len(ids_to_delete), "ids_to_delete")
 
-        batch_size = 1024
-
         ids = []
         for sku_id, new_doc in skus.items():
             ids.append(sku_id)
-            if len(ids) > batch_size:
+            if len(ids) > self.batch_size:
                 self.create_updates(ids, skus)
                 ids = []
 
