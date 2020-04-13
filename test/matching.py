@@ -13,7 +13,6 @@ from supermatch.syncer import Syncer
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
-
 def run_matcher(name, query, links_of_products=None):
     paths = get_paths(name)
 
@@ -37,11 +36,13 @@ def run_matcher(name, query, links_of_products=None):
 
     syncer.compare_and_sync(basic_skus)
 
+
 def check_matching():
     links = json_util.read_json("links.json")
     query = {keys.LINK: {"$in": flatten(links)}}
     # query = {}
     run_matcher(name="basic", query=query)
+
 
 if __name__ == "__main__":
 
@@ -49,4 +50,3 @@ if __name__ == "__main__":
     full_skus = json_util.read_json(paths.full_skus)
     syncer = Syncer(is_test=True)
     syncer.sync_the_new_matching(full_skus)
-
