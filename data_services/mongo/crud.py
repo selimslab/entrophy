@@ -12,7 +12,7 @@ def get_in_stock(market):
 
 def get_sku_ids_by_links(links):
     return collections.items_collection.find(
-        {keys.LINK: {"$exists": True, "$in": links}, },
+        {keys.LINK: {"$exists": True, "$in": links},},
         {"_id": 0, keys.LINK: 1, keys.SKU_ID: 1},
     )
 

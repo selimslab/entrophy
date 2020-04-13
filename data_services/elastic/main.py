@@ -59,7 +59,7 @@ class Elastic:
     def update_docs(self, docs: list, index):
         if index is None:
             index = "test"
-        batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
+        batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size :]
         helpers.bulk(self.es, self.elastic_update_generator(batch, index))
         if remaining_docs:
             self.update_docs(remaining_docs, index)
@@ -67,7 +67,7 @@ class Elastic:
     def replace_docs(self, docs: list, index):
         if index is None:
             index = "test"
-        batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size:]
+        batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size :]
         print(f"replacing {len(batch)} docs")
         helpers.bulk(self.es, self.elastic_replace_generator(batch, index))
         if remaining_docs:

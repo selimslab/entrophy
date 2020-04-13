@@ -11,7 +11,7 @@ from spec.exceptions import ItemContentException
 
 class MarketPipeline(BasePipeline):
     def __init__(
-            self, batch_size=256, size_adder=SizeAdder(),
+        self, batch_size=256, size_adder=SizeAdder(),
     ):
         super().__init__(batch_size)
         self.size_adder = size_adder

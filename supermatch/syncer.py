@@ -20,9 +20,7 @@ class Syncer:
             self.index = "products"
             self.fs_collection = firebase_collections.skus_collection
 
-        self.mongo_sync = MongoSync(
-            collection=mongo_coll, write_interval=128
-        )
+        self.mongo_sync = MongoSync(collection=mongo_coll, write_interval=128)
 
     @staticmethod
     def strip_debug_fields(skus):
@@ -65,7 +63,10 @@ class Syncer:
         ids_to_delete = []
         if not self.is_test:
             body = {"stored_fields": []}
-            all_ids = (hit.get("_id") for hit in data_services.elastic.scroll(body=body, duration="3m"))
+            all_ids = (
+                hit.get("_id")
+                for hit in data_services.elastic.scroll(body=body, duration="3m")
+            )
             ids_to_delete = list(set(all_ids) - ids_to_keep)
             print(len(ids_to_delete), "ids_to_delete")
 
@@ -83,8 +84,9 @@ class Syncer:
         if not self.is_test and ids_to_delete:
             elastic.delete_ids(ids_to_delete, index="products")
             # TODO why sync to fs?
-            data_services.firestore_delete_by_ids(ids_to_delete,
-                                                  collection=firebase_collections.skus_collection)
+            data_services.firestore_delete_by_ids(
+                ids_to_delete, collection=firebase_collections.skus_collection
+            )
 
     def sync_the_new_matching(self, skus):
         fresh_skus = self.strip_debug_fields(skus)

@@ -77,4 +77,3 @@ class Stats:
 if __name__ == "__main__":
     # Stats.show_single_market_stats(keys.ALTUNBILEK)
     Stats.show_all_market_stats()
-

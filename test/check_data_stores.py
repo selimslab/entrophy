@@ -11,4 +11,6 @@ def check_firestore():
         print(u"{} => {}".format(doc.id, doc.to_dict()))
 
 
-print(items_collection.find_one({"_id": {"$in": [ObjectId("5d7be09143a5a28ff82323f7")]}}))
+print(
+    items_collection.find_one({"_id": {"$in": [ObjectId("5d7be09143a5a28ff82323f7")]}})
+)
