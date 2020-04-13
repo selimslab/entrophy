@@ -19,7 +19,7 @@ class MongoSync:
         if self.ops:
             try:
                 self.collection.bulk_write(self.ops, ordered=False)
-                logging.info("bulk write successful!", "written", len(self.ops), "items")
+                logging.info(f"bulk write successful! written {len(self.ops)} items")
             except BulkWriteError as e:
                 logging.error(e)
             finally:

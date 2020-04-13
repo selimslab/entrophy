@@ -14,7 +14,6 @@ from supermatch.syncer import strip_debug_fields, compare_and_sync
 def run_matcher(name, query, links_of_products=None):
     paths = get_paths(name)
 
-
     docs_to_match = data_services.get_docs_to_match(query)
 
     full_skus = create_matching(
@@ -27,7 +26,7 @@ def run_matcher(name, query, links_of_products=None):
     excel.create_excel(docs, paths.excel)
 
     basic_skus = strip_debug_fields(full_skus)
-    # compare_and_sync(basic_skus, is_test=True)
+    compare_and_sync(basic_skus, is_test=True)
 
     json_util.save_json(paths.full_skus, full_skus)
     json_util.save_json(paths.basic_skus, basic_skus)
@@ -37,6 +36,6 @@ if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     links = json_util.read_json("links.json")
     # run_matcher(name="süt", links=sut)
-    # query = {keys.LINK: {"$in": flatten(links)}}
-    query = {}
-    run_matcher(name="end_to_end", query=query)
+    query = {keys.LINK: {"$in": flatten(links)}}
+    # query = {}
+    run_matcher(name="basic", query=query)

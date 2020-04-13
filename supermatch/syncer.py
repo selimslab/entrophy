@@ -2,7 +2,8 @@ import data_services
 from spec.model.sku import BasicSKU
 from dataclasses import asdict
 from data_services import elastic
-from data_services.firebase.connect import skus_collection, test_collection
+import data_services.firebase.connect as firebase_collections
+import data_services.mongo.collections as mongo_collections
 
 
 def strip_debug_fields(skus):
@@ -17,16 +18,16 @@ def strip_debug_fields(skus):
 def sync_datastores(to_be_updated, is_test=True):
     if is_test:
         index = "test"
-        collection = test_collection
+        collection = firebase_collections.test_collection
+        mongo_coll = mongo_collections.test_collection
     else:
         index = "products"
-        collection = skus_collection
+        collection = firebase_collections.skus_collection
+        mongo_coll = mongo_collections.items_collection
 
     elastic.replace_docs(to_be_updated, index=index)
     data_services.batch_set_firestore(to_be_updated, collection=collection)
-
-    if not is_test:
-        data_services.sync_sku_ids(to_be_updated)
+    data_services.sync_sku_ids(to_be_updated, mongo_coll)
 
 
 def sync_updates(ids, fresh_skus, is_test):
@@ -42,7 +43,9 @@ def sync_updates(ids, fresh_skus, is_test):
         if old_doc and new_doc == old_doc:
             continue
         to_be_updated.append(new_doc)
-    sync_datastores(to_be_updated, is_test)
+
+    if to_be_updated:
+        sync_datastores(to_be_updated, is_test)
 
 
 def compare_and_sync(fresh_skus, is_test=True):
@@ -69,7 +72,7 @@ def compare_and_sync(fresh_skus, is_test=True):
     if not is_test and ids_to_delete:
         elastic.delete_ids(ids_to_delete, index="products")
         # TODO why sync to fs?
-        data_services.firestore_delete_by_ids(ids_to_delete, collection=skus_collection)
+        data_services.firestore_delete_by_ids(ids_to_delete, collection=firebase_collections.skus_collection)
 
 
 def sync_the_new_matching(skus):
