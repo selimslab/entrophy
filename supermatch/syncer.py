@@ -40,9 +40,10 @@ class Syncer:
 
     def create_updates(self, ids, skus):
         body = {"query": {"ids": {"values": ids}}}
+
         old_skus = {
             hit.get("_id"): hit.get("_source")
-            for hit in data_services.elastic.scroll(body=body)
+            for hit in data_services.elastic.scroll(body=body, duration="5m")
         }
         to_be_updated = list()
         all_doc_ids = list()
@@ -73,14 +74,7 @@ class Syncer:
             ids_to_delete = list(set(all_ids) - ids_to_keep)
             print(len(ids_to_delete), "ids_to_delete")
 
-        ids = []
-        for sku_id, new_doc in skus.items():
-            ids.append(sku_id)
-            if len(ids) > self.batch_size:
-                self.create_updates(ids, skus)
-                ids = []
-
-        self.create_updates(ids, skus)
+        self.create_updates(list(ids_to_keep), skus)
 
         if not self.is_test and ids_to_delete:
             elastic.delete_ids(ids_to_delete, index="products")
