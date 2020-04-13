@@ -29,12 +29,30 @@ def sync_mongo(collection, item_updates):
 def sync_sku_ids(mongo_sync, skus, all_doc_ids):
     for sku, doc_ids in zip(skus, all_doc_ids):
         doc_ids = [ObjectId(id) for id in doc_ids]
-        selector = {"_id": {"$in": doc_ids}}
-        update = {keys.SKU_ID: sku.get(keys.SKU_ID)}
-        command = {"$set": update}
-        mongo_sync.add_update_many(selector, command)
+        for id in doc_ids:
+            # selector = {"_id": {"$in": doc_ids}}
+            selector = {"_id": id}
+            update = {keys.SKU_ID: sku.get(keys.SKU_ID)}
+            command = {"$set": update}
+            mongo_sync.add_update_one(selector, command)
     mongo_sync.bulk_exec()
 
 
+def test():
+    doc_ids = ["5df35a775bc9b8611f193757","5df35ad05bc9b8611f1a0289"]
+    mongo_sync = MongoSync(collection=collections.test_collection)
+    doc_ids = [ObjectId(id) for id in doc_ids]
+    selector = {"_id": {"$in": doc_ids}}
+    update = {"x": "ok"}
+    command = {"$set": update}
+    mongo_sync.add_update_one(selector, command)
+    print(mongo_sync.ops)
+    mongo_sync.bulk_exec()
+
+    for doc in mongo_sync.collection.find({"_id": {"$in": doc_ids}}):
+        print(doc)
+
+
 if __name__ == "__main__":
-    pass
+    test()
+

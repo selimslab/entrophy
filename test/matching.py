@@ -45,8 +45,8 @@ def check_matching():
 
 
 if __name__ == "__main__":
-
     paths = get_paths("end_to_end")
     full_skus = json_util.read_json(paths.full_skus)
     syncer = Syncer(is_test=True)
-    syncer.sync_the_new_matching(full_skus)
+    syncer.sync_the_new_matching(dict(itertools.islice(full_skus.items(), 2))
+)
