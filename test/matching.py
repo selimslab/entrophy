@@ -8,7 +8,7 @@ from services import json_util, excel, flatten
 from supermatch.main import create_matching
 from test.test_logs.paths import get_paths
 
-from supermatch.syncer import strip_debug_fields, compare_and_sync
+from supermatch.syncer import Syncer
 
 
 def run_matcher(name, query, links_of_products=None):
@@ -27,10 +27,12 @@ def run_matcher(name, query, links_of_products=None):
 
     excel.create_excel(docs, paths.excel)
 
-    basic_skus = strip_debug_fields(full_skus)
+    syncer = Syncer(is_test=True)
+
+    basic_skus = syncer.strip_debug_fields(full_skus)
     json_util.save_json(paths.basic_skus, basic_skus)
 
-    compare_and_sync(basic_skus, is_test=True)
+    syncer.compare_and_sync(basic_skus)
 
 
 if __name__ == "__main__":
