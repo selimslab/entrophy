@@ -20,7 +20,7 @@ class Syncer:
             mongo_coll = mongo_collections.items_collection
             self.index = "products"
             self.fs_collection = firebase_collections.skus_collection
-            self.batch_size = 256
+            self.batch_size = 4096
 
         self.mongo_sync = MongoSync(collection=mongo_coll, write_interval=128)
 
@@ -43,7 +43,7 @@ class Syncer:
 
         old_skus = {
             hit.get("_id"): hit.get("_source")
-            for hit in data_services.elastic.scroll(body=body, duration="15m")
+            for hit in data_services.elastic.scroll(body=body)
         }
         to_be_updated = list()
         all_doc_ids = list()
@@ -74,7 +74,14 @@ class Syncer:
             ids_to_delete = list(set(all_ids) - ids_to_keep)
             print(len(ids_to_delete), "ids_to_delete")
 
-        self.create_updates(list(ids_to_keep), skus)
+        ids = []
+        for sku_id, new_doc in skus.items():
+            ids.append(sku_id)
+            if len(ids) > self.batch_size:
+                self.create_updates(ids, skus)
+                ids = []
+
+        self.create_updates(ids, skus)
 
         if not self.is_test and ids_to_delete:
             elastic.delete_ids(ids_to_delete, index="products")
