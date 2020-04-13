@@ -35,7 +35,10 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
             sku["docs"] = docs
             sku["doc_ids"] = doc_ids
 
-    groups_of_sku_ids = sku_grouper.group_skus(skus)
+    return skus
+
+
+def add_product_info(groups_of_sku_ids, skus):
     for sku_ids in groups_of_sku_ids:
         product_id = str(uuid.uuid4())
         for sku_id in sku_ids:
@@ -47,11 +50,6 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
             for doc in docs:
                 doc[keys.PRODUCT_ID] = product_id
             skus[sku_id]["docs"] = docs
-
-    skus = {
-        sku_id: {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
-        for sku_id, sku in skus.items()
-    }
 
     return skus
 
@@ -71,5 +69,12 @@ def create_matching(docs_to_match: Iterator, links_of_products: set = None) -> d
 
     groups_of_doc_ids = get_sku_groups(id_doc_pairs)
     skus = reduce_docs(groups_of_doc_ids, id_doc_pairs)
+    groups_of_sku_ids = sku_grouper.group_skus(skus)
+    skus = add_product_info(groups_of_sku_ids, skus)
+    skus = {
+        sku_id: {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
+        for sku_id, sku in skus.items()
+    }
+
     logging.info(f"skus # {len(skus)}")
     return skus

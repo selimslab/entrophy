@@ -11,11 +11,10 @@ from spec.exceptions import ItemContentException
 
 class MarketPipeline(BasePipeline):
     def __init__(
-        self, batch_size=256, size_adder=SizeAdder(),
+            self, batch_size=256, size_adder=SizeAdder(),
     ):
         super().__init__(batch_size)
         self.size_adder = size_adder
-        self.instant_update_active = True
         self.batch = []
         self.batch_size = batch_size
         self.important_keys = {keys.LINK, keys.NAME, keys.PRICE, keys.MARKET, keys.SRC}
@@ -70,7 +69,8 @@ class MarketPipeline(BasePipeline):
                 command = {"$set": item}
                 self.mongo_sync.add_update(selector, command)
 
-        instant_price_update(existing_link_id_pairs, instant_update_batch)
+        if instant_update_batch:
+            instant_price_update(existing_link_id_pairs, instant_update_batch)
 
     def process_item(self, item, spider):
         item = self.clean_item(item)
