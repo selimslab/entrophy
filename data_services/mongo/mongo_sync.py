@@ -15,18 +15,16 @@ class MongoSync:
         self.ops = list()
         self.collection = collection
 
-    def bulk_exec(self, debug=False):
+    def bulk_exec(self):
         if self.ops:
             try:
                 self.collection.bulk_write(self.ops, ordered=False)
-                if debug:
-                    print("bulk write successful!", "written", len(self.ops), "items")
-                self.ops = list()
+                logging.info("bulk write successful!", "written", len(self.ops), "items")
             except BulkWriteError as e:
                 logging.error(e)
+            finally:
                 # clear ops to prevent cascading failure
                 self.ops = list()
-                raise
 
     def add_update(self, selector, command):
         new_op = UpdateOne(selector, command, upsert=True)

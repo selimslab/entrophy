@@ -26,7 +26,7 @@ def sync_datastores(to_be_updated, is_test=True):
     data_services.batch_set_firestore(to_be_updated, collection=collection)
 
     if not is_test:
-        data_services.mongo_sync_sku_ids(to_be_updated)
+        data_services.sync_sku_ids(to_be_updated)
 
 
 def sync_updates(ids, fresh_skus, is_test):
@@ -51,7 +51,7 @@ def compare_and_sync(fresh_skus, is_test=True):
     ids_to_delete = []
     if not is_test:
         body = {"stored_fields": []}
-        all_ids = (hit.get("_id") for hit in data_services.elastic.scroll(body=body, duration="5m"))
+        all_ids = (hit.get("_id") for hit in data_services.elastic.scroll(body=body, duration="3m"))
         ids_to_delete = list(set(all_ids) - ids_to_keep)
         print(len(ids_to_delete), "ids_to_delete")
 
