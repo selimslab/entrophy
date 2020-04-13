@@ -21,5 +21,6 @@ def get_docs_to_match(query: dict):
         keys.SKU_ID: 1,
         # keys.PRODUCT_ID: 1,
     }
-    cursor = collections.items_collection.find(query, projection)
+    ## TODO change to the real
+    cursor = collections.items_backup_collection.find(query, projection)
     return cursor

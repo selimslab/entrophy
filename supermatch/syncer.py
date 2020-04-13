@@ -86,7 +86,7 @@ class Syncer:
             if ids_to_delete:
                 elastic.delete_ids(ids_to_delete, index="products")
                 # TODO why sync to fs?
-                # data_services.firestore_delete_by_ids(ids_to_delete, collection=firebase_collections.skus_collection)
+                data_services.firestore_delete_by_ids(ids_to_delete, collection=firebase_collections.skus_collection)
 
     def sync_the_new_matching(self, skus):
         fresh_skus = self.strip_debug_fields(skus)
