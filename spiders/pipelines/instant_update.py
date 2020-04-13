@@ -4,7 +4,7 @@ from data_services.firebase.connect import skus_collection
 
 
 def instant_price_update(existing_link_id_pairs, instant_update_batch):
-    existing_ids = list(existing_link_id_pairs.values())
+    existing_ids = [id for id in existing_link_id_pairs.values() if id]
     if not existing_ids:
         return
 
@@ -34,3 +34,13 @@ def instant_price_update(existing_link_id_pairs, instant_update_batch):
 
     data_services.elastic.update_docs(instant_updates, index="products")
     data_services.batch_update_firestore(instant_updates, collection=skus_collection)
+
+
+if __name__ == "__main__":
+    body = {
+        "_source": {"includes": ["prices"]},
+        "query": {"ids": {"values": ["dada","asdasd"]}},
+    }
+
+    for doc in data_services.elastic.scroll(body=body):
+        print(doc)
