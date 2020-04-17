@@ -143,42 +143,55 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
     if not docs:
         return {}
 
-    sku = SKU()
-
     try:
-        sku.prices = get_prices(docs)
+        prices = get_prices(docs)
     except MatchingException:
         return {}
 
-    sku.markets = list(set(sku.prices.keys()))
-    sku.market_count = len(sku.markets)
-    sku.best_price = min(list(sku.prices.values()))
+    markets = list(set(prices.keys()))
+    market_count = len(markets)
+    best_price = min(list(prices.values()))
+
+    doc_ids = [doc.get("_id") for doc in docs]
+
+    sku_ids = [doc.get(keys.SKU_ID) for doc in docs]
+    sku_ids = [p for p in sku_ids if p]
+    sku_ids_count = dict(collections.Counter(sku_ids))
+    sku_id = select_unique_id(sku_ids_count, used_sku_ids)
+
+    names = {
+        doc.get(keys.MARKET): doc.get(keys.NAME) for doc in docs if doc.get(keys.NAME)
+    }
+    sku_name = get_name(names)
+
+    sku_src = get_image(docs)
+
+    sku = SKU(
+        doc_ids=doc_ids,
+        sku_id=sku_id,
+        product_id=sku_id,
+        objectID=sku_id,
+
+        name=sku_name,
+        src=sku_src,
+
+        prices=prices,
+        markets=markets,
+        market_count=market_count,
+        best_price=best_price
+    )
 
     barcodes = [doc.get(keys.BARCODES) for doc in docs]
     barcodes = services.flatten(barcodes)
     barcodes = [b for b in barcodes if b]
     sku.barcodes = list(set(barcodes))
 
-    sku.doc_ids = [doc.get("_id") for doc in docs]
-
-    sku_ids = [doc.get(keys.SKU_ID) for doc in docs]
-    sku_ids = [p for p in sku_ids if p]
-    sku_ids_count = dict(collections.Counter(sku_ids))
-    sku.sku_id = select_unique_id(sku_ids_count, used_sku_ids)
-
     links = [doc.get(keys.LINK) for doc in docs]
     sku.links = list(set(links))
-
-    names = {
-        doc.get(keys.MARKET): doc.get(keys.NAME) for doc in docs if doc.get(keys.NAME)
-    }
-    sku.name = get_name(names)
 
     tokens = token_util.get_tokens_of_a_group(list(names.values()))
     sku.most_common_tokens = sorted(token_util.get_n_most_common_tokens(tokens, 3))
     sku.tags = " ".join(sorted(list(set(tokens))))
-
-    sku.src = get_image(docs)
 
     sku.digits, sku.unit, sku.size = get_size(sku.name, docs)
 
