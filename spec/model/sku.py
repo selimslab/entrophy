@@ -4,26 +4,25 @@ from typing import Union
 
 @dataclass
 class BasicSKU:
-    doc_ids: list = None
-    sku_id: str = None
-    product_id: str = None
+    doc_ids: list
+    sku_id: str
+    product_id: str
+    objectID: str
 
-    name: str = None
-    src: str = None
+    name: str
+    src: str
 
-    prices: dict = None
-    market: str = None
+    prices: dict
+    markets: list
+    market_count: int
+    best_price: Union[int, float]
+
     out_of_stock: bool = None
 
     digits: Union[int, float] = None
     unit: str = None
     size: str = None
-
     unit_price: Union[int, float] = None
-    best_price: Union[int, float] = None
-
-    markets: list = None
-    market_count: int = None
 
     video_url: str = None
     tags: str = None
