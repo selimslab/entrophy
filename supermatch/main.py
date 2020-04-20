@@ -25,7 +25,7 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
             logging.info("skip single clone")
             continue
         docs = [id_doc_pairs.get(doc_id, {}) for doc_id in doc_ids]
-        sku = reduce_docs_to_sku(docs, used_sku_ids,doc_ids)
+        sku = reduce_docs_to_sku(docs, used_sku_ids, doc_ids)
         if sku:
             sku_id = sku.get("sku_id")
             skus[sku_id] = sku
