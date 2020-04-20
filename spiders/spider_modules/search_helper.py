@@ -3,7 +3,7 @@ import data_services.mongo.collections as collections
 
 CUSTOM_SEARCHBOX_SETTINGS = {
     "DOWNLOAD_DELAY": 2,
-    "ITEM_PIPELINES": {"src.spiders.pipelines.search_pipeline.SearchPipeline": 300},
+    "ITEM_PIPELINES": {"spiders.pipelines.search_pipeline.SearchPipeline": 300},
 }
 
 

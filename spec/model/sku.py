@@ -1,21 +1,21 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Union
 
 
 @dataclass
 class BasicSKU:
-    doc_ids: list
-    sku_id: str
-    product_id: str
-    objectID: str
+    doc_ids: list = field(default_factory=list)
+    sku_id: str = None
+    product_id: str = None
+    objectID: str = None
 
-    name: str
-    src: str
+    name: str = None
+    src: str = None
 
-    prices: dict
-    markets: list
-    market_count: int
-    best_price: Union[int, float]
+    prices: dict = field(default_factory=dict)
+    markets: list = field(default_factory=list)
+    market_count: int = None
+    best_price: Union[int, float] = None
 
     out_of_stock: bool = None
 
@@ -27,7 +27,7 @@ class BasicSKU:
     video_url: str = None
     tags: str = None
 
-    barcodes: list = None
+    barcodes: list = field(default_factory=list)
 
 
 @dataclass

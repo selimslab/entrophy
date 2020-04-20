@@ -11,6 +11,12 @@ def check_firestore():
         print(u"{} => {}".format(doc.id, doc.to_dict()))
 
 
-print(
-    items_collection.find_one({"_id": {"$in": [ObjectId("5d7be09143a5a28ff82323f7")]}})
-)
+def check_mongo():
+    link = "5d8086d74a4834d16139f82e+clone016"
+    doc = items_collection.find_one({"link": link})
+
+    print(doc)
+
+
+if __name__ == "__main__":
+    check_mongo()

@@ -27,7 +27,7 @@ class MarketyoSearcher(BaseSpider):
         for header in self.markets_to_search:
             market_name = header.get("client")
             if self.debug:
-                barcodes_to_search = {"8690767675089", "8690624101874"}
+                barcodes_to_search = {"8690572785690", "8690624101874"}
             else:
                 barcodes_to_search = BarcodeSearchHelper.get_barcodes_to_search(
                     market_name, keys.TRADITIONAL_MARKETS

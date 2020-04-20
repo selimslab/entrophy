@@ -4,14 +4,17 @@ from dataclasses import asdict
 from data_services import elastic
 import data_services.firebase.connect as firebase_collections
 import data_services.mongo.collections as mongo_collections
-
 from data_services.mongo.mongo_sync import MongoSync
-
+import logging
 
 class Syncer:
-    def __init__(self, is_test):
+    def __init__(self, is_test=None):
+        if is_test is None:
+            is_test = True
+
         self.is_test = is_test
-        if is_test:
+        if self.is_test:
+            logging.info("sync in test mode..")
             mongo_coll = mongo_collections.test_collection
             self.index = "test"
             self.fs_collection = firebase_collections.test_collection
@@ -71,22 +74,20 @@ class Syncer:
 
         self.create_updates(ids, skus)
 
-        if not self.is_test:
-            body = {"stored_fields": []}
-            all_ids = (
-                hit.get("_id")
-                for hit in data_services.elastic.scroll(body=body, duration="3m")
-            )
+        body = {"stored_fields": []}
+        all_ids = (
+            hit.get("_id")
+            for hit in data_services.elastic.scroll(index=self.index, body=body, duration="3m")
+        )
 
-            ids_to_keep = set(skus.keys())
-            print(len(ids_to_keep), "ids_to_keep")
-            ids_to_delete = list(set(all_ids) - ids_to_keep)
-            print(len(ids_to_delete), "ids_to_delete")
+        ids_to_keep = set(skus.keys())
+        print(len(ids_to_keep), "ids_to_keep")
+        ids_to_delete = list(set(all_ids) - ids_to_keep)
+        print(len(ids_to_delete), "ids_to_delete")
 
-            if ids_to_delete:
-                elastic.delete_ids(ids_to_delete, index="products")
-                # TODO why sync to fs?
-                data_services.firestore_delete_by_ids(ids_to_delete, collection=firebase_collections.skus_collection)
+        if ids_to_delete:
+            elastic.delete_ids(ids_to_delete, index=self.index)
+            data_services.firestore_delete_by_ids(ids_to_delete, collection=self.fs_collection)
 
     def sync_the_new_matching(self, skus):
         fresh_skus = self.strip_debug_fields(skus)
