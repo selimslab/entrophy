@@ -1,7 +1,5 @@
 from data_services.firebase.connect import firestore_client
 
-from mobile.cat import raw_cats
-
 
 def push_cats():
     tree = dict()

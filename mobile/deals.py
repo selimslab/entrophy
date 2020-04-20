@@ -1,7 +1,6 @@
 import pprint
 
 import constants as keys
-from mobile.deal_kw import antikws
 from services import json_util
 import data_services
 
