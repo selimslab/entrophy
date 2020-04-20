@@ -1,7 +1,7 @@
 import constants as keys
 from services import name_cleaner
 from services.barcode_cleaner import BarcodeCleaner
-from services.sizing.main import SizeFinder, SizingException
+from supermatch.sizing import SizeFinder, SizingException
 from spiders.pipelines.base_pipeline import BasePipeline
 
 

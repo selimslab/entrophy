@@ -1,26 +1,10 @@
-from abc import ABC, abstractmethod
 from itertools import combinations
 from typing import Iterator
 
 import networkx as nx
 
 
-class GenericGraphInterface(ABC):
-    def __init__(self):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def create_connected_component_groups(g: nx.Graph) -> list:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def create_graph_from_neighbor_pairs(neighbors: list):
-        pass
-
-
-class GenericGraph(GenericGraphInterface):
+class GenericGraph:
     @staticmethod
     def create_connected_component_groups(g: nx.Graph) -> list:
         return [list(group) for group in nx.connected_components(g)]

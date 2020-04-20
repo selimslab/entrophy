@@ -1,5 +1,5 @@
 from services import name_cleaner
-from services.sizing.main import SizeFinder, SizingException
+from supermatch.sizing import SizeFinder, SizingException
 
 
 def test_sizing():

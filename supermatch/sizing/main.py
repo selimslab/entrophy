@@ -1,7 +1,7 @@
 import re
 from typing import List, Tuple
 
-from services.sizing.digits_mixin import DigitsMixin
+from supermatch.sizing import DigitsMixin
 from .pattern_pairs import PAIRS
 from .pattern_regexes import REGEXES
 
