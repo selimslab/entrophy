@@ -2,7 +2,6 @@ import constants as keys
 import data_services
 from services.barcode_cleaner import BarcodeCleaner
 from .base_pipeline import BasePipeline
-from .size_adder import SizeAdder
 from datetime import datetime
 from .instant_update import instant_price_update
 from .check_count import check_count
@@ -11,12 +10,11 @@ from spec.exceptions import ItemContentException
 
 class MarketPipeline(BasePipeline):
     def __init__(
-        self, batch_size=256, size_adder=SizeAdder(),
+        self
     ):
-        super().__init__(batch_size)
-        self.size_adder = size_adder
+        super().__init__()
         self.batch = []
-        self.batch_size = batch_size
+        self.batch_size = 256
         self.important_keys = {keys.LINK, keys.NAME, keys.PRICE, keys.MARKET, keys.SRC}
         self.bad_item_count = 0
 
@@ -79,7 +77,6 @@ class MarketPipeline(BasePipeline):
         item = self.clean_item(item)
         if not item:
             return {}
-        item = self.size_adder.add_size(item)
 
         item[keys.BARCODES] = BarcodeCleaner.get_clean_barcodes(
             item.get(keys.BARCODES, [])
