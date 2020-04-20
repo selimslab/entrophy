@@ -79,7 +79,7 @@ class Syncer:
         all_ids = (
             hit.get("_id")
             for hit in data_services.elastic.scroll(
-                index=self.index, body=body, duration="3m"
+                index=self.index, body=body, duration="10m"
             )
         )
 

@@ -5,12 +5,12 @@ import services
 
 
 def get_gratis_link_id_tuples(skus: dict, gratis_product_links: set) -> list:
-    gratis_links_with_sku = [
+    gratis_links_with_sku = (
         (link, sku_id)
         for sku_id, sku in skus.items()
         for link in sku.get("links", [])
         if "?sku" in link
-    ]
+    )
     gratis_link_id_tuples = [
         (link.split("?")[0], sku_id)
         for (link, sku_id) in gratis_links_with_sku
@@ -48,8 +48,7 @@ def get_google_groups(skus):
     # group by variant index
     raw_groups = itertools.groupby(sorted_link_id_tuples, operator.itemgetter(1))
 
-    # operator.itemgetter(2) gets sku_id
-    groups = [list(map(operator.itemgetter(2), group)) for key, group in raw_groups]
+    groups = (list(map(operator.itemgetter(2), group)) for key, group in raw_groups)
     google_groups = [list(set(group)) for group in groups]
 
     return google_groups
@@ -58,7 +57,7 @@ def get_google_groups(skus):
 def group_link_id_tuples(link_id_tuples):
     sorted_link_id_tuples = sorted(link_id_tuples, key=operator.itemgetter(0))
     raw_groups = itertools.groupby(sorted_link_id_tuples, operator.itemgetter(0))
-    groups = [list(map(operator.itemgetter(1), group)) for key, group in raw_groups]
+    groups = (list(map(operator.itemgetter(1), group)) for key, group in raw_groups)
     groups = [list(set(group)) for group in groups]
     return groups
 
