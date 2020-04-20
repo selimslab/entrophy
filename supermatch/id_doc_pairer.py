@@ -5,6 +5,7 @@ from tqdm import tqdm
 import constants as keys
 import logging
 
+
 def create_id_doc_pairs(docs_to_match: Iterator) -> dict:
     id_doc_pairs = dict()
     for doc in tqdm(docs_to_match):

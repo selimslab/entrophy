@@ -39,7 +39,7 @@ def sync_sku_ids(mongo_sync, skus, all_doc_ids):
 
 
 def test():
-    doc_ids = ["5df35a775bc9b8611f193757","5df35ad05bc9b8611f1a0289"]
+    doc_ids = ["5df35a775bc9b8611f193757", "5df35ad05bc9b8611f1a0289"]
     mongo_sync = MongoSync(collection=collections.test_collection)
     doc_ids = [ObjectId(id) for id in doc_ids]
     selector = {"_id": {"$in": doc_ids}}
@@ -55,4 +55,3 @@ def test():
 
 if __name__ == "__main__":
     test()
-

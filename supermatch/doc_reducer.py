@@ -171,14 +171,12 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
         sku_id=sku_id,
         product_id=sku_id,
         objectID=sku_id,
-
         name=sku_name,
         src=sku_src,
-
         prices=prices,
         markets=markets,
         market_count=market_count,
-        best_price=best_price
+        best_price=best_price,
     )
 
     barcodes = [doc.get(keys.BARCODES) for doc in docs]

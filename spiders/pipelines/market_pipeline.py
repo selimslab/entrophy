@@ -11,7 +11,7 @@ from spec.exceptions import ItemContentException
 
 class MarketPipeline(BasePipeline):
     def __init__(
-            self, batch_size=256, size_adder=SizeAdder(),
+        self, batch_size=256, size_adder=SizeAdder(),
     ):
         super().__init__(batch_size)
         self.size_adder = size_adder
@@ -54,7 +54,9 @@ class MarketPipeline(BasePipeline):
         existing_link_id_pairs = {
             doc.get(keys.LINK): doc.get(keys.SKU_ID) for doc in existing_links_cursor
         }
-        existing_link_id_pairs = {k: v for k, v in existing_link_id_pairs.items() if k and v}
+        existing_link_id_pairs = {
+            k: v for k, v in existing_link_id_pairs.items() if k and v
+        }
 
         instant_update_batch = []
 
