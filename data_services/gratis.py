@@ -1,8 +1,10 @@
 import constants as keys
 import data_services.mongo.collections as collections
+import logging
 
 
 def get_gratis_product_names(product_links: set):
+    logging.info("reading names of gratis products..")
     cursor = collections.items_collection.find(
         {keys.MARKET: keys.GRATIS, keys.LINK: {"$in": list(product_links)}},
         {keys.LINK: 1, keys.NAME: 1},
@@ -15,6 +17,7 @@ def get_gratis_product_names(product_links: set):
 
 
 def get_links_of_products() -> set:
+    logging.info("reading gratis links..")
     links = collections.items_collection.distinct(keys.LINK, {keys.MARKET: keys.GRATIS})
     clean_links = (link[:-1] if link[-1] == "/" else link for link in links)
     product_links = (link.split("?")[0] for link in clean_links if "?sku" in link)

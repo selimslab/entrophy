@@ -21,8 +21,11 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
     skus = dict()
     used_sku_ids = set()
     for doc_ids in groups_of_doc_ids:
+        if len(doc_ids) == 1 and "clone" in doc_ids.pop():
+            logging.info("skip single clone")
+            continue
         docs = [id_doc_pairs.get(doc_id, {}) for doc_id in doc_ids]
-        sku = reduce_docs_to_sku(docs, used_sku_ids)
+        sku = reduce_docs_to_sku(docs, used_sku_ids,doc_ids)
         if sku:
             sku_id = sku.get("sku_id")
             skus[sku_id] = sku
@@ -69,8 +72,11 @@ def create_matching(docs_to_match: Iterator, links_of_products: set = None) -> d
 
     groups_of_doc_ids = get_sku_groups(id_doc_pairs)
     skus = reduce_docs(groups_of_doc_ids, id_doc_pairs)
-    groups_of_sku_ids = sku_grouper.group_skus(skus)
-    skus = add_product_info(groups_of_sku_ids, skus)
+
+    # TODO uncomment
+    # groups_of_sku_ids = sku_grouper.group_skus(skus)
+    # skus = add_product_info(groups_of_sku_ids, skus)
+
     skus = {
         sku_id: {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
         for sku_id, sku in skus.items()

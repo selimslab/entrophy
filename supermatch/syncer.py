@@ -43,6 +43,7 @@ class Syncer:
         data_services.sync_sku_ids(self.mongo_sync, to_be_updated, all_doc_ids)
 
     def create_updates(self, ids, skus):
+        logging.info(f"ids, {ids}")
         body = {"query": {"ids": {"values": ids}}}
 
         old_skus = {
@@ -65,7 +66,6 @@ class Syncer:
             self.sync_datastores(to_be_updated, all_doc_ids)
 
     def compare_and_sync(self, skus):
-
         ids = []
         for sku_id, new_doc in skus.items():
             ids.append(sku_id)
@@ -73,20 +73,25 @@ class Syncer:
                 self.create_updates(ids, skus)
                 ids = []
 
-        self.create_updates(ids, skus)
+        if ids:
+            self.create_updates(ids, skus)
 
         body = {"stored_fields": []}
-        all_ids = (
+        all_ids = [
             hit.get("_id")
             for hit in data_services.elastic.scroll(
                 index=self.index, body=body, duration="10m"
             )
-        )
+        ]
 
         ids_to_keep = set(skus.keys())
         print(len(ids_to_keep), "ids_to_keep")
         ids_to_delete = list(set(all_ids) - ids_to_keep)
         print(len(ids_to_delete), "ids_to_delete")
+
+        print("all ids", all_ids)
+        print("ids_to_keep", ids_to_keep)
+        print("ids_to_delete", ids_to_delete)
 
         if ids_to_delete:
             elastic.delete_ids(ids_to_delete, index=self.index)

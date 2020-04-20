@@ -139,7 +139,7 @@ def get_size(name, docs):
     return digits, unit, size
 
 
-def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
+def reduce_docs_to_sku(docs: list, used_sku_ids: set, doc_ids: list) -> dict:
     if not docs:
         return {}
 
@@ -152,12 +152,10 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set) -> dict:
     market_count = len(markets)
     best_price = min(list(prices.values()))
 
-    doc_ids = [doc.get("_id") for doc in docs]
-
-    sku_ids = [doc.get(keys.SKU_ID) for doc in docs]
-    sku_ids = [p for p in sku_ids if p]
+    sku_ids = (doc.get(keys.SKU_ID) for doc in docs)
+    sku_ids = (p for p in sku_ids if p)
     sku_ids_count = dict(collections.Counter(sku_ids))
-    sku_id = select_unique_id(sku_ids_count, used_sku_ids)
+    sku_id = select_unique_id(sku_ids_count, used_sku_ids, doc_ids)
 
     names = {
         doc.get(keys.MARKET): doc.get(keys.NAME) for doc in docs if doc.get(keys.NAME)
