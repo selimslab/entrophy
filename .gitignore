@@ -8,7 +8,7 @@ project.egg-info
 .pytest_cache
 
 image_match
-*.json
+test/*.json
 *.env
 *.xlsx
 
