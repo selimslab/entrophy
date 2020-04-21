@@ -2,6 +2,7 @@ from .connect import db
 
 items_collection = db["items"]
 
-items_backup_collection = db["items_backup"]
+items_backup = db["docs_backup"]
 
 test_collection = db["test"]
+
