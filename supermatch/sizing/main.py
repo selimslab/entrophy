@@ -1,4 +1,5 @@
 import re
+import logging
 from typing import List, Tuple
 
 from supermatch.sizing.digits_mixin import DigitsMixin
@@ -12,6 +13,7 @@ class SizingException(Exception):
 
 class SizeFinder(DigitsMixin):
     def __init__(self):
+        logging.info("init SizeFinder")
         self.patterns = self.create_size_patterns(PAIRS, REGEXES)
         self.max_digits = {
             "yıkama": 100,

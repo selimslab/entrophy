@@ -2,12 +2,13 @@ import re
 
 import constants as keys
 import services
+import logging
 
 
 class ExactNameMatcher:
     @staticmethod
     def get_exact_match_groups(id_doc_pairs: dict, connected_ids: set) -> list:
-        print("creating exact_name_match_groups")
+        logging.info("creating exact_name_match_groups")
         pattern = re.compile("([^\s\w]|_)+")
 
         name_id_pairs = dict()

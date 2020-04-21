@@ -11,6 +11,7 @@ from services import name_cleaner
 from supermatch.sizing.main import size_finder, SizingException
 import logging
 
+
 def get_size(sku_name, docs):
     digits = unit = size = None
 
@@ -18,26 +19,13 @@ def get_size(sku_name, docs):
     if variant_name:
         return digits, unit, variant_name
 
-    results = list()
-
-    for doc in docs:
-        name = doc.get(keys.NAME, "")
-        market = doc.get(keys.MARKET)
-        if name and market not in keys.HELPER_MARKETS:
-            try:
-                size_name = name_cleaner.size_cleaner(name)
-                result = size_finder.get_digits_and_unit(size_name)
-                if result:
-                    digits, unit, size = result
-                    results.append(result)
-            except SizingException:
-                continue
-
-            if str(digits) in sku_name:
-                return digits, unit, size
-
-    if results:
-        return results.pop()
+    try:
+        size_name = name_cleaner.size_cleaner(sku_name)
+        result = size_finder.get_digits_and_unit(size_name)
+        if result:
+            return result
+    except SizingException:
+        pass
 
     return digits, unit, size
 
