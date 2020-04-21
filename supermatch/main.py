@@ -6,6 +6,7 @@ from supermatch.sku_graph import sku_graph_creator
 from supermatch.doc_reducer import reduce_docs_to_sku
 import uuid
 from tqdm import tqdm
+import multiprocessing
 
 
 def get_sku_groups(id_doc_pairs):
@@ -20,7 +21,6 @@ def get_sku_groups(id_doc_pairs):
 
 def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
     skus = dict()
-    used_sku_ids = set()
 
     logging.debug("reducing docs to skus..")
 
@@ -29,11 +29,10 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
             continue
 
         docs = [id_doc_pairs.get(doc_id, {}) for doc_id in doc_ids]
-        sku = reduce_docs_to_sku(docs, used_sku_ids, doc_ids)
+        sku = reduce_docs_to_sku(docs, doc_ids)
         if sku:
             sku_id = sku.get("sku_id")
             skus[sku_id] = sku
-            used_sku_ids.add(sku_id)
 
             for doc in docs:
                 doc[keys.SKU_ID] = sku_id

@@ -30,6 +30,7 @@ class Syncer:
 
     @staticmethod
     def strip_debug_fields(skus):
+        logging.info("strip_debug_fields..")
         keys_to_sync = set(asdict(BasicSKU()).keys())
         fresh_skus = {
             sku_id: {k: v for k, v in sku.items() if k in keys_to_sync}
@@ -86,12 +87,9 @@ class Syncer:
 
         ids_to_keep = set(skus.keys())
         print(len(ids_to_keep), "ids_to_keep")
+
         ids_to_delete = list(set(all_ids) - ids_to_keep)
         print(len(ids_to_delete), "ids_to_delete")
-
-        print("all ids", all_ids)
-        print("ids_to_keep", ids_to_keep)
-        print("ids_to_delete", ids_to_delete)
 
         if ids_to_delete:
             elastic.delete_ids(ids_to_delete, index=self.index)

@@ -1,6 +1,5 @@
 from services import name_cleaner
-from supermatch.sizing.main import size_finder, SizingException
-
+from services.sizing.main import size_finder, SizingException
 
 def test_sizing():
     test_cases = [
@@ -30,7 +29,7 @@ def test_sizing():
     ]
 
     for case, answer in test_cases:
-        result = size_finder.get_digits_and_unit(name_cleaner.size_cleaner(case))
+        result = size_finder.get_digits_unit_size(name_cleaner.clean_for_sizing(case))
         try:
             assert result == answer
         except AssertionError:

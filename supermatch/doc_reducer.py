@@ -8,11 +8,10 @@ from services import token_util
 from spec.exceptions import MatchingException
 from supermatch.id_selector import select_unique_id
 from services import name_cleaner
-from supermatch.sizing.main import size_finder, SizingException
-import logging
+from services.sizing.main import size_finder, SizingException
 
 
-def get_size(sku_name, docs):
+def get_size(sku_name, docs, names):
     digits = unit = size = None
 
     variant_name = get_variant_name(docs)
@@ -20,12 +19,18 @@ def get_size(sku_name, docs):
         return digits, unit, variant_name
 
     try:
-        size_name = name_cleaner.size_cleaner(sku_name)
-        result = size_finder.get_digits_and_unit(size_name)
+        size_name = name_cleaner.clean_for_sizing(sku_name)
+        result = size_finder.get_digits_unit_size(size_name)
         if result:
             return result
     except SizingException:
         pass
+
+    for name in names:
+        size_name = name_cleaner.clean_for_sizing(name)
+        result = size_finder.get_digits_unit_size(size_name)
+        if result:
+            return result
 
     return digits, unit, size
 
@@ -137,7 +142,7 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
-def reduce_docs_to_sku(docs: list, used_sku_ids: set, doc_ids: list) -> dict:
+def reduce_docs_to_sku(docs: list,doc_ids: list) -> dict:
     if not docs:
         return {}
 
@@ -153,7 +158,7 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set, doc_ids: list) -> dict:
     sku_ids = (doc.get(keys.SKU_ID) for doc in docs)
     sku_ids = (p for p in sku_ids if p)
     sku_ids_count = dict(collections.Counter(sku_ids))
-    sku_id = select_unique_id(sku_ids_count, used_sku_ids, doc_ids)
+    sku_id = select_unique_id(sku_ids_count, doc_ids)
 
     names = {
         doc.get(keys.MARKET): doc.get(keys.NAME) for doc in docs if doc.get(keys.NAME)
@@ -187,7 +192,7 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set, doc_ids: list) -> dict:
     sku.most_common_tokens = sorted(token_util.get_n_most_common_tokens(tokens, 3))
     sku.tags = " ".join(sorted(list(set(tokens))))
 
-    sku.digits, sku.unit, sku.size = get_size(sku.name, docs)
+    sku.digits, sku.unit, sku.size = get_size(sku.name, docs, names)
 
     if sku.digits:
         sku.unit_price = round(sku.best_price / sku.digits, 2)

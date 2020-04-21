@@ -2,10 +2,9 @@ import re
 import logging
 from typing import List, Tuple
 
-from supermatch.sizing.digits_mixin import DigitsMixin
+from .digits_mixin import DigitsMixin
 from .pattern_pairs import PAIRS
 from .pattern_regexes import REGEXES
-
 
 class SizingException(Exception):
     pass
@@ -13,7 +12,7 @@ class SizingException(Exception):
 
 class SizeFinder(DigitsMixin):
     def __init__(self):
-        logging.info("init SizeFinder")
+        print("init SizeFinder")
         self.patterns = self.create_size_patterns(PAIRS, REGEXES)
         self.max_digits = {
             "yıkama": 100,
@@ -60,7 +59,7 @@ class SizeFinder(DigitsMixin):
                 match = match.pop(0).strip()
                 return match, unit
 
-    def get_digits_and_unit(self, name):
+    def get_digits_unit_size(self, name):
         bad_tokens = {"+", "essence", "ruj", "aptamil 5"}
         if any([token in name for token in bad_tokens]):
             raise SizingException("bad sizing token")
