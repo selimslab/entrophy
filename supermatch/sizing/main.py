@@ -1,7 +1,7 @@
 import re
 from typing import List, Tuple
 
-from supermatch.sizing import DigitsMixin
+from supermatch.sizing.digits_mixin import DigitsMixin
 from .pattern_pairs import PAIRS
 from .pattern_regexes import REGEXES
 
@@ -75,7 +75,7 @@ class SizeFinder(DigitsMixin):
 
                 digits, unit = self.convert(digits, unit)
 
-                return digits, unit
+                return digits, unit, match
 
 
 size_finder = SizeFinder()

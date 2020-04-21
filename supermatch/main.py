@@ -5,7 +5,6 @@ from supermatch import id_doc_pairer, sku_grouper
 from supermatch.sku_graph import sku_graph_creator
 from supermatch.doc_reducer import reduce_docs_to_sku
 import uuid
-from supermatch.size_adder import SizeAdder
 
 
 def get_sku_groups(id_doc_pairs):
@@ -21,7 +20,6 @@ def get_sku_groups(id_doc_pairs):
 def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
     skus = dict()
     used_sku_ids = set()
-    size_adder = SizeAdder()
 
     for doc_ids in groups_of_doc_ids:
         if len(doc_ids) == 1 and "clone" in doc_ids.pop():

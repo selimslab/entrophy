@@ -1,5 +1,5 @@
 from services import name_cleaner
-from supermatch.sizing import SizeFinder, SizingException
+from supermatch.sizing.main import size_finder, SizingException
 
 
 def test_sizing():
@@ -28,9 +28,8 @@ def test_sizing():
         ["aptamil 2 800 g", (800, "gr")],
     ]
 
-    sizer = SizeFinder()
     for case, answer in test_cases:
-        result = sizer.get_digits_and_unit(name_cleaner.size_cleaner(case))
+        result = size_finder.get_digits_and_unit(name_cleaner.size_cleaner(case))
         try:
             assert result == answer
         except AssertionError:

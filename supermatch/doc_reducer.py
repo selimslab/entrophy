@@ -7,6 +7,39 @@ from services import convert_price
 from services import token_util
 from spec.exceptions import MatchingException
 from supermatch.id_selector import select_unique_id
+from services import name_cleaner
+from supermatch.sizing.main import size_finder, SizingException
+
+
+def get_size(sku_name, docs):
+    digits = unit = size = None
+
+    variant_name = get_variant_name(docs)
+    if variant_name:
+        return digits, unit, variant_name
+
+    results = list()
+
+    for doc in docs:
+        name = doc.get(keys.NAME, "")
+        market = doc.get(keys.MARKET)
+        if name and market not in keys.HELPER_MARKETS:
+            try:
+                size_name = name_cleaner.size_cleaner(name)
+                result = size_finder.get_digits_and_unit(size_name)
+                if result:
+                    digits, unit, size = result
+                    results.append(result)
+            except SizingException:
+                continue
+
+            if str(digits) in sku_name:
+                return digits, unit, size
+
+    if results:
+        return results.pop()
+
+    return digits, unit, size
 
 
 def clean_price(price):
@@ -50,7 +83,7 @@ def get_name(names):
     name_priority = -2
     selected_name = ""
     for market, name in names.items():
-        if "html" not in name and name_priorities.get(market, 0) > name_priority:
+        if name_priorities.get(market, 0) > name_priority:
             name_priority = name_priorities.get(market, 0)
             selected_name = name
 
@@ -116,29 +149,6 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
-def get_size(name, docs):
-    size = None
-    digits = None
-    unit = None
-    variant_name = get_variant_name(docs)
-    if variant_name:
-        size = variant_name
-    else:
-        size_info = [
-            (doc.get(keys.DIGITS), doc.get(keys.UNIT), doc.get(keys.SIZE))
-            for doc in docs
-        ]
-        size_info = [(d, u, s) for (d, u, s) in size_info if d and u and s]
-        for (d, u, s) in size_info:
-            if str(d) in name:
-                digits, unit, size = (d, u, s)
-                break
-        if size_info and not digits:
-            digits, unit, size = size_info[0]
-
-    return digits, unit, size
-
-
 def reduce_docs_to_sku(docs: list, used_sku_ids: set, doc_ids: list) -> dict:
     if not docs:
         return {}
@@ -190,6 +200,8 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set, doc_ids: list) -> dict:
     sku.tags = " ".join(sorted(list(set(tokens))))
 
     sku.digits, sku.unit, sku.size = get_size(sku.name, docs)
+    if not sku.size:
+        sku.size = get_digits_unit_size(sku.name)
 
     if sku.digits:
         sku.unit_price = round(sku.best_price / sku.digits, 2)

@@ -9,7 +9,6 @@ from supermatch.main import create_matching
 from test.test_logs.paths import get_paths
 
 from supermatch.syncer import Syncer
-from .size_adder import SizeAdder
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
