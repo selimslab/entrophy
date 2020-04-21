@@ -118,12 +118,12 @@ class Elastic:
 
     def scroll(self, body=None, index=None, duration=None):
         if index is None:
-            index = "products"
+            index = "test"
         if body is None:
             body = {}
         if duration is None:
             duration = "1m"
-        # Initialize the scroll
+
         # Init scroll by search
         data = self.es.search(index=index, scroll=duration, size=300, body=body)
 
