@@ -26,6 +26,7 @@ def test_sizing():
         ["5 800 g", (800, "gr")],
         ["Persil Gülün Büyüsü 6 KG 40 Yıkama", (40, "yıkama")],
         ["aptamil 2 800 g", (800, "gr")],
+        ["a Gazlı İçecek Portakal 1.75 L", (1750, "ml")]
     ]
 
     for case, answer in test_cases:

@@ -9,6 +9,7 @@ from supermatch.matcher.exact_name_matcher import ExactNameMatcher
 from supermatch.matcher.promoted_link_matcher import PromotedLinkMatcher
 
 from spec.interfaces.sku_graph import AbstractSKUGraphCreator
+import logging
 
 
 class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
@@ -25,13 +26,13 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
             self.sku_graph.add_node(doc_id)
 
     def _add_edges_from_barcodes(self, barcode_id_pairs: dict):
-        print("adding_edges_from_barcodes..")
+        logging.info(f"adding_edges using {len(barcode_id_pairs)} barcodes")
         for ids in barcode_id_pairs.values():
             edges = itertools.combinations(ids, 2)
             self.sku_graph.add_edges_from(edges)
 
-    def _add_edges_from_promoted_links(self, id_doc_pairs):
-        print("addding_edges_from_promoted_links..")
+    def _add_edges_from_promoted_links(self, id_doc_pairs, connected_ids):
+        logging.info("addding_edges_from_promoted_links..")
 
         link_id_pairs = PromotedLinkMatcher.create_link_id_pairs(id_doc_pairs)
 
@@ -65,7 +66,7 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
         promoted_connections = {
             id: doc_id
             for id, doc_id in promoted_connections.items()
-            if id not in refers_to_multiple_barcodes
+            if id not in refers_to_multiple_barcodes and id not in connected_ids
         }
         matched_using_promoted = set(promoted_connections.keys())
 
@@ -83,18 +84,22 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
     def create_graph(self, id_doc_pairs: dict) -> nx.Graph:
 
         self._init_sku_graph(id_doc_pairs)
-        matched = set()
+        connected_ids = set()
+
         barcode_id_pairs = BarcodeMatcher.create_barcode_id_pairs(id_doc_pairs)
-        print(len(barcode_id_pairs), "barcodes in the pool")
         self._add_edges_from_barcodes(barcode_id_pairs)
 
-        matched_using_promoted = self._add_edges_from_promoted_links(id_doc_pairs)
-        matched.update(matched_using_promoted)
-
         exact_match_groups = ExactNameMatcher.get_exact_match_groups(
-            id_doc_pairs, matched
+            id_doc_pairs, connected_ids
         )
+
+        for ids in exact_match_groups:
+            connected_ids.update(ids)
+
         self._add_edges_from_exact_name_match(exact_match_groups)
+
+        matched_using_promoted = self._add_edges_from_promoted_links(id_doc_pairs, connected_ids)
+        connected_ids.update(matched_using_promoted)
 
         return self.sku_graph
 

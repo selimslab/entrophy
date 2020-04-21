@@ -6,7 +6,7 @@ import services
 
 class ExactNameMatcher:
     @staticmethod
-    def get_exact_match_groups(id_doc_pairs: dict, matched: set) -> list:
+    def get_exact_match_groups(id_doc_pairs: dict, connected_ids: set) -> list:
         print("creating exact_name_match_groups")
         pattern = re.compile("([^\s\w]|_)+")
 
@@ -14,7 +14,7 @@ class ExactNameMatcher:
         name_barcode_pairs = dict()
 
         for doc_id, doc in id_doc_pairs.items():
-            if doc_id in matched:
+            if doc_id in connected_ids:
                 continue
             name = doc.get(keys.NAME)
             if not name:

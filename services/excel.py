@@ -20,7 +20,7 @@ def create_excel(rows, path):
         if c in df.columns
     ]
     df = df[cols]
-    df = df.sort_values(keys.PRODUCT_ID)
+    df = df.sort_values(keys.SKU_ID)
     df.to_excel(path, index=False)
     print("done")
 

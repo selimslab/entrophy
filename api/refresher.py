@@ -8,7 +8,7 @@ def create_new_matching():
     docs_to_match = data_services.get_docs_to_match({})
     links_of_products: set = data_services.get_links_of_products()
     skus: dict = create_matching(
-        docs_to_match=docs_to_match, links_of_products=links_of_products
+        docs_to_match=docs_to_match, links_of_products=links_of_products, debug=False
     )
     syncer = Syncer(is_test=False)
     syncer.sync_the_new_matching(skus)
