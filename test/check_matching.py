@@ -9,7 +9,7 @@ from supermatch.main import create_matching
 from test.test_logs.paths import get_paths
 
 from supermatch.syncer import Syncer
-
+from memory_profiler import profile
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -46,16 +46,18 @@ def check_sync_only():
     syncer.sync_the_new_matching(dict(itertools.islice(full_skus.items(), 1000)))
 
 
+@profile
 def check_all():
     query = {}
     run_matcher(name="all_docs", query=query)
 
 
-def check_matching():
+@profile
+def check_partial():
     links = json_util.read_json("links.json")
     query = {keys.LINK: {"$in": flatten(links)}}
     run_matcher(name="partial", query=query)
 
 
 if __name__ == "__main__":
-    check_matching()
+    check_partial()

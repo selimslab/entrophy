@@ -37,10 +37,4 @@ def instant_price_update(existing_link_id_pairs, instant_update_batch):
 
 
 if __name__ == "__main__":
-    body = {
-        "_source": {"includes": ["prices"]},
-        "query": {"ids": {"values": ["dada", "asdasd"]}},
-    }
-
-    for doc in data_services.elastic.scroll(body=body):
-        print(doc)
+    pass

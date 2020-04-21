@@ -5,6 +5,8 @@ from supermatch import id_doc_pairer, sku_grouper
 from supermatch.sku_graph import sku_graph_creator
 from supermatch.doc_reducer import reduce_docs_to_sku
 import uuid
+import services
+from memory_profiler import profile
 
 
 def get_sku_groups(id_doc_pairs):
@@ -25,7 +27,6 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
 
     for doc_ids in groups_of_doc_ids:
         if len(doc_ids) == 1 and "clone" in doc_ids[0]:
-            logging.info("skip single clone")
             continue
 
         docs = [id_doc_pairs.get(doc_id, {}) for doc_id in doc_ids]
@@ -60,12 +61,15 @@ def add_product_info(groups_of_sku_ids, skus):
 
     return skus
 
-
+@profile
 def create_matching(docs_to_match: Iterator, links_of_products: set = None, debug=True) -> dict:
     if links_of_products is None:
         links_of_products = set()
 
-    id_doc_pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
+    if debug:
+        id_doc_pairs = services.read_json("id_doc_pairs.json")
+    else:
+        id_doc_pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
 
     # don't use gratis products for matching
     id_doc_pairs = {

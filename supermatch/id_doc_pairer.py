@@ -24,7 +24,6 @@ def create_id_doc_pairs(docs_to_match: Iterator) -> dict:
         barcodes = doc.get(keys.BARCODES, [])
         # clone_docs_with_multiple_barcodes
         if barcodes and len(barcodes) > 1:
-            logging.debug(f"cloning {barcodes}, {doc}")
             for i, barcode in enumerate(barcodes):
                 copy_id = doc_id + "+clone" + str(i)
                 copy_of_doc = doc.copy()
