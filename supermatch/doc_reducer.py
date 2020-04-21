@@ -9,7 +9,7 @@ from spec.exceptions import MatchingException
 from supermatch.id_selector import select_unique_id
 from services import name_cleaner
 from supermatch.sizing.main import size_finder, SizingException
-
+import logging
 
 def get_size(sku_name, docs):
     digits = unit = size = None
@@ -200,8 +200,6 @@ def reduce_docs_to_sku(docs: list, used_sku_ids: set, doc_ids: list) -> dict:
     sku.tags = " ".join(sorted(list(set(tokens))))
 
     sku.digits, sku.unit, sku.size = get_size(sku.name, docs)
-    if not sku.size:
-        sku.size = get_digits_unit_size(sku.name)
 
     if sku.digits:
         sku.unit_price = round(sku.best_price / sku.digits, 2)
