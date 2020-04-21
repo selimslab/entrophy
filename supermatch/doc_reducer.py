@@ -142,7 +142,7 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
-def reduce_docs_to_sku(docs: list,doc_ids: list) -> dict:
+def reduce_docs_to_sku(docs: list, doc_ids: list) -> dict:
     if not docs:
         return {}
 

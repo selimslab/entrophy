@@ -60,7 +60,12 @@ def add_product_info(groups_of_sku_ids, skus):
     return skus
 
 
-def create_matching(docs_to_match: Iterator, links_of_products: set = None, id_doc_pairs=None, debug=True) -> dict:
+def create_matching(
+    docs_to_match: Iterator,
+    links_of_products: set = None,
+    id_doc_pairs=None,
+    debug=True,
+) -> dict:
     if links_of_products is None:
         links_of_products = set()
 

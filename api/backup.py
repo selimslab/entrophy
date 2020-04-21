@@ -17,7 +17,9 @@ def backup_elastic():
 
 
 def backup_raw_items():
-    mongo_collections.items_collection.aggregate([{"$match": {}}, {"$out": "docs_backup"}])
+    mongo_collections.items_collection.aggregate(
+        [{"$match": {}}, {"$out": "docs_backup"}]
+    )
 
 
 def inspect_prods():
@@ -36,6 +38,6 @@ def inspect_prods():
 
     services.save_json("links.json", pairs)
 
+
 if __name__ == "__main__":
     backup_raw_items()
-

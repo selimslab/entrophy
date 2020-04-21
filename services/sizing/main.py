@@ -6,6 +6,7 @@ from .digits_mixin import DigitsMixin
 from .pattern_pairs import PAIRS
 from .pattern_regexes import REGEXES
 
+
 class SizingException(Exception):
     pass
 

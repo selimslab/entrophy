@@ -42,7 +42,7 @@ def check_lang():
         "ю",
         "и",
         "ß",
-        "ä"
+        "ä",
     }
     # search_fs_by_object_ids(x)
     # vars = services.json_util.read_json("varnew.json")
@@ -53,9 +53,7 @@ def check_lang():
     to_delete = set()
     for doc in cursor:
         keys = doc.get("variants", {}).keys()
-        r = [r in key
-             for r in russian
-             for key in keys]
+        r = [r in key for r in russian for key in keys]
         if any(r):
             to_delete.add(str(doc.get("_id")))
             pprint(keys)

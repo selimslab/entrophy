@@ -9,9 +9,7 @@ from spec.exceptions import ItemContentException
 
 
 class MarketPipeline(BasePipeline):
-    def __init__(
-        self
-    ):
+    def __init__(self):
         super().__init__()
         self.batch = []
         self.batch_size = 256

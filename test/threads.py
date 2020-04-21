@@ -27,7 +27,7 @@ def seq():
         get_size(name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     names = services.read_json("names.json")
     print(timeit.timeit("par()", setup="from __main__ import par, get_size", number=1))
     print(timeit.timeit("seq()", setup="from __main__ import seq, get_size", number=1))

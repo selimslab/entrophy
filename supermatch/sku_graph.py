@@ -98,7 +98,9 @@ class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
 
         self._add_edges_from_exact_name_match(exact_match_groups)
 
-        matched_using_promoted = self._add_edges_from_promoted_links(id_doc_pairs, connected_ids)
+        matched_using_promoted = self._add_edges_from_promoted_links(
+            id_doc_pairs, connected_ids
+        )
         connected_ids.update(matched_using_promoted)
 
         return self.sku_graph

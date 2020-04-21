@@ -15,12 +15,15 @@ from supermatch.syncer import Syncer
 def run_matcher(name, query, links_of_products=None, is_test=True):
     paths = get_paths(name)
 
-    docs_to_match = [] #data_services.get_docs_to_match(query)
+    docs_to_match = []  # data_services.get_docs_to_match(query)
 
     id_doc_pairs = services.read_json("id_doc_pairs.json")
 
     full_skus = create_matching(
-        docs_to_match=docs_to_match, links_of_products=links_of_products, debug=True, id_doc_pairs=id_doc_pairs
+        docs_to_match=docs_to_match,
+        links_of_products=links_of_products,
+        debug=True,
+        id_doc_pairs=id_doc_pairs,
     )
     json_util.save_json(paths.full_skus, full_skus)
 
