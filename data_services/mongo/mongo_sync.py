@@ -3,6 +3,7 @@ from pymongo.errors import BulkWriteError
 from tqdm import tqdm
 import logging
 import constants as keys
+from contextlib import contextmanager
 
 
 class MongoSync:
@@ -34,7 +35,7 @@ class MongoSync:
             self.bulk_exec()
 
     def add_update_many(self, selector, command):
-        new_op = UpdateMany(selector, command, upsert=True)
+        new_op = UpdateMany(filter=selector, update=command)
         self.ops.append(new_op)
         if len(self.ops) >= self.write_interval:
             self.bulk_exec()
@@ -68,3 +69,18 @@ class MongoSync:
             self.add_update_one(selector, command)
 
         self.bulk_exec()
+
+
+@contextmanager
+def exec_remaining_ops(mongo_sync):
+    yield mongo_sync
+    mongo_sync.bulk_exec()
+
+
+
+def test_update_many():
+    mongo_sync = MongoSync(collection=test_collection, write_interval=128)
+
+
+if __name__ == "__main__":
+    pass

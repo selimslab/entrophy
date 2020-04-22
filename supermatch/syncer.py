@@ -6,6 +6,7 @@ import data_services.firebase.connect as firebase_collections
 import data_services.mongo.collections as mongo_collections
 from data_services.mongo.mongo_sync import MongoSync
 import logging
+import constants as keys
 
 
 class Syncer:
@@ -19,7 +20,7 @@ class Syncer:
             mongo_coll = mongo_collections.test_collection
             self.index = "test"
             self.fs_collection = firebase_collections.test_collection
-            self.batch_size = 16
+            self.batch_size = 256
         else:
             mongo_coll = mongo_collections.items_collection
             self.index = "products"
@@ -38,10 +39,10 @@ class Syncer:
         }
         return fresh_skus
 
-    def sync_datastores(self, to_be_updated, all_doc_ids):
+    def sync_datastores(self, to_be_updated, sku_id_doc_ids_pairs):
         elastic.replace_docs(to_be_updated, index=self.index)
         data_services.batch_set_firestore(to_be_updated, collection=self.fs_collection)
-        data_services.sync_sku_ids(self.mongo_sync, to_be_updated, all_doc_ids)
+        data_services.sync_sku_ids(self.mongo_sync, sku_id_doc_ids_pairs)
 
     def create_updates(self, sku_ids, skus):
         body = {"query": {"ids": {"values": sku_ids}}}
@@ -50,7 +51,7 @@ class Syncer:
             for hit in data_services.elastic.scroll(body=body, index=self.index)
         }
         to_be_updated = list()
-        all_doc_ids = list()
+        sku_id_doc_ids_pairs = list()
         for sku_id in sku_ids:
             old_sku = old_skus.get(sku_id, {})
             new_sku = skus.get(sku_id, {})
@@ -60,10 +61,11 @@ class Syncer:
             to_be_updated.append(new_sku)
 
             doc_ids = [id for id in new_sku.pop("doc_ids", []) if "clone" not in id]
-            all_doc_ids.append(doc_ids)
+            if sku_id and doc_ids:
+                sku_id_doc_ids_pairs.append((sku_id, doc_ids))
 
         if to_be_updated:
-            self.sync_datastores(to_be_updated, all_doc_ids)
+            self.sync_datastores(to_be_updated, sku_id_doc_ids_pairs)
 
     def compare_and_sync(self, skus):
         ids = []
@@ -101,5 +103,3 @@ class Syncer:
         self.compare_and_sync(fresh_skus)
 
 
-if __name__ == "__main__":
-    pass

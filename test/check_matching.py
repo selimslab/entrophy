@@ -17,7 +17,6 @@ def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True, sync=
 
     full_skus = create_matching(
         docs_to_match=docs_to_match,
-        debug=True,
         id_doc_pairs=id_doc_pairs
     )
     json_util.save_json(paths.full_skus, full_skus)
@@ -54,7 +53,7 @@ def check_query():
 
 def check_partial():
     id_doc_pairs = services.read_json("id_doc_pairs.json")
-    run_matcher(name="partial", id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 100000, 150000)))
+    run_matcher(name="partial", sync=True, id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000, 11000)))
 
 
 if __name__ == "__main__":

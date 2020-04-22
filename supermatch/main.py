@@ -9,8 +9,6 @@ from tqdm import tqdm
 from memory_profiler import profile
 import data_services
 
-import multiprocessing
-
 
 def get_sku_groups(id_doc_pairs):
     graph_of_raw_docs = sku_graph_creator.create_graph(id_doc_pairs)
@@ -49,17 +47,15 @@ def add_product_info(groups_of_sku_ids, skus):
     return skus
 
 
-@profile
 def create_matching(
         docs_to_match: Iterator,
         id_doc_pairs=None,
-        debug=True,
 ) -> dict:
     if id_doc_pairs is None:
         id_doc_pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
 
     links_of_products = data_services.get_links_of_gratis_products(id_doc_pairs)
-    # don't use gratis products for matching
+    # don't use gratis products for doc grouping
     id_doc_pairs = {
         doc_id: doc
         for doc_id, doc in id_doc_pairs.items()

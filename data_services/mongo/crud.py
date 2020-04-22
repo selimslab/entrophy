@@ -1,6 +1,6 @@
 import constants as keys
 import data_services.mongo.collections as collections
-from data_services.mongo.mongo_sync import MongoSync
+from data_services.mongo.mongo_sync import MongoSync, exec_remaining_ops
 from bson import ObjectId
 
 
@@ -26,16 +26,14 @@ def sync_mongo(collection, item_updates):
         collection.delete_many({"objectID": {"$in": ids_to_delete}})
 
 
-def sync_sku_ids(mongo_sync, skus, all_doc_ids):
-    for sku, doc_ids in zip(skus, all_doc_ids):
-        doc_ids = [ObjectId(id) for id in doc_ids]
-        for id in doc_ids:
-            # selector = {"_id": {"$in": doc_ids}}
-            selector = {"_id": id}
-            update = {keys.SKU_ID: sku.get(keys.SKU_ID)}
+def sync_sku_ids(mongo_sync, sku_id_doc_ids_pairs):
+    with exec_remaining_ops(mongo_sync) as mongo_sync_managed:
+        for sku_id, doc_ids in sku_id_doc_ids_pairs:
+            doc_ids = [ObjectId(id) for id in doc_ids]
+            selector = {"_id": {"$in": doc_ids}}
+            update = {keys.SKU_ID: sku_id}
             command = {"$set": update}
-            mongo_sync.add_update_one(selector, command)
-    mongo_sync.bulk_exec()
+            mongo_sync_managed.add_update_many(selector, command)
 
 
 def test():
