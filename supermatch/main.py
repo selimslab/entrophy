@@ -18,7 +18,7 @@ def get_sku_groups(id_doc_pairs):
     return groups_of_doc_ids
 
 
-def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
+def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict, debug=True) -> dict:
     skus = dict()
 
     logging.debug("reducing docs to skus..")
@@ -28,19 +28,20 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
         if len(doc_ids) == 1 and "clone" in doc_ids[0]:
             continue
 
-        docs = [id_doc_pairs.get(doc_id, {}) for doc_id in doc_ids]
+        docs = [id_doc_pairs.pop(doc_id, {}) for doc_id in doc_ids]
         sku = reduce_docs_to_sku(docs, doc_ids, used_ids)
         if sku:
-            sku_id = sku.get("sku_id")
+            sku_id = sku.get(keys.SKU_ID)
             used_ids.add(sku_id)
             skus[sku_id] = sku
+            sku["doc_ids"] = doc_ids
 
             for doc in docs:
                 doc[keys.SKU_ID] = sku_id
                 doc[keys.PRODUCT_ID] = sku_id
 
-            sku["docs"] = docs
-            sku["doc_ids"] = doc_ids
+            if debug:
+                sku["docs"] = docs
 
     return skus
 
@@ -85,9 +86,7 @@ def create_matching(
     }
 
     groups_of_doc_ids = get_sku_groups(id_doc_pairs)
-    skus = reduce_docs(groups_of_doc_ids, id_doc_pairs)
-
-    del id_doc_pairs
+    skus = reduce_docs(groups_of_doc_ids, id_doc_pairs, debug)
 
     if not debug:
         groups_of_sku_ids = sku_grouper.group_skus(skus)
