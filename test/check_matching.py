@@ -12,7 +12,7 @@ from test.test_logs.paths import get_paths
 from supermatch.syncer import Syncer
 
 
-def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True):
+def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True, sync=False):
     paths = get_paths(name)
 
     full_skus = create_matching(
@@ -22,17 +22,14 @@ def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True):
     )
     json_util.save_json(paths.full_skus, full_skus)
 
-    docs = [sku.get("docs") for sku in full_skus.values()]
-    docs = list(itertools.chain.from_iterable(docs))
-    json_util.save_json(paths.docs, docs)
-
-    excel.create_excel(docs, paths.excel)
+    excel.create_excel(full_skus, id_doc_pairs, paths.excel)
 
     syncer = Syncer(is_test)
     basic_skus = syncer.strip_debug_fields(full_skus)
     json_util.save_json(paths.basic_skus, basic_skus)
 
-    # syncer.compare_and_sync(basic_skus)
+    if sync:
+        syncer.compare_and_sync(basic_skus)
 
 
 def check_sync_only():
@@ -57,10 +54,10 @@ def check_query():
 
 def check_partial():
     id_doc_pairs = services.read_json("id_doc_pairs.json")
-    run_matcher(name="partial", id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000)))
+    run_matcher(name="partial", id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 100000, 150000)))
 
 
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_all()
+    check_partial()

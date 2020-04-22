@@ -43,24 +43,23 @@ class Syncer:
         data_services.batch_set_firestore(to_be_updated, collection=self.fs_collection)
         data_services.sync_sku_ids(self.mongo_sync, to_be_updated, all_doc_ids)
 
-    def create_updates(self, ids, skus):
-        logging.info(f"ids, {ids}")
-        body = {"query": {"ids": {"values": ids}}}
-
+    def create_updates(self, sku_ids, skus):
+        body = {"query": {"ids": {"values": sku_ids}}}
         old_skus = {
             hit.get("_id"): hit.get("_source")
             for hit in data_services.elastic.scroll(body=body, index=self.index)
         }
         to_be_updated = list()
         all_doc_ids = list()
-        for sku_id in ids:
+        for sku_id in sku_ids:
             old_sku = old_skus.get(sku_id, {})
             new_sku = skus.get(sku_id, {})
-            doc_ids = new_sku.pop("doc_ids")
             if old_sku and new_sku == old_sku:
                 continue
+
             to_be_updated.append(new_sku)
-            doc_ids = [id for id in doc_ids if "clone" not in id]
+
+            doc_ids = [id for id in new_sku.pop("doc_ids", []) if "clone" not in id]
             all_doc_ids.append(doc_ids)
 
         if to_be_updated:

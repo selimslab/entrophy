@@ -105,4 +105,5 @@ class SKUGraphCreator(GenericGraph):
         return self.sku_graph
 
 
+# singleton
 sku_graph_creator = SKUGraphCreator()

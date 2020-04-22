@@ -9,6 +9,7 @@ from spec.exceptions import MatchingException
 from supermatch.id_selector import select_unique_id
 from services import name_cleaner
 from services.sizing.main import size_finder, SizingException
+import logging
 
 
 def get_size(sku_name, docs, names):
@@ -106,7 +107,6 @@ def get_prices(docs):
         for market, price in prices.items()
         if market in keys.VISIBLE_MARKETS
     }
-
     prices = {market: clean_price(price) for market, price in prices.items()}
     prices = {market: price for market, price in prices.items() if price}
     if not prices:
@@ -142,13 +142,13 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
-def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids: set) -> tuple:
+def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     if not docs:
         return None, None
 
     try:
         prices = get_prices(docs)
-    except MatchingException:
+    except MatchingException as e:
         return None, None
 
     markets = list(set(prices.keys()))
@@ -164,6 +164,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids: set) -> tuple:
         doc.get(keys.MARKET): doc.get(keys.NAME) for doc in docs if doc.get(keys.NAME)
     }
     sku_name = get_name(names)
+    doc_names = list(names.values())
 
     sku_src = get_image(docs)
 
@@ -193,7 +194,8 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids: set) -> tuple:
         barcodes=barcodes,
         tags=tags,
         links=links,
-        most_common_tokens=most_common_tokens
+        most_common_tokens=most_common_tokens,
+        names=doc_names
     )
 
     sku.digits, sku.unit, sku.size = get_size(sku.name, docs, names)

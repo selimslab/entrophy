@@ -5,7 +5,7 @@ from services.sizing.main import size_finder, SizingException
 
 import multiprocessing
 from tqdm import tqdm
-
+import itertools
 
 def get_size(name):
     try:
@@ -19,8 +19,8 @@ def get_size(name):
 
 def par():
     with multiprocessing.Pool(processes=2) as pool:
-        pool.map(get_size, tqdm(names))
-
+        vals = pool.map(get_size, tqdm(names[:100]))
+        print(vals)
 
 def seq():
     for name in tqdm(names):
@@ -30,4 +30,4 @@ def seq():
 if __name__ == "__main__":
     names = services.read_json("names.json")
     print(timeit.timeit("par()", setup="from __main__ import par, get_size", number=1))
-    print(timeit.timeit("seq()", setup="from __main__ import seq, get_size", number=1))
+    # print(timeit.timeit("seq()", setup="from __main__ import seq, get_size", number=1))
