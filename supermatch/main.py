@@ -6,7 +6,6 @@ from supermatch.sku_graph import sku_graph_creator
 from supermatch.doc_reducer import reduce_docs_to_sku
 import uuid
 from tqdm import tqdm
-import multiprocessing
 
 
 def get_sku_groups(id_doc_pairs):

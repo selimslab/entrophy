@@ -7,7 +7,7 @@ import multiprocessing
 from tqdm import tqdm
 
 
-def get_size(name="apti"):
+def get_size(name):
     try:
         size_name = name_cleaner.clean_for_sizing(name)
         result = size_finder.get_digits_unit_size(size_name)

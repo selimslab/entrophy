@@ -167,6 +167,18 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids: set) -> dict:
 
     sku_src = get_image(docs)
 
+    barcodes = [doc.get(keys.BARCODES) for doc in docs]
+    barcodes = services.flatten(barcodes)
+    barcodes = [b for b in barcodes if b]
+    barcodes = list(set(barcodes))
+
+    tokens = token_util.get_tokens_of_a_group(list(names.values()))
+    most_common_tokens = sorted(token_util.get_n_most_common_tokens(tokens, 3))
+    tags = " ".join(sorted(list(set(tokens))))
+
+    links = [doc.get(keys.LINK) for doc in docs]
+    links = list(set(links))
+
     sku = SKU(
         doc_ids=doc_ids,
         sku_id=sku_id,
@@ -178,19 +190,11 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids: set) -> dict:
         markets=markets,
         market_count=market_count,
         best_price=best_price,
+        barcodes=barcodes,
+        tags=tags,
+        links=links,
+        most_common_tokens=most_common_tokens
     )
-
-    barcodes = [doc.get(keys.BARCODES) for doc in docs]
-    barcodes = services.flatten(barcodes)
-    barcodes = [b for b in barcodes if b]
-    sku.barcodes = list(set(barcodes))
-
-    links = [doc.get(keys.LINK) for doc in docs]
-    sku.links = list(set(links))
-
-    tokens = token_util.get_tokens_of_a_group(list(names.values()))
-    sku.most_common_tokens = sorted(token_util.get_n_most_common_tokens(tokens, 3))
-    sku.tags = " ".join(sorted(list(set(tokens))))
 
     sku.digits, sku.unit, sku.size = get_size(sku.name, docs, names)
 
