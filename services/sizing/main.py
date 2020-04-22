@@ -13,7 +13,6 @@ class SizingException(Exception):
 
 class SizeFinder(DigitsMixin):
     def __init__(self):
-        print("init SizeFinder")
         self.patterns = self.create_size_patterns(PAIRS, REGEXES)
         self.max_digits = {
             "yıkama": 100,

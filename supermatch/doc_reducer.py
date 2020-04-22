@@ -99,7 +99,7 @@ def get_prices(docs):
     prices = {
         doc.get(keys.MARKET): doc.get(keys.PRICE)
         for doc in docs
-        if not doc.get(keys.OUT_OF_STOCK)
+        if doc.get(keys.OUT_OF_STOCK) not in [True, "Stokta Yok"]
     }
     prices = {
         market: price

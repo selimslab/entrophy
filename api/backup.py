@@ -1,10 +1,13 @@
 import data_services.mongo.collections as mongo_collections
 from data_services.mongo.mongo_sync import MongoSync
-import api.sentry
 from data_services import elastic
 import services
 from tqdm import tqdm
 import collections
+import sentry_sdk
+
+sentry_sdk.init("https://39fd5a66307d47dcb3e9c37a8b709c44@sentry.io/5186400")
+
 
 
 def backup_elastic():

@@ -12,18 +12,13 @@ from test.test_logs.paths import get_paths
 from supermatch.syncer import Syncer
 
 
-def run_matcher(name, query, links_of_products=None, is_test=True):
+def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True):
     paths = get_paths(name)
-
-    docs_to_match = []  # data_services.get_docs_to_match(query)
-
-    id_doc_pairs = services.read_json("id_doc_pairs.json")
 
     full_skus = create_matching(
         docs_to_match=docs_to_match,
-        links_of_products=links_of_products,
         debug=True,
-        id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 100000))
+        id_doc_pairs=id_doc_pairs
     )
     json_util.save_json(paths.full_skus, full_skus)
 
@@ -49,17 +44,23 @@ def check_sync_only():
 
 
 def check_all():
-    query = {}
-    run_matcher(name="all_docs", query=query)
+    id_doc_pairs = services.read_json("id_doc_pairs.json")
+    run_matcher(name="all_docs", id_doc_pairs=id_doc_pairs)
+
+
+def check_query():
+    links = json_util.read_json("links.json")
+    query = {keys.LINK: {"$in": flatten(links)}}
+    docs_to_match = data_services.get_docs_to_match(query)
+    run_matcher(name="query", docs_to_match=docs_to_match)
 
 
 def check_partial():
-    links = json_util.read_json("links.json")
-    query = {keys.LINK: {"$in": flatten(links)}}
-    run_matcher(name="partial", query=query)
+    id_doc_pairs = services.read_json("id_doc_pairs.json")
+    run_matcher(name="partial", id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000)))
 
 
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_partial()
+    check_all()

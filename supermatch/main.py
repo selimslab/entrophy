@@ -7,6 +7,7 @@ from supermatch.doc_reducer import reduce_docs_to_sku
 import uuid
 from tqdm import tqdm
 from memory_profiler import profile
+import data_services
 
 
 def get_sku_groups(id_doc_pairs):
@@ -67,22 +68,20 @@ def add_product_info(groups_of_sku_ids, skus):
 @profile
 def create_matching(
         docs_to_match: Iterator,
-        links_of_products: set = None,
         id_doc_pairs=None,
         debug=True,
 ) -> dict:
-    if links_of_products is None:
-        links_of_products = set()
-
     if id_doc_pairs is None:
         id_doc_pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
 
+    links_of_products = data_services.get_links_of_gratis_products(id_doc_pairs)
     # don't use gratis products for matching
     id_doc_pairs = {
         doc_id: doc
         for doc_id, doc in id_doc_pairs.items()
         if doc.get(keys.LINK) not in links_of_products
     }
+    logging.info("finding variants..")
     variants = (doc.get(keys.VARIANTS) for doc in id_doc_pairs.values())
     variants = (v for v in variants if v)
 
@@ -90,7 +89,7 @@ def create_matching(
     skus = reduce_docs(groups_of_doc_ids, id_doc_pairs, debug)
 
     if not debug:
-        groups_of_sku_ids = sku_grouper.group_skus(skus,variants,links_of_products)
+        groups_of_sku_ids = sku_grouper.group_skus(skus, variants, links_of_products)
         skus = add_product_info(groups_of_sku_ids, skus)
 
     skus = {

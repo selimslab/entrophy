@@ -32,9 +32,9 @@ class BasicSKU:
 
 @dataclass
 class SKU(BasicSKU):
-    product_ids_count: dict = None
     sku_ids_count: dict = None
     docs: list = None
     links: list = None
     most_common_tokens: list = None
     variants: list = None
+    names: list = None
