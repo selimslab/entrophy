@@ -7,7 +7,7 @@ from services import GenericGraph
 from supermatch.matcher.barcode_matcher import BarcodeMatcher
 from supermatch.matcher.exact_name_matcher import ExactNameMatcher
 from supermatch.matcher.promoted_link_matcher import PromotedLinkMatcher
-
+from tqdm import tqdm
 import logging
 
 
@@ -38,7 +38,7 @@ class SKUGraphCreator(GenericGraph):
         promoted_connections = dict()
         refers_to_multiple_barcodes = set()
 
-        for doc_id, doc in id_doc_pairs.items():
+        for doc_id, doc in tqdm(id_doc_pairs.items()):
             promoted = doc.get(keys.PROMOTED, {})
             if not promoted:
                 continue

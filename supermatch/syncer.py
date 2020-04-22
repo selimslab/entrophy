@@ -27,7 +27,7 @@ class Syncer:
             self.fs_collection = firebase_collections.skus_collection
             self.batch_size = 4096
 
-        self.mongo_sync = MongoSync(collection=mongo_coll, write_interval=128)
+        self.mongo_sync = MongoSync(collection=mongo_coll, write_interval=self.batch_size)
 
     @staticmethod
     def strip_debug_fields(skus):
