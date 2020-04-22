@@ -183,7 +183,6 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     sku = SKU(
         doc_ids=doc_ids,
         sku_id=sku_id,
-        product_id=sku_id,
         objectID=sku_id,
         name=sku_name,
         src=sku_src,

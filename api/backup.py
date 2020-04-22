@@ -5,6 +5,7 @@ import services
 from tqdm import tqdm
 import collections
 import sentry_sdk
+from data_services.mongo.connect import db, newdb
 
 sentry_sdk.init("https://39fd5a66307d47dcb3e9c37a8b709c44@sentry.io/5186400")
 
@@ -41,5 +42,16 @@ def inspect_prods():
     services.save_json("links.json", pairs)
 
 
+def migrate_mongo():
+    batch = []
+    for doc in db["items"].find({}):
+        batch.append(doc)
+        if len(batch) > 300:
+            newdb["raw_products"].insert_many(batch)
+            batch = []
+
+    newdb["raw_products"].insert_many(batch)
+
+
 if __name__ == "__main__":
-    backup_raw_items()
+    migrate_mongo()
