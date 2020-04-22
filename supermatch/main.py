@@ -6,6 +6,7 @@ from supermatch.sku_graph import sku_graph_creator
 from supermatch.doc_reducer import reduce_docs_to_sku
 import uuid
 from tqdm import tqdm
+from memory_profiler import profile
 
 
 def get_sku_groups(id_doc_pairs):
@@ -29,18 +30,15 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict, debug=True) -> dict
             continue
 
         docs = [id_doc_pairs.pop(doc_id, {}) for doc_id in doc_ids]
-        sku = reduce_docs_to_sku(docs, doc_ids, used_ids)
+        sku, sku_id = reduce_docs_to_sku(docs, doc_ids, used_ids)
         if sku:
-            sku_id = sku.get(keys.SKU_ID)
             used_ids.add(sku_id)
             skus[sku_id] = sku
-            sku["doc_ids"] = doc_ids
-
-            for doc in docs:
-                doc[keys.SKU_ID] = sku_id
-                doc[keys.PRODUCT_ID] = sku_id
 
             if debug:
+                for doc in docs:
+                    doc[keys.SKU_ID] = sku_id
+                    doc[keys.PRODUCT_ID] = sku_id
                 sku["docs"] = docs
 
     return skus
@@ -66,6 +64,7 @@ def add_product_info(groups_of_sku_ids, skus):
     return skus
 
 
+@profile
 def create_matching(
         docs_to_match: Iterator,
         links_of_products: set = None,
@@ -84,12 +83,14 @@ def create_matching(
         for doc_id, doc in id_doc_pairs.items()
         if doc.get(keys.LINK) not in links_of_products
     }
+    variants = (doc.get(keys.VARIANTS) for doc in id_doc_pairs.values())
+    variants = (v for v in variants if v)
 
     groups_of_doc_ids = get_sku_groups(id_doc_pairs)
     skus = reduce_docs(groups_of_doc_ids, id_doc_pairs, debug)
 
     if not debug:
-        groups_of_sku_ids = sku_grouper.group_skus(skus)
+        groups_of_sku_ids = sku_grouper.group_skus(skus,variants,links_of_products)
         skus = add_product_info(groups_of_sku_ids, skus)
 
     skus = {

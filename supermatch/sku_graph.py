@@ -8,11 +8,10 @@ from supermatch.matcher.barcode_matcher import BarcodeMatcher
 from supermatch.matcher.exact_name_matcher import ExactNameMatcher
 from supermatch.matcher.promoted_link_matcher import PromotedLinkMatcher
 
-from spec.interfaces.sku_graph import AbstractSKUGraphCreator
 import logging
 
 
-class SKUGraphCreator(AbstractSKUGraphCreator, GenericGraph):
+class SKUGraphCreator(GenericGraph):
     """ Create a graph with items as vertices and barcodes as edges """
 
     def __init__(self):

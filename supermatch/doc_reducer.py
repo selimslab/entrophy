@@ -142,14 +142,14 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
-def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids: set) -> dict:
+def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids: set) -> tuple:
     if not docs:
-        return {}
+        return None, None
 
     try:
         prices = get_prices(docs)
     except MatchingException:
-        return {}
+        return None, None
 
     markets = list(set(prices.keys()))
     market_count = len(markets)
@@ -201,4 +201,4 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids: set) -> dict:
     if sku.digits:
         sku.unit_price = round(sku.best_price / sku.digits, 2)
 
-    return asdict(sku)
+    return asdict(sku), sku_id

@@ -1,6 +1,5 @@
 import itertools
 import operator
-import data_services
 import services
 
 
@@ -20,11 +19,11 @@ def get_gratis_link_id_tuples(skus: dict, gratis_product_links: set) -> list:
     return gratis_link_id_tuples
 
 
-def get_google_groups(skus):
+def get_google_groups(skus, variants):
     """
     variants: [{'250 ml': '/shopping/product/17523461779494271950'}, {} ... ]
     """
-    variants = data_services.get_google_variants()
+    # variants = data_services.get_google_variants()
 
     variant_id_pairs = dict()
 
@@ -62,11 +61,10 @@ def group_link_id_tuples(link_id_tuples):
     return groups
 
 
-def group_skus(skus: dict) -> list:
-    google_groups = get_google_groups(skus)
+def group_skus(skus: dict, variants, links_of_products) -> list:
+    google_groups = get_google_groups(skus, variants)
 
-    gratis_product_links: set = data_services.get_links_of_products()
-    gratis_link_id_tuples = get_gratis_link_id_tuples(skus, gratis_product_links)
+    gratis_link_id_tuples = get_gratis_link_id_tuples(skus, links_of_products)
     gratis_groups = group_link_id_tuples(gratis_link_id_tuples)
 
     sku_groups = itertools.chain(google_groups, gratis_groups)

@@ -23,7 +23,7 @@ def run_matcher(name, query, links_of_products=None, is_test=True):
         docs_to_match=docs_to_match,
         links_of_products=links_of_products,
         debug=True,
-        id_doc_pairs=id_doc_pairs,
+        id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 100000))
     )
     json_util.save_json(paths.full_skus, full_skus)
 
@@ -62,4 +62,4 @@ def check_partial():
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_all()
+    check_partial()
