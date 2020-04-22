@@ -6,7 +6,6 @@ from supermatch.sku_graph import sku_graph_creator
 from supermatch.doc_reducer import reduce_docs_to_sku
 import uuid
 from tqdm import tqdm
-from memory_profiler import profile
 import data_services
 
 
