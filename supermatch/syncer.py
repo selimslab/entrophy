@@ -101,5 +101,3 @@ class Syncer:
     def sync_the_new_matching(self, skus):
         fresh_skus = self.strip_debug_fields(skus)
         self.compare_and_sync(fresh_skus)
-
-

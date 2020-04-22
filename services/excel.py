@@ -14,7 +14,7 @@ def create_excel(full_skus, id_doc_pairs, path):
         "size",
         "barcodes",
         "variants",
-        keys.VARIANT_NAME
+        keys.VARIANT_NAME,
     ]
     for sku in full_skus.values():
         sku_id = sku.get(keys.SKU_ID)
@@ -28,11 +28,7 @@ def create_excel(full_skus, id_doc_pairs, path):
 
     items = list(rows)
     df = pd.DataFrame(items).fillna("")
-    cols = [
-        c
-        for c in colnames
-        if c in df.columns
-    ]
+    cols = [c for c in colnames if c in df.columns]
     df = df[cols]
     df = df.sort_values(keys.SKU_ID)
     df.to_excel(path, index=False)

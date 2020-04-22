@@ -9,7 +9,6 @@ import sentry_sdk
 sentry_sdk.init("https://39fd5a66307d47dcb3e9c37a8b709c44@sentry.io/5186400")
 
 
-
 def backup_elastic():
     mongo_sync = MongoSync(collection=mongo_collections.products_backup)
     for hit in tqdm(elastic.scroll()):

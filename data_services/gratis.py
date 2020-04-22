@@ -18,11 +18,14 @@ def get_gratis_product_names(product_links: set):
 
 def get_links_of_gratis_products(id_doc_pairs) -> set:
     logging.info("finding gratis product links..")
-    gratis_links = (doc.get(keys.LINK) for doc in id_doc_pairs.values() if doc.get(keys.MARKET) == keys.GRATIS)
+    gratis_links = (
+        doc.get(keys.LINK)
+        for doc in id_doc_pairs.values()
+        if doc.get(keys.MARKET) == keys.GRATIS
+    )
     clean_links = (link[:-1] if link[-1] == "/" else link for link in set(gratis_links))
     product_links = (link.split("?")[0] for link in clean_links if "?sku" in link)
     links_of_products = (
         link for link in product_links if not link.split("/")[-1].isdigit()
     )
     return set(links_of_products)
-

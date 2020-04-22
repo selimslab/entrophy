@@ -7,6 +7,7 @@ import multiprocessing
 from tqdm import tqdm
 import itertools
 
+
 def get_size(name):
     try:
         size_name = name_cleaner.clean_for_sizing(name)
@@ -21,6 +22,7 @@ def par():
     with multiprocessing.Pool(processes=2) as pool:
         vals = pool.map(get_size, tqdm(names[:100]))
         print(vals)
+
 
 def seq():
     for name in tqdm(names):

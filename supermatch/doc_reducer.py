@@ -195,7 +195,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         tags=tags,
         links=links,
         most_common_tokens=most_common_tokens,
-        names=doc_names
+        names=doc_names,
     )
 
     sku.digits, sku.unit, sku.size = get_size(sku.name, docs, names)

@@ -15,10 +15,7 @@ from supermatch.syncer import Syncer
 def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True, sync=False):
     paths = get_paths(name)
 
-    full_skus = create_matching(
-        docs_to_match=docs_to_match,
-        id_doc_pairs=id_doc_pairs
-    )
+    full_skus = create_matching(docs_to_match=docs_to_match, id_doc_pairs=id_doc_pairs)
     json_util.save_json(paths.full_skus, full_skus)
 
     excel.create_excel(full_skus, id_doc_pairs, paths.excel)
@@ -53,7 +50,11 @@ def check_query():
 
 def check_partial():
     id_doc_pairs = services.read_json("id_doc_pairs.json")
-    run_matcher(name="partial", sync=True, id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000, 11000)))
+    run_matcher(
+        name="partial",
+        sync=True,
+        id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000, 11000)),
+    )
 
 
 if __name__ == "__main__":
