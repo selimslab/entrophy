@@ -142,7 +142,7 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
-def reduce_docs_to_sku(docs: list, doc_ids: list) -> dict:
+def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids: set) -> dict:
     if not docs:
         return {}
 
@@ -158,7 +158,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list) -> dict:
     sku_ids = (doc.get(keys.SKU_ID) for doc in docs)
     sku_ids = (p for p in sku_ids if p)
     sku_ids_count = dict(collections.Counter(sku_ids))
-    sku_id = select_unique_id(sku_ids_count, doc_ids)
+    sku_id = select_unique_id(sku_ids_count, doc_ids, used_ids)
 
     names = {
         doc.get(keys.MARKET): doc.get(keys.NAME) for doc in docs if doc.get(keys.NAME)

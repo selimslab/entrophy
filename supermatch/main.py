@@ -24,14 +24,16 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
 
     logging.debug("reducing docs to skus..")
 
+    used_ids = set()
     for doc_ids in tqdm(groups_of_doc_ids):
         if len(doc_ids) == 1 and "clone" in doc_ids[0]:
             continue
 
         docs = [id_doc_pairs.get(doc_id, {}) for doc_id in doc_ids]
-        sku = reduce_docs_to_sku(docs, doc_ids)
+        sku = reduce_docs_to_sku(docs, doc_ids, used_ids)
         if sku:
             sku_id = sku.get("sku_id")
+            used_ids.add(sku_id)
             skus[sku_id] = sku
 
             for doc in docs:
@@ -48,23 +50,27 @@ def add_product_info(groups_of_sku_ids, skus):
     for sku_ids in groups_of_sku_ids:
         product_id = str(uuid.uuid4())
         for sku_id in sku_ids:
-            skus[sku_id][keys.VARIANTS] = sku_ids
-            skus[sku_id][keys.PRODUCT_ID] = product_id
-            skus[sku_id][keys.SKU_ID] = sku_id
+            sku = skus[sku_id]
 
-            docs = skus[sku_id]["docs"]
+            sku[keys.VARIANTS] = sku_ids
+            sku[keys.PRODUCT_ID] = product_id
+            sku[keys.SKU_ID] = sku_id
+
+            docs = sku["docs"]
             for doc in docs:
                 doc[keys.PRODUCT_ID] = product_id
-            skus[sku_id]["docs"] = docs
+            sku["docs"] = docs
+
+            skus[sku_id] = sku
 
     return skus
 
 
 def create_matching(
-    docs_to_match: Iterator,
-    links_of_products: set = None,
-    id_doc_pairs=None,
-    debug=True,
+        docs_to_match: Iterator,
+        links_of_products: set = None,
+        id_doc_pairs=None,
+        debug=True,
 ) -> dict:
     if links_of_products is None:
         links_of_products = set()
