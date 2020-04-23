@@ -60,5 +60,6 @@ def migrate_mongo():
     if batch:
         newdb["raw_products"].insert_many(batch)
 
+
 if __name__ == "__main__":
     migrate_mongo()
