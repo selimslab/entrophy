@@ -52,8 +52,7 @@ def migrate_mongo():
     print(basekeys)
     for doc in tqdm(db["items"].find({})):
         doc = {k: v for k, v in doc.items() if k in basekeys}
-        vars = doc.get("variants")
-        if any("." in key for key in vars.keys()):
+        if any("." in key for key in doc.get("variants",{}).keys()):
             print(doc)
             continue
 
