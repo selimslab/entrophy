@@ -53,7 +53,7 @@ def migrate_mongo():
     for doc in tqdm(db["items"].find({})):
         doc = {k: v for k, v in doc.items() if k in basekeys}
         batch.append(doc)
-        if len(batch) > 300:
+        if len(batch) > 1000:
             newdb["raw_products"].insert_many(batch)
             batch = []
 
