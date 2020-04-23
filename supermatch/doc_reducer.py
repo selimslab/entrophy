@@ -134,7 +134,7 @@ def get_variant_name(docs):
     doc_links = [doc.get(keys.LINK) for doc in docs]
 
     for variant in variants:
-        for variant_name, var_link in variant.items():
+        for var_link, variant_name in variant.items():
             if any([var_link in doc_link for doc_link in doc_links]):
                 variant_names.append(variant_name)
 

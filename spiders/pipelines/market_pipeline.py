@@ -20,7 +20,7 @@ class MarketPipeline(BasePipeline):
     def log_historical_price(item):
         price = item.get(keys.PRICE)
         if price:
-            # replace dots because it will be used in mongo dot notation
+            # mongo doesnt accept . in keys
             price = str(price).replace(".", ",")
             log_key = keys.HISTORICAL_PRICES + "." + price
             item[log_key] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")

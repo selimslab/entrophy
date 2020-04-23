@@ -104,11 +104,12 @@ class GoogleDetailSpider(BaseSpider):
             # mongo doesn't accept keys with . or $
             name = name.replace(".", ",").replace("$", "")
             if is_selected:
-                variants[name] = "/shopping" + page_link.split("shopping")[1]
+                link = "/shopping" + page_link.split("shopping")[1]
+                variants[link] = name
                 continue
             else:
                 link = option.css("::attr(value)").extract_first()
-                variants[name] = link
+                variants[link] = name
         return variants
 
 
