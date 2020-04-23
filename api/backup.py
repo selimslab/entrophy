@@ -53,9 +53,9 @@ def migrate_mongo():
     for doc in tqdm(db["items"].find({})):
         doc = {k: v for k, v in doc.items() if k in basekeys}
         if "variants" in doc:
-            var = dict()
+            vars = dict()
             for name, link in doc.get("variants", {}).items():
-                var[link] = name
+                vars[link] = name
             doc["variants"] = vars
         batch.append(doc)
         if len(batch) > 1000:
