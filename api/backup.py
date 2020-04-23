@@ -43,15 +43,21 @@ def inspect_prods():
 
 
 def migrate_mongo():
+    from spec.model.doc import BaseDoc
+    from dataclasses import asdict
     batch = []
+    basekeys = set(asdict(BaseDoc()).keys())
+    basekeys.add("_id")
+    print(basekeys)
     for doc in db["items"].find({}):
+        doc = {k: v for k, v in doc.items() if k in basekeys}
         batch.append(doc)
         if len(batch) > 300:
             newdb["raw_products"].insert_many(batch)
             batch = []
 
-    newdb["raw_products"].insert_many(batch)
-
+    if batch:
+        newdb["raw_products"].insert_many(batch)
 
 if __name__ == "__main__":
     migrate_mongo()

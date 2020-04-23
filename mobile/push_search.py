@@ -4,7 +4,7 @@ from data_services.firebase.connect import firestore_client
 def sync_search():
     search_keyword = {
         "from": 0,
-        "size": 12,
+        "size": 24,
         "_source": {
             "excludes": [
                 "tags",
@@ -60,9 +60,7 @@ def sync_search():
 
     url = "https://search-narmoni-sby3slciocpfo5f3ubqhplod7u.eu-central-1.es.amazonaws.com/products/_search"
     firestore_client.collection(u"config").document(u"search").set(
-        {"url": url, "query": search_keyword, "barcode_search": barcode_search, "search_by_id": search_by_id,
-         "query_variable": "body.query.bool.must.multi_match.query"
-         }
+        {"url": url, "query": search_keyword, "barcode_search": barcode_search  }
     )
 
 
