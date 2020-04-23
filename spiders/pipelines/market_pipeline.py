@@ -100,7 +100,7 @@ class MarketPipeline(BasePipeline):
 
         check_count(spider.name, stats)
         if self.bad_item_count > 100:
-            raise ItemContentException(f"{self.bad_item_count} bad items")
+            raise ItemContentException(f"{self.bad_item_count} bad items in {spider.name}")
 
 
 if __name__ == "__main__":
