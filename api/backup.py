@@ -6,6 +6,7 @@ from tqdm import tqdm
 import collections
 import sentry_sdk
 from data_services.mongo.connect import db, newdb
+import logging
 
 sentry_sdk.init("https://39fd5a66307d47dcb3e9c37a8b709c44@sentry.io/5186400")
 
@@ -49,7 +50,7 @@ def migrate_mongo():
     basekeys = set(asdict(BaseDoc()).keys())
     basekeys.add("_id")
     print(basekeys)
-    for doc in db["items"].find({}):
+    for doc in tqdm(db["items"].find({})):
         doc = {k: v for k, v in doc.items() if k in basekeys}
         batch.append(doc)
         if len(batch) > 300:
