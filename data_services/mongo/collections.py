@@ -1,9 +1,9 @@
 from .connect import db
 
-items_collection = db["items"]
+items_collection = db["raw_products"]
 
-items_backup = db["docs_backup"]
+items_backup = db["raw_products_backup"]
 
 test_collection = db["test"]
 
-products_backup = db["products_backup"]
+elastic_backup = db["elastic_backup"]
