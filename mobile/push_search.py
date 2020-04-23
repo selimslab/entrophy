@@ -5,12 +5,7 @@ def sync_search():
     search_keyword = {
         "from": 0,
         "size": 24,
-        "_source": {
-            "excludes": [
-                "tags",
-                "barcodes"
-            ]
-        },
+        "_source": {"excludes": ["tags", "barcodes"]},
         "query": {
             "bool": {
                 "must": {
@@ -21,27 +16,20 @@ def sync_search():
                         "operator": "and",
                     }
                 },
-                "filter": {"terms": {"markets": []}}
+                "filter": {"terms": {"markets": []}},
             },
         },
-        "sort": ["_score"]
+        "sort": ["_score"],
     }
 
     barcode_search = {
         "from": 0,
         "size": 10,
-        "_source": {
-            "excludes": [
-                "tags",
-                "barcodes",
-            ]
-        },
+        "_source": {"excludes": ["tags", "barcodes",]},
         "query": {
             "bool": {
-                "must": [{"match_all": {}}, ],
-                "filter": [
-                    {"terms": {"barcodes": []}},
-                ],
+                "must": [{"match_all": {}},],
+                "filter": [{"terms": {"barcodes": []}},],
             }
         },
     }
@@ -60,7 +48,7 @@ def sync_search():
 
     url = "https://search-narmoni-sby3slciocpfo5f3ubqhplod7u.eu-central-1.es.amazonaws.com/products/_search"
     firestore_client.collection(u"config").document(u"search").set(
-        {"url": url, "query": search_keyword, "barcode_search": barcode_search  }
+        {"url": url, "query": search_keyword, "barcode_search": barcode_search}
     )
 
 
