@@ -24,3 +24,4 @@ def backup_raw_items():
 
 if __name__ == "__main__":
     backup_raw_items()
+    print(mongo_collections.items_backup.count_documents({}))
