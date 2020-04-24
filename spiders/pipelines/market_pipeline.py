@@ -6,7 +6,7 @@ from datetime import datetime
 from .instant_update import instant_price_update
 from .check_count import check_count
 from spec.exceptions import ItemContentException
-
+import logging
 
 class MarketPipeline(BasePipeline):
     def __init__(self):
@@ -68,6 +68,7 @@ class MarketPipeline(BasePipeline):
                 command = {"$set": item}
                 self.mongo_sync.add_update_one(selector, command)
 
+        logging.info(f"{len(instant_update_batch)} of {(len(self.batch))} docs for instant update..")
         if instant_update_batch:
             instant_price_update(existing_link_id_pairs, instant_update_batch)
 

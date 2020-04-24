@@ -1,6 +1,7 @@
 import constants as keys
 import data_services
 from data_services.firebase.connect import skus_collection
+import logging
 
 
 def instant_price_update(existing_link_id_pairs, instant_update_batch):
