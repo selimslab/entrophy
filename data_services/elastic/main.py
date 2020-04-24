@@ -59,6 +59,7 @@ class Elastic:
     def update_docs(self, docs: list, index):
         if index is None:
             index = "test"
+        print(f"updating {len(docs)} elastic docs")
         batch, remaining_docs = docs[: self.batch_size], docs[self.batch_size :]
         helpers.bulk(self.es, self.elastic_update_generator(batch, index))
         if remaining_docs:

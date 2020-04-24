@@ -6,7 +6,7 @@ from data_services import MongoSync
 class BasePipeline:
     def __init__(self, write_interval=None):
         if not write_interval:
-            write_interval = 128
+            write_interval = 256
         self.mongo_sync = MongoSync(
             collection=collections.items_collection, write_interval=write_interval
         )

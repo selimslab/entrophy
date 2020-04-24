@@ -28,7 +28,6 @@ def instant_price_update(existing_link_id_pairs, instant_update_batch):
         if old_prices:
             price_update = {item.get(keys.MARKET): item.get(keys.PRICE)}
             new_prices = {**old_prices, **price_update}
-            # TODO LAST_UPDATED, but will you show a time besides every price?
             update = {keys.SKU_ID: sku_id, keys.PRICES: new_prices}
             instant_updates.append(update)
 
