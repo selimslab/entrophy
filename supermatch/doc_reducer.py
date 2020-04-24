@@ -43,7 +43,7 @@ def clean_price(price):
         return convert_price(price)
     except (TypeError, ValueError) as e:
         print(e)
-        return None
+        return
 
 
 def get_name_priorities():
