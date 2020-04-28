@@ -30,17 +30,60 @@ class SKUGraphCreator(GenericGraph):
         for doc_id in id_doc_pairs.keys():
             self.sku_graph.add_node(doc_id)
 
-    def _add_edges_from_barcodes(self, barcode_id_pairs: dict):
+    def barcode_match(self, id_doc_pairs: dict):
+        barcode_id_pairs = collections.defaultdict(list)
+        for doc_id, doc in id_doc_pairs.items():
+            barcodes = doc.get(keys.BARCODES, [])
+            if not barcodes:
+                continue
+
+            market = doc.get(keys.MARKET)
+            if market in {keys.GOOGLE}:
+                pass
+
+            for code in barcodes:
+                barcode_id_pairs[code] += doc_id
+
         logging.info(f"adding_edges using {len(barcode_id_pairs)} barcodes")
         for ids in barcode_id_pairs.values():
             edges = itertools.combinations(ids, 2)
             self.sku_graph.add_edges_from(edges)
             self.connected_ids.update(ids)
+    
+    @staticmethod
+    def get_promoted_links(promoted: dict) -> list:
+        promoted_links = []
+        for promoted_name, link in promoted.items():
+            if any(
+                [
+                    market_name in promoted_name
+                    for market_name in keys.ALLOWED_MARKET_LINKS
+                ]
+            ):
+                if link[-1] == "/":
+                    link = link[:-1]
 
-    def _add_edges_from_promoted_links(self, id_doc_pairs, connected_ids):
+                if "&gclid" in link:
+                    link = link.split("&gclid")[0]
+                if "?gclid" in link:
+                    link = link.split("?gclid")[0]
+                if "?utm" in link:
+                    link = link.split("?utm")[0]
+                if "&utm" in link:
+                    link = link.split("&utm")[0]
+
+                link = link.strip()
+                promoted_links.append(link)
+
+        return promoted_links
+
+
+    def promoted_match(self, id_doc_pairs):
         logging.info("addding_edges_from_promoted_links..")
 
-        link_id_pairs = PromotedLinkMatcher.create_link_id_pairs(id_doc_pairs)
+        link_id_pairs = dict()
+        for doc_id, doc in id_doc_pairs.items():
+            link_id_pairs[doc.get(keys.LINK)] = doc_id
 
         promoted_connections = dict()
         refers_to_multiple_barcodes = set()
@@ -49,7 +92,7 @@ class SKUGraphCreator(GenericGraph):
             promoted = doc.get(keys.PROMOTED, {})
             if not promoted:
                 continue
-            promoted_links = PromotedLinkMatcher.get_promoted_links(promoted)
+            promoted_links = self.get_promoted_links(promoted)
             promoted_links = [link for link in promoted_links if link in link_id_pairs]
 
             # add edge iff sizes are the same
@@ -72,12 +115,13 @@ class SKUGraphCreator(GenericGraph):
         promoted_connections = {
             id: doc_id
             for id, doc_id in promoted_connections.items()
-            if id not in refers_to_multiple_barcodes and id not in connected_ids
+            if id not in refers_to_multiple_barcodes and id not in self.connected_ids
         }
         matched_using_promoted = set(promoted_connections.keys())
 
         for id, doc_id in promoted_connections.items():
             self.sku_graph.add_edge(id, doc_id)
+            self.connected_ids.add(id)
 
         return matched_using_promoted
 
@@ -128,14 +172,15 @@ class SKUGraphCreator(GenericGraph):
 
     def set_match(self, id_doc_pairs):
         id_groups = self.create_connected_component_groups(self.sku_graph)
+        # filter single items
+        id_groups = [id_group for id_group in id_groups if all(id in self.connected_ids for id in id_group)]
+
         common_tokens = dict()
         group_tokens = dict()
         self.inverted_index = collections.defaultdict(set)
         self.group_names = dict()
 
         for id_group in tqdm(id_groups):
-            if not any(id in self.connected_ids for id in id_group):
-                continue
             names = [id_doc_pairs.get(id).get("clean_name") for id in id_group if "clone" not in id]
             names = [n for n in names if n]
             self.group_names[tuple(id_group)] = names
@@ -160,28 +205,30 @@ class SKUGraphCreator(GenericGraph):
         services.save_json("matches.json", list(matches))
 
     def exact_name_match(self, id_doc_pairs):
-        unmatched_ids = set(id_doc_pairs.keys()).difference(self.connected_ids)
+        name_barcode_pairs = collections.defaultdict(list)
+        name_id_pairs = collections.defaultdict(list)
+        for doc_id, doc in id_doc_pairs.items():
+            name = doc.get("clean_name")
+            sorted_name = " ".join(sorted(name.split()))
+            barcodes = doc.get(keys.BARCODES, [])
+            name_barcode_pairs[sorted_name] += barcodes
+            name_id_pairs[sorted_name] += doc_id
+
+        print("adding_edges_from_exact_name_match..")
+        for name, barcodes in name_barcode_pairs.items():
+            barcodes = set(services.flatten(barcodes))
+            if len(barcodes) <= 1:
+                doc_ids = name_id_pairs.get(name)
+                edges = itertools.combinations(doc_ids, 2)
+                self.sku_graph.add_edges_from(edges)
+                self.connected_ids.update(doc_ids)
 
     def create_graph(self, id_doc_pairs: dict) -> nx.Graph:
         self._init_sku_graph(id_doc_pairs)
-
-        barcode_id_pairs = BarcodeMatcher.create_barcode_id_pairs(id_doc_pairs)
-        self._add_edges_from_barcodes(barcode_id_pairs)
+        self.barcode_match(id_doc_pairs)
         self.set_match(id_doc_pairs)
-
-        exact_match_groups = NameMatcher.get_exact_match_groups(
-            id_doc_pairs, connected_ids
-        )
-
-        for ids in exact_match_groups:
-            connected_ids.update(ids)
-
-        self._add_edges_from_exact_name_match(exact_match_groups)
-
-        matched_using_promoted = self._add_edges_from_promoted_links(
-            id_doc_pairs, connected_ids
-        )
-        connected_ids.update(matched_using_promoted)
+        self.exact_name_match(id_doc_pairs)
+        self.promoted_match(id_doc_pairs)
 
         return self.sku_graph
 
