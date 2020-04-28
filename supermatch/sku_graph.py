@@ -13,20 +13,21 @@ from services.sizing.main import size_finder, SizingException
 class SKUGraphCreator(GenericGraph):
     """ Create a graph with items as vertices and barcodes as edges """
 
-    def __init__(self):
+    def __init__(self,id_doc_pairs):
         super().__init__()
         self.sku_graph = nx.Graph()
         self.connected_ids = set()
+        self.id_doc_pairs = id_doc_pairs
 
-    def _init_sku_graph(self, id_doc_pairs):
+    def init_sku_graph(self):
         # add all items as nodes
-        print("creating sku graph..")
-        for doc_id in id_doc_pairs.keys():
+        print("init sku graph..")
+        for doc_id in self.id_doc_pairs.keys():
             self.sku_graph.add_node(doc_id)
 
-    def barcode_match(self, id_doc_pairs: dict):
+    def barcode_match(self):
         barcode_id_pairs = collections.defaultdict(list)
-        for doc_id, doc in id_doc_pairs.items():
+        for doc_id, doc in self.id_doc_pairs.items():
             barcodes = doc.get(keys.BARCODES, [])
             if not barcodes:
                 continue
@@ -71,17 +72,17 @@ class SKUGraphCreator(GenericGraph):
 
         return promoted_links
 
-    def promoted_match(self, id_doc_pairs):
+    def promoted_match(self):
         logging.info("addding_edges_from_promoted_links..")
 
         link_id_pairs = dict()
-        for doc_id, doc in id_doc_pairs.items():
+        for doc_id, doc in self.id_doc_pairs.items():
             link_id_pairs[doc.get(keys.LINK)] = doc_id
 
         promoted_connections = dict()
         refers_to_multiple_barcodes = set()
 
-        for doc_id, doc in tqdm(id_doc_pairs.items()):
+        for doc_id, doc in tqdm(self.id_doc_pairs.items()):
             promoted = doc.get(keys.PROMOTED, {})
             if not promoted:
                 continue
@@ -95,7 +96,7 @@ class SKUGraphCreator(GenericGraph):
             filtered_referenced_ids = [
                 id
                 for id in referenced_ids
-                if not id_doc_pairs.get(id, {}).get(keys.BARCODES)
+                if not self.id_doc_pairs.get(id, {}).get(keys.BARCODES)
             ]
 
             # bir linki birden fazla link promote ediyorsa, hiçbiri dikkate alınmıyor
@@ -117,12 +118,6 @@ class SKUGraphCreator(GenericGraph):
             self.connected_ids.add(id)
 
         return matched_using_promoted
-
-    def _add_edges_from_exact_name_match(self, exact_match_groups: list):
-        print("adding_edges_from_exact_name_match..")
-        for ids in exact_match_groups:
-            edges = itertools.combinations(ids, 2)
-            self.sku_graph.add_edges_from(edges)
 
     @staticmethod
     def replace_size(name):
@@ -165,7 +160,7 @@ class SKUGraphCreator(GenericGraph):
                     self.connected_ids.add(id)
                     return name, self.group_names.get(id_group)
 
-    def set_match(self, id_doc_pairs):
+    def set_match(self):
         id_groups = self.create_connected_component_groups(self.sku_graph)
         # filter single items
         id_groups = [
@@ -181,7 +176,7 @@ class SKUGraphCreator(GenericGraph):
 
         for id_group in tqdm(id_groups):
             names = [
-                id_doc_pairs.get(id).get("clean_name")
+                self.id_doc_pairs.get(id).get("clean_name")
                 for id in id_group
                 if "clone" not in id
             ]
@@ -200,9 +195,9 @@ class SKUGraphCreator(GenericGraph):
         self.common_tokens = {k: v for k, v in common_tokens.items() if v}
         self.group_tokens = {k: v for k, v in group_tokens.items() if v}
 
-        unmatched_ids = set(id_doc_pairs.keys()).difference(self.connected_ids)
+        unmatched_ids = set(self.id_doc_pairs.keys()).difference(self.connected_ids)
         single_names = (
-            (id, id_doc_pairs.get(id).get("clean_name"))
+            (id, self.id_doc_pairs.get(id).get("clean_name"))
             for id in unmatched_ids
             if "clone" not in id
         )
@@ -213,10 +208,10 @@ class SKUGraphCreator(GenericGraph):
         matches = (m for m in matches if m)
         services.save_json("matches.json", list(matches))
 
-    def exact_name_match(self, id_doc_pairs):
+    def exact_name_match(self):
         name_barcode_pairs = collections.defaultdict(list)
         name_id_pairs = collections.defaultdict(list)
-        for doc_id, doc in id_doc_pairs.items():
+        for doc_id, doc in self.id_doc_pairs.items():
             name = doc.get("clean_name")
             sorted_name = " ".join(sorted(name.split()))
             barcodes = doc.get(keys.BARCODES, [])
@@ -232,15 +227,12 @@ class SKUGraphCreator(GenericGraph):
                 self.sku_graph.add_edges_from(edges)
                 self.connected_ids.update(doc_ids)
 
-    def create_graph(self, id_doc_pairs: dict) -> nx.Graph:
-        self._init_sku_graph(id_doc_pairs)
-        self.barcode_match(id_doc_pairs)
-        self.set_match(id_doc_pairs)
-        self.exact_name_match(id_doc_pairs)
-        self.promoted_match(id_doc_pairs)
-
+    def create_graph(self) -> nx.Graph:
+        self.init_sku_graph()
+        self.barcode_match()
+        self.set_match()
+        self.exact_name_match()
+        self.promoted_match()
         return self.sku_graph
 
 
-# singleton
-sku_graph_creator = SKUGraphCreator()

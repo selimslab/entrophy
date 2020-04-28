@@ -2,7 +2,7 @@ import logging
 from typing import Iterator
 import constants as keys
 from supermatch import id_doc_pairer, sku_grouper
-from supermatch.sku_graph import sku_graph_creator
+from supermatch.sku_graph import SKUGraphCreator
 from supermatch.doc_reducer import reduce_docs_to_sku
 import uuid
 from tqdm import tqdm
@@ -10,12 +10,11 @@ import data_services
 
 
 def get_sku_groups(id_doc_pairs):
-    graph_of_raw_docs = sku_graph_creator.create_graph(id_doc_pairs)
-
+    sku_graph_creator = SKUGraphCreator(id_doc_pairs)
+    graph_of_raw_docs = sku_graph_creator.create_graph()
     groups_of_doc_ids = sku_graph_creator.create_connected_component_groups(
         graph_of_raw_docs
     )
-
     return groups_of_doc_ids
 
 
