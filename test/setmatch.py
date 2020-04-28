@@ -20,13 +20,16 @@ class Group:
 
 def minitest():
     groups = {
-        1: ["Vernel Max Taze Gül Çamaşır Yumuşatıcısı 1.44 L", "Vernel Konsantre Çamaşır Yumuşatıcısı Gül 1440 ml"],
+        1: [
+            "Vernel Max Taze Gül Çamaşır Yumuşatıcısı 1.44 L",
+            "Vernel Konsantre Çamaşır Yumuşatıcısı Gül 1440 ml",
+        ],
     }
 
     singles = {
         2: ["Vernel Gül Çamaşır Yumuşatıcısı 1.44L"],
         3: ["Vernel Konsantre Çamaşır Yumuşatıcısı Taze Gül 1440ml"],
-        4: ["Vernel Konsantre Çamaşır Yumuşatıcısı Gül Ferahlığı 1440ml"]
+        4: ["Vernel Konsantre Çamaşır Yumuşatıcısı Gül Ferahlığı 1440ml"],
     }
 
     inverted_index = collections.defaultdict(set)
@@ -39,7 +42,9 @@ def minitest():
         group_tokens = list()
         for name in names:
             name = services.clean_name(name)
-            digits, unit, match = size_finder.get_digits_unit_size(services.clean_for_sizing(name))
+            digits, unit, match = size_finder.get_digits_unit_size(
+                services.clean_for_sizing(name)
+            )
             name = name.replace(match, str(digits) + " " + unit)
             print(name)
             name_tokens = set(name.split())
@@ -68,7 +73,9 @@ def replace_size(id, name):
     if not name:
         return
     try:
-        digits, unit, match = size_finder.get_digits_unit_size(services.clean_for_sizing(name))
+        digits, unit, match = size_finder.get_digits_unit_size(
+            services.clean_for_sizing(name)
+        )
         name = name.replace(match, str(digits) + " " + unit)
     except SizingException:
         pass
@@ -84,12 +91,14 @@ def save_clean_names():
         names = pool.starmap(replace_size, tqdm(list(names)))
         # services.save_json("names.json", names)
 
+
 def add_clean_names():
     pairs = services.read_json("id_doc_pairs.json")
     names = services.read_json("names.json")
     for id, name in names:
         pairs[id]["clean_name"] = name
     services.save_json("pairs.json", pairs)
+
 
 """
 save_clean_names()

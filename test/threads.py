@@ -8,6 +8,7 @@ from tqdm import tqdm
 import itertools
 from pprint import pprint
 
+
 def get_size(name):
     try:
         size_name = name_cleaner.clean_for_sizing(name)

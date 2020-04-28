@@ -1,19 +1,13 @@
 import itertools
-import json
 import networkx as nx
+from tqdm import tqdm
+import logging
+import collections
 
 import constants as keys
 from services import GenericGraph
-from supermatch.matcher.barcode_matcher import BarcodeMatcher
-from supermatch.matcher.name_matcher import NameMatcher
-from supermatch.matcher.promoted_link_matcher import PromotedLinkMatcher
-from tqdm import tqdm
-import logging
 import services
 from services.sizing.main import size_finder, SizingException
-import collections
-import multiprocessing
-from pprint import pprint
 
 
 class SKUGraphCreator(GenericGraph):
@@ -49,16 +43,16 @@ class SKUGraphCreator(GenericGraph):
             edges = itertools.combinations(ids, 2)
             self.sku_graph.add_edges_from(edges)
             self.connected_ids.update(ids)
-    
+
     @staticmethod
     def get_promoted_links(promoted: dict) -> list:
         promoted_links = []
         for promoted_name, link in promoted.items():
             if any(
-                [
-                    market_name in promoted_name
-                    for market_name in keys.ALLOWED_MARKET_LINKS
-                ]
+                    [
+                        market_name in promoted_name
+                        for market_name in keys.ALLOWED_MARKET_LINKS
+                    ]
             ):
                 if link[-1] == "/":
                     link = link[:-1]
@@ -76,7 +70,6 @@ class SKUGraphCreator(GenericGraph):
                 promoted_links.append(link)
 
         return promoted_links
-
 
     def promoted_match(self, id_doc_pairs):
         logging.info("addding_edges_from_promoted_links..")
@@ -135,7 +128,9 @@ class SKUGraphCreator(GenericGraph):
     def replace_size(name):
         name = services.clean_name(name)
         try:
-            digits, unit, match = size_finder.get_digits_unit_size(services.clean_for_sizing(name))
+            digits, unit, match = size_finder.get_digits_unit_size(
+                services.clean_for_sizing(name)
+            )
             name = name.replace(match, str(digits) + " " + unit)
         except SizingException:
             pass
@@ -173,7 +168,11 @@ class SKUGraphCreator(GenericGraph):
     def set_match(self, id_doc_pairs):
         id_groups = self.create_connected_component_groups(self.sku_graph)
         # filter single items
-        id_groups = [id_group for id_group in id_groups if all(id in self.connected_ids for id in id_group)]
+        id_groups = [
+            id_group
+            for id_group in id_groups
+            if all(id in self.connected_ids for id in id_group)
+        ]
 
         common_tokens = dict()
         group_tokens = dict()
@@ -181,7 +180,11 @@ class SKUGraphCreator(GenericGraph):
         self.group_names = dict()
 
         for id_group in tqdm(id_groups):
-            names = [id_doc_pairs.get(id).get("clean_name") for id in id_group if "clone" not in id]
+            names = [
+                id_doc_pairs.get(id).get("clean_name")
+                for id in id_group
+                if "clone" not in id
+            ]
             names = [n for n in names if n]
             self.group_names[tuple(id_group)] = names
             token_sets = [self.tokenize(name) for name in names]
@@ -198,9 +201,15 @@ class SKUGraphCreator(GenericGraph):
         self.group_tokens = {k: v for k, v in group_tokens.items() if v}
 
         unmatched_ids = set(id_doc_pairs.keys()).difference(self.connected_ids)
-        single_names = ((id, id_doc_pairs.get(id).get("clean_name")) for id in unmatched_ids if "clone" not in id)
+        single_names = (
+            (id, id_doc_pairs.get(id).get("clean_name"))
+            for id in unmatched_ids
+            if "clone" not in id
+        )
         logging.info("matching singles..")
-        matches = (self.match_singles(id, name) for id, name in tqdm(single_names) if name)
+        matches = (
+            self.match_singles(id, name) for id, name in tqdm(single_names) if name
+        )
         matches = (m for m in matches if m)
         services.save_json("matches.json", list(matches))
 
