@@ -20,8 +20,6 @@ def test_sizing():
         ["dasd 4 x 200 ML 565dfds", (800, "ml")],
         ["2/1 360 ML ada", (360, "ml")],
         [" 0.75  L adfa", (750, "ml")],
-        ["dad 5-89 Gece", None],
-        ["dad 5-89 gece", None],
         ["dasd 3 6.5 kg", (6500, "gr")],
         ["5 800 g", (800, "gr")],
         ["Persil Gülün Büyüsü 6 KG 40 Yıkama", (40, "yıkama")],
@@ -30,11 +28,13 @@ def test_sizing():
     ]
 
     for case, answer in test_cases:
-        result = size_finder.get_digits_unit_size(name_cleaner.clean_for_sizing(case))
         try:
-            assert result == answer
-        except AssertionError:
-            print(case, result, answer)
+            result = size_finder.get_digits_unit_size(name_cleaner.clean_for_sizing(case))
+            try:
+                assert result == answer
+            except AssertionError:
+                print(case, result, answer)
+
         except SizingException as e:
             print(e)
 
