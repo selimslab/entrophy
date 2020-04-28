@@ -29,7 +29,7 @@ def get_google_groups(skus, variants):
 
     for i, var in enumerate(variants):
         links = sorted(list(var.keys()))
-        links = [link[:-1] if link[-1] == "/" else link for link in links]
+        links = [link[:-1] if link[-1] == "/" else link for link in links if link]
         links = ["https://www.google.com" + link for link in links]
         for link in links:
             variant_id_pairs[link] = i

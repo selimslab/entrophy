@@ -3,6 +3,7 @@ import networkx as nx
 from tqdm import tqdm
 import logging
 import collections
+import operator
 
 import constants as keys
 from services import GenericGraph
@@ -13,7 +14,7 @@ from services.sizing.main import size_finder, SizingException
 class SKUGraphCreator(GenericGraph):
     """ Create a graph with items as vertices and barcodes as edges """
 
-    def __init__(self,id_doc_pairs):
+    def __init__(self, id_doc_pairs):
         super().__init__()
         self.sku_graph = nx.Graph()
         self.connected_ids = set()
@@ -26,7 +27,7 @@ class SKUGraphCreator(GenericGraph):
             self.sku_graph.add_node(doc_id)
 
     def barcode_match(self):
-        barcode_id_pairs = collections.defaultdict(list)
+        barcode_id_pairs = collections.defaultdict(set)
         for doc_id, doc in self.id_doc_pairs.items():
             barcodes = doc.get(keys.BARCODES, [])
             if not barcodes:
@@ -37,10 +38,10 @@ class SKUGraphCreator(GenericGraph):
                 pass
 
             for code in barcodes:
-                barcode_id_pairs[code] += doc_id
+                barcode_id_pairs[code].add(doc_id)
 
         logging.info(f"adding_edges using {len(barcode_id_pairs)} barcodes")
-        for ids in barcode_id_pairs.values():
+        for ids in tqdm(barcode_id_pairs.values()):
             edges = itertools.combinations(ids, 2)
             self.sku_graph.add_edges_from(edges)
             self.connected_ids.update(ids)
@@ -50,10 +51,10 @@ class SKUGraphCreator(GenericGraph):
         promoted_links = []
         for promoted_name, link in promoted.items():
             if any(
-                    [
-                        market_name in promoted_name
-                        for market_name in keys.ALLOWED_MARKET_LINKS
-                    ]
+                [
+                    market_name in promoted_name
+                    for market_name in keys.ALLOWED_MARKET_LINKS
+                ]
             ):
                 if link[-1] == "/":
                     link = link[:-1]
@@ -143,22 +144,45 @@ class SKUGraphCreator(GenericGraph):
             return set()
 
     def match_singles(self, id, name):
-        tokenset = self.tokenize(name)
-        candidates = [self.inverted_index.get(token, []) for token in tokenset]
+        """ connect single name to a group """
+
+        token_set = self.tokenize(name)
+        candidates = [self.inverted_index.get(token, []) for token in token_set]
         candidates = set(itertools.chain(*candidates))
         if not candidates:
             return
+
+        matches = set()
         for id_group in candidates:
             group_common = self.common_tokens.get(id_group, set())
             if not group_common:
                 continue
-            if tokenset.issuperset(group_common):
+            if token_set.issuperset(group_common):
                 group_all = self.group_tokens.get(id_group, set())
-                if group_all.issuperset(tokenset):
-                    # connect single name to a group
-                    self.sku_graph.add_edges_from((id, id_group[0]))
-                    self.connected_ids.add(id)
-                    return name, self.group_names.get(id_group)
+                if group_all.issuperset(token_set):
+                    common_set_size, difference_size = (
+                        len(group_common),
+                        len(group_all.difference(token_set)),
+                    )
+                    match_score = common_set_size - difference_size
+                    # first common, if commons same, difference
+                    matches.add(
+                        (
+                            id,
+                            id_group,
+                            match_score,
+                            name,
+                            tuple(self.group_names.get(id_group)),
+                        )
+                    )
+
+        if matches:
+            id, id_group, match_score, name, group_names = max(
+                matches, key=operator.itemgetter(2)
+            )
+            self.sku_graph.add_edges_from([(id, id_group[0])])
+            self.connected_ids.add(id)
+            return name, group_names
 
     def set_match(self):
         id_groups = self.create_connected_component_groups(self.sku_graph)
@@ -196,31 +220,31 @@ class SKUGraphCreator(GenericGraph):
         self.group_tokens = {k: v for k, v in group_tokens.items() if v}
 
         unmatched_ids = set(self.id_doc_pairs.keys()).difference(self.connected_ids)
-        single_names = (
+        single_names = [
             (id, self.id_doc_pairs.get(id).get("clean_name"))
             for id in unmatched_ids
             if "clone" not in id
-        )
+        ]
         logging.info("matching singles..")
-        matches = (
+        matched_names = [
             self.match_singles(id, name) for id, name in tqdm(single_names) if name
-        )
-        matches = (m for m in matches if m)
-        services.save_json("matches.json", list(matches))
+        ]
+        matched_names = [m for m in matched_names if m]
+        services.save_json("matched_names.json", matched_names)
 
     def exact_name_match(self):
-        name_barcode_pairs = collections.defaultdict(list)
-        name_id_pairs = collections.defaultdict(list)
+        name_barcode_pairs = collections.defaultdict(set)
+        name_id_pairs = collections.defaultdict(set)
         for doc_id, doc in self.id_doc_pairs.items():
             name = doc.get("clean_name")
+            if not name:
+                continue
             sorted_name = " ".join(sorted(name.split()))
             barcodes = doc.get(keys.BARCODES, [])
-            name_barcode_pairs[sorted_name] += barcodes
-            name_id_pairs[sorted_name] += doc_id
+            name_barcode_pairs[sorted_name].update(set(barcodes))
+            name_id_pairs[sorted_name].add(doc_id)
 
-        print("adding_edges_from_exact_name_match..")
         for name, barcodes in name_barcode_pairs.items():
-            barcodes = set(services.flatten(barcodes))
             if len(barcodes) <= 1:
                 doc_ids = name_id_pairs.get(name)
                 edges = itertools.combinations(doc_ids, 2)
@@ -229,10 +253,19 @@ class SKUGraphCreator(GenericGraph):
 
     def create_graph(self) -> nx.Graph:
         self.init_sku_graph()
+
+        print("barcode match..")
         self.barcode_match()
+
+        print("set match..")
         self.set_match()
+
+        print("exact_name_match..")
         self.exact_name_match()
+
+        print("promoted match..")
         self.promoted_match()
+
+        ## TODO add stage to docs
+
         return self.sku_graph
-
-

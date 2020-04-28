@@ -49,11 +49,11 @@ def check_query():
 
 
 def check_partial():
-    id_doc_pairs = services.read_json("pairs.json")
+    pairs = services.read_json("pairs.json")
     run_matcher(
         name="setmatch",
         sync=False,
-        id_doc_pairs=id_doc_pairs
+        id_doc_pairs=pairs
         # id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000, 11000)),
     )
 
