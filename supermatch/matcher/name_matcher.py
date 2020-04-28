@@ -5,7 +5,7 @@ import services
 import logging
 
 
-class ExactNameMatcher:
+class NameMatcher:
     @staticmethod
     def get_exact_match_groups(id_doc_pairs: dict, connected_ids: set) -> list:
         logging.info("creating exact_name_match_groups")
@@ -20,6 +20,7 @@ class ExactNameMatcher:
             name = doc.get(keys.NAME)
             if not name:
                 continue
+
             try:
                 name = pattern.sub("", name)
             except TypeError as e:

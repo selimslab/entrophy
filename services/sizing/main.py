@@ -62,7 +62,7 @@ class SizeFinder(DigitsMixin):
     def get_digits_unit_size(self, name):
         bad_tokens = {"+", "essence", "ruj", "aptamil 5"}
         if any([token in name for token in bad_tokens]):
-            raise SizingException("bad sizing token")
+            raise SizingException(f"bad sizing token in {name}")
 
         matched = self.pattern_match(name)
         if matched:
@@ -70,13 +70,15 @@ class SizeFinder(DigitsMixin):
             digits = self.get_digits(match, unit)
             if digits:
                 if digits > self.max_digits.get(unit, 1000):
-                    raise SizingException("anormal digits")
+                    raise SizingException(f"anormal digits in {name}")
                 if float(digits).is_integer():
                     digits = int(digits)
 
                 digits, unit = self.convert(digits, unit)
 
                 return digits, unit, match
+
+        raise SizingException(f"no size found in {name}")
 
 
 size_finder = SizeFinder()

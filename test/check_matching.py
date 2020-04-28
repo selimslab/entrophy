@@ -49,15 +49,16 @@ def check_query():
 
 
 def check_partial():
-    id_doc_pairs = services.read_json("id_doc_pairs.json")
+    id_doc_pairs = services.read_json("pairs.json")
     run_matcher(
-        name="partial",
-        sync=True,
-        id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000, 11000)),
+        name="setmatch",
+        sync=False,
+        id_doc_pairs=id_doc_pairs
+        # id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000, 11000)),
     )
 
 
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_all()
+    check_partial()

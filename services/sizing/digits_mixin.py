@@ -36,4 +36,7 @@ class DigitsMixin:
             unit = "ml"
             digits = digits * 1000
 
+        if float(digits).is_integer():
+            digits = int(digits)
+
         return digits, unit

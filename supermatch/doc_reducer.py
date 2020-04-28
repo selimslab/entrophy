@@ -29,9 +29,11 @@ def get_size(sku_name, docs, names):
 
     for name in names:
         size_name = name_cleaner.clean_for_sizing(name)
-        result = size_finder.get_digits_unit_size(size_name)
-        if result:
+        try:
+            result = size_finder.get_digits_unit_size(size_name)
             return result
+        except SizingException:
+            pass
 
     return digits, unit, size
 
