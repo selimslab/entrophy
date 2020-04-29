@@ -19,6 +19,7 @@ class SKUGraphCreator(GenericGraph):
         self.sku_graph = nx.Graph()
         self.connected_ids = set()
         self.id_doc_pairs = id_doc_pairs
+        self.stages = dict()
 
     def init_sku_graph(self):
         # add all items as nodes
@@ -46,15 +47,17 @@ class SKUGraphCreator(GenericGraph):
             self.sku_graph.add_edges_from(edges)
             self.connected_ids.update(ids)
 
+        self.stages = {**dict.fromkeys(self.connected_ids, "barcode")}
+
     @staticmethod
     def get_promoted_links(promoted: dict) -> list:
         promoted_links = []
         for promoted_name, link in promoted.items():
             if any(
-                [
-                    market_name in promoted_name
-                    for market_name in keys.ALLOWED_MARKET_LINKS
-                ]
+                    [
+                        market_name in promoted_name
+                        for market_name in keys.ALLOWED_MARKET_LINKS
+                    ]
             ):
                 if link[-1] == "/":
                     link = link[:-1]
@@ -74,7 +77,6 @@ class SKUGraphCreator(GenericGraph):
         return promoted_links
 
     def promoted_match(self):
-        logging.info("addding_edges_from_promoted_links..")
 
         link_id_pairs = dict()
         for doc_id, doc in self.id_doc_pairs.items():
@@ -112,13 +114,11 @@ class SKUGraphCreator(GenericGraph):
             for id, doc_id in promoted_connections.items()
             if id not in refers_to_multiple_barcodes and id not in self.connected_ids
         }
-        matched_using_promoted = set(promoted_connections.keys())
 
         for id, doc_id in promoted_connections.items():
             self.sku_graph.add_edge(id, doc_id)
             self.connected_ids.add(id)
-
-        return matched_using_promoted
+            self.stages[id] = "promoted"
 
     @staticmethod
     def replace_size(name):
@@ -137,7 +137,7 @@ class SKUGraphCreator(GenericGraph):
     def tokenize(s):
         stopwords = {"ml", "gr", "adet", "ve", "and"}
         try:
-            tokens = set(t for t in s.split() if len(t) > 2 and t not in stopwords)
+            tokens = set(t for t in s.split() if len(t) > 1 and t not in stopwords)
             return tokens
         except AttributeError as e:
             logging.error(e)
@@ -160,29 +160,42 @@ class SKUGraphCreator(GenericGraph):
             if token_set.issuperset(group_common):
                 group_all = self.group_tokens.get(id_group, set())
                 if group_all.issuperset(token_set):
-                    common_set_size, difference_size = (
+                    common_set_size, diff_size = (
                         len(group_common),
                         len(group_all.difference(token_set)),
                     )
-                    match_score = common_set_size - difference_size
                     # first common, if commons same, difference
                     matches.add(
                         (
+                            common_set_size,
+                            diff_size,
                             id,
                             id_group,
-                            match_score,
+                            tuple(group_common),
+                            tuple(group_all.difference(token_set)),
                             name,
                             tuple(self.group_names.get(id_group)),
                         )
                     )
 
         if matches:
-            id, id_group, match_score, name, group_names = max(
-                matches, key=operator.itemgetter(2)
-            )
+            max_common_size = max(
+                matches, key=operator.itemgetter(0)
+            )[0]
+            matches_with_max_common_size = [match for match in matches if match[0] == max_common_size]
+            if len(matches_with_max_common_size) > 1:
+                match = min(
+                    matches_with_max_common_size, key=operator.itemgetter(1)
+                )
+            else:
+                match = matches_with_max_common_size.pop()
+
+            common_set_size, diff_size, id, id_group, common_set, diff_set, name, group_names = match
             self.sku_graph.add_edges_from([(id, id_group[0])])
             self.connected_ids.add(id)
-            return name, group_names
+            self.stages[id] = "set_match"
+
+            return name, group_names, common_set, diff_set
 
     def set_match(self):
         id_groups = self.create_connected_component_groups(self.sku_graph)
@@ -250,8 +263,10 @@ class SKUGraphCreator(GenericGraph):
                 edges = itertools.combinations(doc_ids, 2)
                 self.sku_graph.add_edges_from(edges)
                 self.connected_ids.update(doc_ids)
+                for doc_id in doc_ids:
+                    self.stages[doc_id] = "exact_name"
 
-    def create_graph(self) -> nx.Graph:
+    def create_graph(self):
         self.init_sku_graph()
 
         print("barcode match..")
@@ -266,6 +281,4 @@ class SKUGraphCreator(GenericGraph):
         print("promoted match..")
         self.promoted_match()
 
-        ## TODO add stage to docs
-
-        return self.sku_graph
+        return self.sku_graph, self.stages

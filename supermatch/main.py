@@ -11,10 +11,15 @@ import data_services
 
 def get_sku_groups(id_doc_pairs):
     sku_graph_creator = SKUGraphCreator(id_doc_pairs)
-    graph_of_raw_docs = sku_graph_creator.create_graph()
+    graph_of_raw_docs, stages = sku_graph_creator.create_graph()
     groups_of_doc_ids = sku_graph_creator.create_connected_component_groups(
         graph_of_raw_docs
     )
+
+    # add matching stage info to docs
+    for doc_id, stage in stages.items():
+        id_doc_pairs[doc_id]["stage"] = stage
+
     return groups_of_doc_ids
 
 
@@ -45,7 +50,7 @@ def add_product_info(groups_of_sku_ids, skus):
     return skus
 
 
-def create_matching(docs_to_match: Iterator, id_doc_pairs=None,) -> dict:
+def create_matching(docs_to_match: Iterator, id_doc_pairs=None, ) -> dict:
     if id_doc_pairs is None:
         id_doc_pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
 

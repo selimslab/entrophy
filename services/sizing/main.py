@@ -77,7 +77,7 @@ class SizeFinder(DigitsMixin):
                 digits, unit = self.convert(digits, unit)
 
                 return digits, unit, match
-
+        ## TODO check usage
         raise SizingException(f"no size found in {name}")
 
 

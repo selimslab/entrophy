@@ -49,5 +49,17 @@ def inspect_case(link):
     search_elastic(name)
 
 
+def foo(d, l):
+    d[3][2] = 8
+    l.append(5)
+
+
+def bar():
+    d = {3: {2: 4}}
+    l = []
+    foo(d, l)
+    print(d, l)
+
+
 if __name__ == "__main__":
-    pass
+    bar()

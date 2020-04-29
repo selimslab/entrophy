@@ -15,6 +15,7 @@ def create_excel(full_skus, id_doc_pairs, path):
         "barcodes",
         "variants",
         keys.VARIANT_NAME,
+        "stage"
     ]
     for sku in full_skus.values():
         sku_id = sku.get(keys.SKU_ID)
