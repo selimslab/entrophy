@@ -54,10 +54,10 @@ class SKUGraphCreator(GenericGraph):
         promoted_links = []
         for promoted_name, link in promoted.items():
             if any(
-                    [
-                        market_name in promoted_name
-                        for market_name in keys.ALLOWED_MARKET_LINKS
-                    ]
+                [
+                    market_name in promoted_name
+                    for market_name in keys.ALLOWED_MARKET_LINKS
+                ]
             ):
                 if link[-1] == "/":
                     link = link[:-1]
@@ -179,18 +179,25 @@ class SKUGraphCreator(GenericGraph):
                     )
 
         if matches:
-            max_common_size = max(
-                matches, key=operator.itemgetter(0)
-            )[0]
-            matches_with_max_common_size = [match for match in matches if match[0] == max_common_size]
+            max_common_size = max(matches, key=operator.itemgetter(0))[0]
+            matches_with_max_common_size = [
+                match for match in matches if match[0] == max_common_size
+            ]
             if len(matches_with_max_common_size) > 1:
-                match = min(
-                    matches_with_max_common_size, key=operator.itemgetter(1)
-                )
+                match = min(matches_with_max_common_size, key=operator.itemgetter(1))
             else:
                 match = matches_with_max_common_size.pop()
 
-            common_set_size, diff_size, id, id_group, common_set, diff_set, name, group_names = match
+            (
+                common_set_size,
+                diff_size,
+                id,
+                id_group,
+                common_set,
+                diff_set,
+                name,
+                group_names,
+            ) = match
             self.sku_graph.add_edges_from([(id, id_group[0])])
             self.connected_ids.add(id)
             self.stages[id] = "set_match"
