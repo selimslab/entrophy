@@ -1,8 +1,9 @@
 import pandas as pd
 import constants as keys
-
+import logging
 
 def create_excel(full_skus, id_doc_pairs, path):
+    logging.info("creating excel..")
     rows = list()
     colnames = [
         "product_id",
@@ -13,7 +14,8 @@ def create_excel(full_skus, id_doc_pairs, path):
         "price",
         "size",
         "barcodes",
-        "variants",
+        #"variants",
+        # "promoted",
         keys.VARIANT_NAME,
         "stage",
     ]

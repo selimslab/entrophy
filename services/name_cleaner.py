@@ -1,12 +1,5 @@
 import re
-
-
-def tr_lower(to_lower: str) -> str:
-    spec = {"İ": "i", "I": "ı", "Ç": "ç", "Ğ": "ğ", "Ö": "ö", "Ş": "ş"}
-    for ch in spec:
-        if ch in to_lower:
-            to_lower.replace(ch, spec[ch])
-    return to_lower.lower()
+import unicodedata
 
 
 def clean_name(name: str) -> str:
@@ -14,21 +7,15 @@ def clean_name(name: str) -> str:
         return ""
 
     name = (
-        tr_lower(name)
-        .replace("&", " ")
-        .replace("'", "")
-        .replace("-", "")
-        .replace(",", ".")
-        .replace("é", "e")
-        .replace("ç", "c")
-        .replace("ş", "s")
-        .replace("ğ", "g")
-        .replace("ı", "i")
-        .replace("ö", "o")
-        .replace("ü", "u")
+        unicodedata.normalize('NFKD', name).encode('ascii', 'ignore')
+            .replace("ı", "i")
+            .replace("&", " ")
+            .replace(",", ".")
     )
+    allowed_chars = re.compile('[^a-zA-Z0-9,.* ]')
+    name = allowed_chars.sub('', name)
     remove_whitespace_pattern = re.compile(r"\s+")
-    name = re.sub(remove_whitespace_pattern, " ", name).strip()
+    name = re.sub(remove_whitespace_pattern, " ", str(name)).strip()
     # name = " ".join(name.strip().split())
     return name
 

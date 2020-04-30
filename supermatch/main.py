@@ -20,6 +20,10 @@ def get_sku_groups(id_doc_pairs):
     for doc_id, stage in stages.items():
         id_doc_pairs[doc_id]["stage"] = stage
 
+    for stage in set(stages.values()):
+        res = sum(v == stage for v in stages.values())
+        print(res, stage)
+
     return groups_of_doc_ids
 
 
@@ -50,7 +54,7 @@ def add_product_info(groups_of_sku_ids, skus):
     return skus
 
 
-def create_matching(docs_to_match: Iterator, id_doc_pairs=None,) -> dict:
+def create_matching(docs_to_match: Iterator, id_doc_pairs=None, ) -> dict:
     if id_doc_pairs is None:
         id_doc_pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
 

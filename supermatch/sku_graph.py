@@ -9,6 +9,7 @@ import constants as keys
 from services import GenericGraph
 import services
 from services.sizing.main import size_finder, SizingException
+import multiprocessing
 
 
 class SKUGraphCreator(GenericGraph):
@@ -54,10 +55,10 @@ class SKUGraphCreator(GenericGraph):
         promoted_links = []
         for promoted_name, link in promoted.items():
             if any(
-                [
-                    market_name in promoted_name
-                    for market_name in keys.ALLOWED_MARKET_LINKS
-                ]
+                    [
+                        market_name in promoted_name
+                        for market_name in keys.ALLOWED_MARKET_LINKS
+                    ]
             ):
                 if link[-1] == "/":
                     link = link[:-1]
@@ -121,23 +122,11 @@ class SKUGraphCreator(GenericGraph):
             self.stages[id] = "promoted"
 
     @staticmethod
-    def replace_size(name):
-        name = services.clean_name(name)
-        try:
-            digits, unit, match = size_finder.get_digits_unit_size(
-                services.clean_for_sizing(name)
-            )
-            name = name.replace(match, str(digits) + " " + unit)
-        except SizingException:
-            pass
-
-        return name
-
-    @staticmethod
     def tokenize(s):
         stopwords = {"ml", "gr", "adet", "ve", "and"}
         try:
-            tokens = set(t for t in s.split() if len(t) > 1 and t not in stopwords)
+            tokens = set(t for t in s.split() if t not in stopwords)  # len(t) > 1 and
+            tokens = set(t for t in tokens if len(t) > 1 or t.isdigit())
             return tokens
         except AttributeError as e:
             logging.error(e)
@@ -147,13 +136,13 @@ class SKUGraphCreator(GenericGraph):
         """ connect single name to a group """
 
         token_set = self.tokenize(name)
-        candidates = [self.inverted_index.get(token, []) for token in token_set]
-        candidates = set(itertools.chain(*candidates))
-        if not candidates:
+        candidate_groups = [self.inverted_index.get(token, []) for token in token_set]
+        candidate_groups = set(itertools.chain(*candidate_groups))
+        if not candidate_groups:
             return
 
         matches = set()
-        for id_group in candidates:
+        for id_group in candidate_groups:
             group_common = self.common_tokens.get(id_group, set())
             if not group_common:
                 continue
@@ -198,25 +187,61 @@ class SKUGraphCreator(GenericGraph):
                 name,
                 group_names,
             ) = match
+
             self.sku_graph.add_edges_from([(id, id_group[0])])
             self.connected_ids.add(id)
             self.stages[id] = "set_match"
 
             return name, group_names, common_set, diff_set
 
+    @staticmethod
+    def replace_size(id, name):
+        name = services.clean_name(name)
+        if not name:
+            return
+        try:
+            digits, unit, size_match = size_finder.get_digits_unit_size(
+                services.clean_for_sizing(name)
+            )
+            name = name.replace(size_match, str(digits) + " " + unit)
+            return id, name, digits, unit, size_match
+        except SizingException:
+            pass
+
+    def add_clean_name(self):
+        to_clean = list()
+        for doc_id, doc in self.id_doc_pairs.items():
+            if "name" in doc and "clean_name" not in doc:
+                to_clean.append((doc_id, doc.get("name")))
+
+        with multiprocessing.Pool(processes=2) as pool:
+            results = pool.starmap(self.replace_size, tqdm(to_clean))
+            results = (r for r in results if r)
+            for doc_id, clean_name, digits, unit, size_match in results:
+                info = {
+                    "clean_name": clean_name,
+                    keys.DIGITS: digits,
+                    keys.UNIT: unit,
+                    keys.SIZE: size_match
+                }
+                self.id_doc_pairs[doc_id].update(info)
+
     def set_match(self):
         id_groups = self.create_connected_component_groups(self.sku_graph)
-        # filter single items
+
+        # filter without barcode
         id_groups = [
             id_group
             for id_group in id_groups
-            if all(id in self.connected_ids for id in id_group)
+            if all(id in self.connected_ids for id in id_group)  # len(id_group)>1 and
         ]
 
         common_tokens = dict()
         group_tokens = dict()
         self.inverted_index = collections.defaultdict(set)
         self.group_names = dict()
+
+        self.add_clean_name()
 
         for id_group in tqdm(id_groups):
             names = [
@@ -267,11 +292,12 @@ class SKUGraphCreator(GenericGraph):
         for name, barcodes in name_barcode_pairs.items():
             if len(barcodes) <= 1:
                 doc_ids = name_id_pairs.get(name)
-                edges = itertools.combinations(doc_ids, 2)
-                self.sku_graph.add_edges_from(edges)
-                self.connected_ids.update(doc_ids)
-                for doc_id in doc_ids:
-                    self.stages[doc_id] = "exact_name"
+                doc_ids = [id for id in doc_ids if id not in self.connected_ids]
+                if len(doc_ids) > 1:
+                    edges = itertools.combinations(doc_ids, 2)
+                    self.sku_graph.add_edges_from(edges)
+                    self.stages.update({**dict.fromkeys(doc_ids, "exact_name")})
+                    self.connected_ids.update(doc_ids)
 
     def create_graph(self):
         self.init_sku_graph()

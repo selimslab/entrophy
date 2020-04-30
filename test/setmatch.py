@@ -8,6 +8,7 @@ import services
 from tqdm import tqdm
 import multiprocessing
 import operator
+import constants as keys
 
 
 @dataclass
@@ -73,22 +74,31 @@ def replace_size(id, name):
     if not name:
         return
     try:
-        digits, unit, match = size_finder.get_digits_unit_size(
+        digits, unit, size_match = size_finder.get_digits_unit_size(
             services.clean_for_sizing(name)
         )
-        name = name.replace(match, str(digits) + " " + unit)
+        name = name.replace(size_match, str(digits) + " " + unit)
+        return id, name, digits, unit, size_match
     except SizingException:
         pass
-    finally:
-        return id, name
 
 
 def save_clean_names():
     with multiprocessing.Pool(processes=2) as pool:
-        pairs = services.read_json("id_doc_pairs.json")
+        pairs = services.read_json("pairs.json")
         names = ((id, doc.get("name")) for id, doc in tqdm(pairs.items()))
         names = ((id, name) for id, name in names if name)
-        names = pool.starmap(replace_size, tqdm(list(names)))
+        results = pool.starmap(replace_size, tqdm(list(names)))
+        results = (r for r in results if r)
+        for id, name, digits, unit, size_match in results:
+            info = {
+                "clean_name": name,
+                keys.DIGITS: digits,
+                keys.UNIT: unit,
+                keys.SIZE: size_match
+            }
+            pairs[id].update(info)
+        services.save_json("newpairs.json", pairs)
         # services.save_json("names.json", names)
 
 
@@ -100,7 +110,12 @@ def add_clean_names():
     services.save_json("pairs.json", pairs)
 
 
-"""
-save_clean_names()
+def non_ascii(s):
+    return [ord(c) > 128 for c in s]
 
-"""
+
+names = services.read_json("names.json")
+for _, name in names:
+    badchars = [c for c in name if c and ord(c) >= 128 ]
+    if badchars:
+        print(badchars, name)
