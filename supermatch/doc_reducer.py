@@ -145,8 +145,9 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     barcodes = services.flatten(barcodes)
     barcodes = [b for b in barcodes if b]
     barcodes = list(set(barcodes))
-
-    tokens = token_util.get_tokens_of_a_group(list(names.values()))
+    
+    clean_names = list(doc.get("clean_name") for doc in docs)
+    tokens = token_util.get_tokens_of_a_group(clean_names)
     most_common_tokens = sorted(token_util.get_n_most_common_tokens(tokens, 3))
     tags = " ".join(sorted(list(set(tokens))))
 
@@ -163,7 +164,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         digits, unit = collections.Counter(digits_units).most_common(1)[0][0]
         unit_price = round(best_price / digits, 2)
         if not size:
-            size = " ".join([digits, unit])
+            size = " ".join([str(digits), unit])
 
     sku = SKU(
         doc_ids=doc_ids,
