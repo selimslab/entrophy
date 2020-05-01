@@ -32,6 +32,9 @@ def replace_size(id, name):
     try:
         digits, unit, size_match = size_finder.get_digits_unit_size(name)
         name = name.replace(size_match, str(digits) + " " + unit)
+        # only size can have .
+        tokens = [t if t in str(digits) else t.replace(".", "") for t in name.split()]
+        name = " ".join(tokens)
     except SizingException:
         pass
     finally:
@@ -275,6 +278,7 @@ class SKUGraphCreator(GenericGraph):
             if "clone" not in id
         ]
         logging.info("matching singles..")
+        # this could be parallel
         matched_names = [
             self.match_singles(id, name) for id, name in tqdm(single_names) if name
         ]
@@ -282,6 +286,7 @@ class SKUGraphCreator(GenericGraph):
         services.save_json("matched_names.json", matched_names)
 
     def exact_name_match(self):
+        """ merge barcode-less items with the same name """
         name_barcode_pairs = collections.defaultdict(set)
         name_id_pairs = collections.defaultdict(set)
         for doc_id, doc in self.id_doc_pairs.items():
