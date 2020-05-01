@@ -115,6 +115,27 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
+def select_size(docs, sku_name):
+    digits = unit = size = None
+    variant_name = get_variant_name(docs)
+    if variant_name:
+        size = variant_name
+
+    candidates = [(doc.get(keys.DIGITS), doc.get(keys.UNIT)) for doc in docs]
+    for candidate_digits, unit in candidates:
+        if str(candidate_digits) in sku_name:
+            digits = candidate_digits
+            break
+
+    if candidates and not digits:
+        digits, unit = collections.Counter(candidates).most_common(1)[0][0]
+
+    if not size and digits and unit:
+        size = " ".join([str(digits), unit])
+
+    return digits, unit, size, candidates
+
+
 def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     if not docs:
         return None, None
@@ -145,7 +166,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     barcodes = services.flatten(barcodes)
     barcodes = [b for b in barcodes if b]
     barcodes = list(set(barcodes))
-    
+
     clean_names = list(doc.get("clean_name") for doc in docs)
     tokens = token_util.get_tokens_of_a_group(clean_names)
     most_common_tokens = sorted(token_util.get_n_most_common_tokens(tokens, 3))
@@ -154,17 +175,10 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     links = [doc.get(keys.LINK) for doc in docs]
     links = list(set(links))
 
-    digits = unit = size = unit_price = None
-    variant_name = get_variant_name(docs)
-    if variant_name:
-        size = variant_name
-
-    digits_units = [(doc.get(keys.DIGITS), doc.get(keys.UNIT)) for doc in docs]
-    if digits_units:
-        digits, unit = collections.Counter(digits_units).most_common(1)[0][0]
+    digits, unit, size, candidates = select_size(docs, sku_name)
+    unit_price = None
+    if digits:
         unit_price = round(best_price / digits, 2)
-        if not size:
-            size = " ".join([str(digits), unit])
 
     sku = SKU(
         doc_ids=doc_ids,
@@ -184,7 +198,8 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         digits=digits,
         unit=unit,
         size=size,
-        unit_price=unit_price
+        unit_price=unit_price,
+        digits_units=candidates
     )
 
     return asdict(sku), sku_id

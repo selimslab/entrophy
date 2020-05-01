@@ -39,6 +39,8 @@ def replace_size(id, name):
 
 
 def add_clean_name(id_doc_pairs):
+    logging.info("add_clean_name..")
+
     to_clean = list()
     for doc_id, doc in id_doc_pairs.items():
         if "name" in doc and "clean_name" not in doc:

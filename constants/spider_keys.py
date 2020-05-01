@@ -1,3 +1,4 @@
+from dataclasses import dataclass, asdict
 # spider keys
 NAME = "name"
 BARCODES = "barcodes"
@@ -23,6 +24,7 @@ SIZE = "size"
 # gratis
 VARIANT_NAME = "variant_name"
 
+
 ALLOWED_KEYS = {
     BARCODES,
     NAME,
@@ -43,3 +45,4 @@ ALLOWED_KEYS = {
 
 # helpers
 PAGE_NUMBER = "page_number"
+
