@@ -1,5 +1,5 @@
-from services import name_cleaner
 from services.sizing.main import size_finder, SizingException
+import services
 
 
 def test_sizing():
@@ -30,7 +30,7 @@ def test_sizing():
     for case, answer in test_cases:
         try:
             result = size_finder.get_digits_unit_size(
-                name_cleaner.clean_for_sizing(case)
+                services.clean_for_sizing(case)
             )
             try:
                 assert result == answer
@@ -39,6 +39,13 @@ def test_sizing():
 
         except SizingException as e:
             print(e)
+
+
+def test_get_tokens_of_a_group():
+    x = services.get_tokens_of_a_group(["quick fox", "lazy dog"])
+    assert set(x) == {"quick", "fox", "lazy", "dog"}
+    y = services.get_tokens_of_a_group([{"quick fox"}, "lazy dog"])
+    assert set(y) == {"lazy", "dog"}
 
 
 if __name__ == "__main__":

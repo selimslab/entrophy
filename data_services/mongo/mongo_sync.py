@@ -77,9 +77,6 @@ def exec_remaining_ops(mongo_sync):
     mongo_sync.bulk_exec()
 
 
-def test_update_many():
-    mongo_sync = MongoSync(collection=test_collection, write_interval=128)
-
 
 if __name__ == "__main__":
     pass

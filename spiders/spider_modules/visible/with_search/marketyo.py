@@ -70,7 +70,7 @@ class MarketyoSpider(BaseSpider):
             yield cat_id
 
 
-def test_cats():
+def show_cats():
     for headers in keys.MARKETYO_MARKET_HEADERS:
         print(headers.get("client"))
         MarketyoSpider.category_id_generator(headers)
