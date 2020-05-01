@@ -1,8 +1,8 @@
 import logging
 from typing import Iterator
 import constants as keys
-from supermatch import id_doc_pairer, sku_grouper
-from supermatch.sku_graph import SKUGraphCreator
+from supermatch import id_doc_pairer, product_matching
+from supermatch.sku_matching import SKUGraphCreator
 from supermatch.doc_reducer import reduce_docs_to_sku
 import uuid
 from tqdm import tqdm
@@ -75,7 +75,7 @@ def create_matching(docs_to_match: Iterator, id_doc_pairs=None, ) -> dict:
     logging.info(f"skus # {len(skus)}")
 
     logging.info("grouping skus into products..")
-    groups_of_sku_ids = sku_grouper.group_skus(skus, variants, links_of_products)
+    groups_of_sku_ids = product_matching.group_skus(skus, variants, links_of_products)
     skus = add_product_info(groups_of_sku_ids, skus)
 
     skus = {

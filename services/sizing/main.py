@@ -27,7 +27,7 @@ class SizeFinder(DigitsMixin):
 
     @staticmethod
     def create_size_patterns(
-        pair_list: List[Tuple[str, str]], regex_list: List[str]
+            pair_list: List[Tuple[str, str]], regex_list: List[str]
     ) -> List[Tuple[str, str]]:
 
         patterns = list()
@@ -60,6 +60,8 @@ class SizeFinder(DigitsMixin):
                 return match, unit
 
     def get_digits_unit_size(self, name):
+        name += " "
+
         bad_tokens = {"+", "essence", "ruj", "aptamil 5"}
         if any([token in name for token in bad_tokens]):
             raise SizingException(f"bad sizing token in {name}")

@@ -7,35 +7,6 @@ from services import convert_price
 from services import token_util
 from spec.exceptions import MatchingException
 from supermatch.id_selector import select_unique_id
-from services import name_cleaner
-from services.sizing.main import size_finder, SizingException
-import logging
-
-
-def get_size(sku_name, docs, names):
-    digits = unit = size = None
-
-    variant_name = get_variant_name(docs)
-    if variant_name:
-        return digits, unit, variant_name
-
-    try:
-        size_name = name_cleaner.clean_for_sizing(sku_name)
-        result = size_finder.get_digits_unit_size(size_name)
-        if result:
-            return result
-    except SizingException:
-        pass
-
-    for name in names:
-        size_name = name_cleaner.clean_for_sizing(name)
-        try:
-            result = size_finder.get_digits_unit_size(size_name)
-            return result
-        except SizingException:
-            pass
-
-    return digits, unit, size
 
 
 def clean_price(price):
@@ -182,6 +153,18 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     links = [doc.get(keys.LINK) for doc in docs]
     links = list(set(links))
 
+    digits = unit = size = unit_price = None
+    variant_name = get_variant_name(docs)
+    if variant_name:
+        size = variant_name
+
+    digits_units = [(doc.get(keys.DIGITS), doc.get(keys.UNIT)) for doc in docs]
+    if digits_units:
+        digits, unit = collections.Counter(digits_units).most_common(1)[0][0]
+        unit_price = round(best_price / digits, 2)
+        if not size:
+            size = " ".join([digits, unit])
+
     sku = SKU(
         doc_ids=doc_ids,
         sku_id=sku_id,
@@ -197,11 +180,10 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         links=links,
         most_common_tokens=most_common_tokens,
         names=doc_names,
+        digits=digits,
+        unit=unit,
+        size=size,
+        unit_price=unit_price
     )
-
-    sku.digits, sku.unit, sku.size = get_size(sku.name, docs, names)
-
-    if sku.digits:
-        sku.unit_price = round(sku.best_price / sku.digits, 2)
 
     return asdict(sku), sku_id
