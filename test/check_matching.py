@@ -21,7 +21,7 @@ def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True, sync=
 
     excel.create_excel(full_skus, id_doc_pairs, paths.excel)
 
-    json_util.save_json("newpairs.json", id_doc_pairs)
+    json_util.save_json(paths.processed_docs, id_doc_pairs)
 
     syncer = Syncer(is_test)
     basic_skus = syncer.strip_debug_fields(full_skus)
@@ -64,4 +64,4 @@ def check_partial():
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_query()
+    check_partial()

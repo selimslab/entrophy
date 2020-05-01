@@ -15,5 +15,6 @@ def get_paths(name):
         basic_skus = target / "basic_skus.json"
         docs = target / "docs.json"
         excel = target / "rows.xlsx"
+        processed_docs = target / "processed_docs.json"
 
     return Paths
