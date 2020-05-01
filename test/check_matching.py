@@ -44,20 +44,12 @@ def check_query():
     query = {keys.LINK: {"$in": flatten(links)}}
     docs_to_match = data_services.get_docs_to_match(query)
     pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
-    run_matcher(
-        name="query",
-        sync=False,
-        id_doc_pairs=pairs
-    )
+    run_matcher(name="query", sync=False, id_doc_pairs=pairs)
 
 
 def check_partial():
     pairs = services.read_json("id_doc_pairs.json")
-    run_matcher(
-        name="partial",
-        sync=False,
-        id_doc_pairs=pairs
-    )
+    run_matcher(name="partial", sync=False, id_doc_pairs=pairs)
     # id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000, 11000)),
 
 

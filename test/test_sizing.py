@@ -29,9 +29,7 @@ def test_sizing():
 
     for case, answer in test_cases:
         try:
-            result = size_finder.get_digits_unit_size(
-                services.clean_name(case)
-            )
+            result = size_finder.get_digits_unit_size(services.clean_name(case))
             try:
                 assert result == answer
             except AssertionError:
