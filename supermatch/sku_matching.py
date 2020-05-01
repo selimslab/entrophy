@@ -27,12 +27,15 @@ def replace_size(id, name):
     name = services.clean_name(name)
     if not name:
         return
+
+    digits = unit = size_match = None
     try:
         digits, unit, size_match = size_finder.get_digits_unit_size(name)
         name = name.replace(size_match, str(digits) + " " + unit)
-        return id, name, digits, unit, size_match
     except SizingException:
-        return id, name, None, None, None
+        pass
+    finally:
+        return id, name, digits, unit, size_match
 
 
 def add_clean_name(id_doc_pairs):
@@ -278,28 +281,25 @@ class SKUGraphCreator(GenericGraph):
 
     def exact_name_match(self):
         name_barcode_pairs = collections.defaultdict(set)
-        name_id_pairs = collections.defaultdict(dict)
+        name_id_pairs = collections.defaultdict(set)
         for doc_id, doc in self.id_doc_pairs.items():
             name = doc.get("clean_name")
             if not name:
                 continue
             sorted_name = " ".join(sorted(name.split()))
             barcodes = doc.get(keys.BARCODES, [])
-            # name_barcode_pairs[sorted_name].update(set(barcodes))
-            newpair = {doc_id: set(services.flatten(barcodes))}
-            name_id_pairs[sorted_name].update(newpair)
+            name_barcode_pairs[sorted_name].update(set(barcodes))
+            name_id_pairs[sorted_name].add(doc_id)
 
-        for name, pairs in name_id_pairs.items():
-            doc_ids = pairs.keys()
-            edges = itertools.combinations(doc_ids, 2)
-            for doc_id1, doc_id2 in edges:
-                barcodes = pairs.get(doc_id1).union(pairs.get(doc_id2))
-                if len(barcodes) <= 1:
-                    self.sku_graph.add_edge(doc_id1, doc_id2)
-                    for node in edges:
-                        if node not in self.connected_ids:
-                            self.stages[node] = "exact_name"
-                            self.connected_ids.add(node)
+        for name, barcodes in name_barcode_pairs.items():
+            if len(barcodes) <= 1:
+                doc_ids = name_id_pairs.get(name)
+                single_doc_ids = [id for id in doc_ids if id not in self.connected_ids]
+                if len(single_doc_ids) > 1:
+                    edges = itertools.combinations(single_doc_ids, 2)
+                    self.sku_graph.add_edges_from(edges)
+                    self.stages.update({**dict.fromkeys(single_doc_ids, "exact_name")})
+                    self.connected_ids.update(single_doc_ids)
 
     def create_graph(self):
         self.init_sku_graph()
