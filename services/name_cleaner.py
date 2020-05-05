@@ -13,9 +13,9 @@ def clean_name(name: str) -> str:
             .replace("'", " ")
             .replace(",", ".")
     )
-    name = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode("ascii")
-    allowed_chars = re.compile('[^a-zA-Z0-9,.* ]')
-    name = allowed_chars.sub('', name)
+    name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
+    allowed_chars = re.compile("[^a-zA-Z0-9,.* ]")
+    name = allowed_chars.sub("", name)
     remove_whitespace_pattern = re.compile(r"\s+")
     name = re.sub(remove_whitespace_pattern, " ", str(name)).strip()
     return name

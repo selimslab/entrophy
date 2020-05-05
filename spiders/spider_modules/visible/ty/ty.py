@@ -25,13 +25,13 @@ class TrendyolSpider(BaseSpider):
         # https://api.trendyol.com/websearchgw/api/aggregations/tum--urunler?q=oyuncak-bebek&culture=tr-TR&storefrontId=1&categoryRelevancyEnabled=undefined&priceAggregationType=DYNAMIC_GAUSS
 
         r = requests.get("https://www.trendyol.com")
-        parsed_html = bs4.BeautifulSoup(r.content, 'html.parser')
+        parsed_html = bs4.BeautifulSoup(r.content, "html.parser")
         navigation_links = dict()
         for menu in parsed_html.findAll("li", class_="tab-link"):
             menu_title = menu.find("a", class_="category-header").text
             for submenu in menu.findAll("a"):
                 if submenu.text:
-                    navigation_links[menu_title + '_' + submenu.text] = submenu['href']
+                    navigation_links[menu_title + "_" + submenu.text] = submenu["href"]
         pprint(navigation_links)
         return navigation_links
 
@@ -70,18 +70,18 @@ def parse_ty_detail(raw_json):
         "url",
         "description",
         "review",
-        "offers"
+        "offers",
     }
 
     product = json.loads(raw_json, strict=False)
     product = {k: v for k, v in product.items() if k in keys}
 
     offers = product.get("offers", {}).get("offers")
-    product["offers"] = [{k: v for k, v in offer.items() if k in {"price", "seller"}} for offer in offers]
+    product["offers"] = [
+        {k: v for k, v in offer.items() if k in {"price", "seller"}} for offer in offers
+    ]
 
     pprint(product)
-
-
 
 
 def test_ty():
