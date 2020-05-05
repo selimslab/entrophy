@@ -39,6 +39,12 @@ def check_sync_only():
     syncer.sync_the_new_matching(dict(itertools.islice(full_skus.items(), 1000)))
 
 
+def check_partial():
+    pairs = services.read_json("id_doc_pairs.json")
+    run_matcher(name="partial", sync=False, id_doc_pairs=pairs)
+    # id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000, 11000)),
+
+
 def check_query():
     links = json_util.read_json("links.json")
     query = {keys.LINK: {"$in": flatten(links)}}
@@ -47,13 +53,7 @@ def check_query():
     run_matcher(name="query", sync=False, id_doc_pairs=pairs)
 
 
-def check_partial():
-    pairs = services.read_json("id_doc_pairs.json")
-    run_matcher(name="partial", sync=False, id_doc_pairs=pairs)
-    # id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000, 11000)),
-
-
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_partial()
+    check_query()
