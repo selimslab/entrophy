@@ -16,7 +16,6 @@ def get_tokens_of_a_group(strings: list):
     return tokens
 
 
-
 def get_n_most_common_tokens(tokens: list, n: int) -> list:
     return [pair[0] for pair in Counter(tokens).most_common(n)]
 

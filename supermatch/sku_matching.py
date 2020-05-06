@@ -57,7 +57,7 @@ def add_clean_name(id_doc_pairs):
                 "clean_name": clean_name,
                 keys.DIGITS: digits,
                 keys.UNIT: unit,
-                keys.SIZE: size_match
+                keys.SIZE: size_match,
             }
             id_doc_pairs[doc_id].update(info)
 

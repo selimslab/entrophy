@@ -199,7 +199,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         unit=unit,
         size=size,
         unit_price=unit_price,
-        digits_units=candidates
+        digits_units=candidates,
     )
 
     return asdict(sku), sku_id

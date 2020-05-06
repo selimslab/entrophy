@@ -77,6 +77,5 @@ def exec_remaining_ops(mongo_sync):
     mongo_sync.bulk_exec()
 
 
-
 if __name__ == "__main__":
     pass

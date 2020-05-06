@@ -45,6 +45,7 @@ def test_get_tokens_of_a_group():
     y = services.get_tokens_of_a_group([{"quick fox"}, "lazy dog"])
     assert set(y) == {"lazy", "dog"}
 
+
 # test branch
 
 if __name__ == "__main__":

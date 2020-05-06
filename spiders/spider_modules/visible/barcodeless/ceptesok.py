@@ -32,7 +32,6 @@ class CepteSokSpider(BaseSpider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, base_domain="ceptesok.com")
         self.start_urls = SokHelper.get_urls_sok()
-        self.instant_update_active = False
 
     def close(self, reason):
         self.logger.info("Spider closed: %s due to %s", self.name, reason)
