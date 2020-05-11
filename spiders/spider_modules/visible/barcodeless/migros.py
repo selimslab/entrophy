@@ -4,6 +4,7 @@ import constants as keys
 from data_services import mark_out_of_stock
 from spiders.spider_modules.base import BaseSpider
 from spiders.spider_modules.visible.barcodeless.migros_helper import MigrosHelper
+from spiders.test_spider import debug_spider
 
 
 class MigrosSpider(BaseSpider):
@@ -46,3 +47,7 @@ class MigrosSpider(BaseSpider):
                     callback=self.parse,
                     meta={keys.PAGE_NUMBER: page_number, "url": url},
                 )
+
+
+if __name__ == "__main__":
+    debug_spider(MigrosSpider)
