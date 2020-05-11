@@ -1,39 +1,39 @@
 import re
 from typing import List, Tuple
+import pprint
+import services
 
 digit_patterns = [
     "\\d+\\.\\d+",
     "\\d+x\\d+",
     "\\d+ x \\d+",
     "\\d+x \\d+",
-    "\\d+ x\\d+",
-    "\\d+\\*\\d+",
-    "\\d+\\ * \\d+",
-    "\\d+\\* \\d+",
-    "\\d+\\ *\\d+",
-    "\\d+",
+    "\\d+ x\\d+",  # 3 x 5
+    "\\d+\\ * \\d+",  # 3 * 5
 ]
 
+all_digits_regex = "\\d+"
+
 units = [
-    ("yıkama", "yıkama"),
-    ("tablet", "tablet"),
-    ("kapsül", "tablet"),
-    ("litre", "lt"),
-    ("tane", "adet"),
-    ("adet", "adet"),
-    ("ml", "ml"),
-    ("cc", "ml"),
-    ("cl", "cl"),
-    ("lt", "lt"),
-    ("gr", "gr"),
-    ("kg", "kg"),
-    ("mg", "mg"),
-    ("lı", "adet"),
-    ("li", "adet"),
-    ("lu", "adet"),
-    ("lü", "adet"),
-    ("g", "gr"),
-    ("l", "lt"),
+    ("yıkama ", "yıkama"),
+    ("tablet ", "tablet"),
+    ("kapsül ", "tablet"),
+    ("litre ", "lt"),
+    ("tane ", "adet"),
+    ("adet ", "adet"),
+    ("ml ", "ml"),
+    ("cc ", "ml"),
+    ("cl ", "cl"),
+    ("lt ", "lt"),
+    ("gr ", "gr"),
+    ("kg ", "kg"),
+    ("mg ", "mg"),
+    ("lı ", "adet"),
+    ("li ", "adet"),
+    ("lu ", "adet"),
+    ("lü ", "adet"),
+    ("g ", "gr"),
+    ("l ", "lt"),
 ]
 
 
@@ -58,10 +58,12 @@ class SizeFinder:
     @staticmethod
     def create_size_patterns():
         patterns = list()
+        # "1 12.5 lt" => first look for 2.3
         for (unit_pattern, clean_unit) in units:
-            # "30 ml"
+            # "30 ml "
             pats = [
-                " ".join((digit_pattern, unit_pattern))
+                # create regex groups
+                " ".join(("(", digit_pattern, unit_pattern, ")"))
                 for digit_pattern in digit_patterns
             ]
             # create a single regex to match 10x faster
@@ -69,16 +71,23 @@ class SizeFinder:
 
             # "30ml"
             pats = [
-                "".join((digit_pattern, unit_pattern))
+                "".join(("(", digit_pattern, unit_pattern, ")"))
                 for digit_pattern in digit_patterns
             ]
             patterns.append(("|".join(pats), clean_unit))
 
+        for (unit_pattern, clean_unit) in units:
+            all_digits_pattern = " ".join((all_digits_regex, unit_pattern))
+            # create a single regex to match 10x faster
+            patterns.append((all_digits_pattern, clean_unit))
+
+        pprint.pprint(patterns)
         return patterns
 
     @staticmethod
     def get_digits(match: str, unit: str):
         digits_list = re.findall(r"\d+", match)
+        print(match, digits_list)
         if not digits_list:
             return
 
@@ -117,14 +126,18 @@ class SizeFinder:
 
     def pattern_match(self, to_be_matched: str):
         for (pattern, unit) in self.patterns:
-            match = re.findall(pattern, to_be_matched)
-            if match:
-                # print(pattern, to_be_matched)
-                match = match.pop(0).strip()
+            matches = re.findall(pattern, to_be_matched)
+            if matches:
+                matches = [m for m in matches.pop() if m]
+                print(pattern, to_be_matched, matches)
+                match = matches[0].strip()
                 return match, unit
 
     def get_digits_unit_size(self, name):
+        # add whitespace because regex groups have them at the end by default
+        # eg. '\\d+ lt '
         name += " "
+
         matched = self.pattern_match(name)
         if matched:
             match, unit = matched
@@ -143,3 +156,55 @@ class SizeFinder:
 
 
 size_finder = SizeFinder()
+
+
+def test_sizing():
+    test_cases = (
+        (" Gillette Tıraş Bıçağı Yedek Mach 3 2'li  fs335 ", (2, "adet")),
+        ("  2'li   ", (2, "adet")),
+        ("dasd 10'lu   ", (10, "adet")),
+        ("Pınar %60 Light Süt 1 L gfds", (1000, "ml")),
+        ("Ph 3.8 200 Ml fasf", (200, "ml")),
+        ("da 200 ml dasd", (200, "ml")),
+        ("dasd 4 kg ", (4000, "gr")),
+        ("da 200 ml dasd", (200, "ml")),
+        ("f54 8 yıkama ", (8, "yıkama")),
+        ("F20 200 ML dwa", (200, "ml")),
+        ("2x200 ML afdas", (400, "ml")),
+        ("2*200 ML 32352", (400, "ml")),
+        ("ewtew 2/4 2*200 ML 46", (400, "ml")),
+        ("dasd 4 x 200 ML 565dfds", (800, "ml")),
+        ("2/1 360 ML ada", (360, "ml")),
+        (" 0.75  L adfa", (750, "ml")),
+        ("dasd 3 6.5 kg", (6500, "gr")),
+        ("5 800 g", (800, "gr")),
+        ("Persil Gülün Büyüsü 6 KG 40 Yıkama", (40, "yıkama")),
+        ("aptamil 2 800 g", (800, "gr")),
+        ("a Gazlı İçecek Portakal 1.75 L", (1750, "ml")),
+        ("780GR 4 LÜ", (780, "gr")),
+        ("dasd 4 LU 780 GR asasd", (780, "gr")),
+        ("süt 1/1 litre sadsad", (1000, "ml")),
+        ("coca cola 1 lt.light", (1000, "ml")),
+        ("ULKER 117 175GR PETIBOR ", (175, "gr")),
+        ("5 800 gr. asdas", (800, "gr")),
+        (" 0.75  L. adfa", (750, "ml")),
+        (" 750 ml. adfa", (750, "ml")),
+        ("30+ 50 ML", (50, "ml")),
+    )
+
+    for case, answer in test_cases:
+        try:
+            result = size_finder.get_digits_unit_size(services.clean_name(case))
+            try:
+                print(case, answer, result)
+                # assert answer == tuple(result[:2])
+            except (AssertionError, AttributeError) as e:
+                print("FAIL", case, answer, result)
+                print(e)
+
+        except SizingException as e:
+            print(e)
+
+
+if __name__ == "__main__":
+    test_sizing()

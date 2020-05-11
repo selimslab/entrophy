@@ -41,8 +41,9 @@ def test_sizing():
             result = size_finder.get_digits_unit_size(services.clean_name(case))
             try:
                 assert answer == tuple(result[:2])
-            except AssertionError:
+            except (AssertionError, AttributeError) as e:
                 print("FAIL", case, answer, result)
+                print(e)
 
         except SizingException as e:
             print(e)
