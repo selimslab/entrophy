@@ -34,6 +34,9 @@ LOG_FORMAT = "%(levelname)s: %(message)s"
 COOKIES_ENABLED = False
 ROBOTSTXT_OBEY = False
 
+CLOSESPIDER_ERRORCOUNT = 100
+CLOSESPIDER_TIMEOUT = 7200
+
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
     "Accept": "text/html,application/json",

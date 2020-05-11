@@ -6,7 +6,6 @@ import data_services.firebase.connect as firebase_collections
 import data_services.mongo.collections as mongo_collections
 from data_services.mongo.mongo_sync import MongoSync
 import logging
-import constants as keys
 
 
 class Syncer:

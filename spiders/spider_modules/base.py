@@ -44,6 +44,6 @@ class BaseSpider(scrapy.Spider):
             pass
 
     def close(self, reason):
-        if self.config:
+        if not self.debug and self.config:
             self.logger.info("Spider closed: %s due to %s", self.name, reason)
             mark_out_of_stock(self.links_seen, self.name)

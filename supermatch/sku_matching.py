@@ -4,18 +4,19 @@ from tqdm import tqdm
 import logging
 import collections
 import operator
+import random
 
 import constants as keys
 from services import GenericGraph
 import services
-from services.sizing.main import size_finder, SizingException
+from services.size_finder import size_finder, SizingException
 import multiprocessing
 
 
 def tokenize(s):
-    stopwords = {"ml", "gr", "adet", "ve", "and"}
+    stopwords = {"ml", "gr", "adet", "ve", "and", "ile"}
     try:
-        tokens = set(t for t in s.split() if t not in stopwords)  # len(t) > 1 and
+        tokens = set(t for t in s.split() if t not in stopwords)
         tokens = set(t for t in tokens if len(t) > 1 or t.isdigit())
         return tokens
     except AttributeError as e:
@@ -32,12 +33,20 @@ def replace_size(id, name):
     try:
         digits, unit, size_match = size_finder.get_digits_unit_size(name)
         name = name.replace(size_match, str(digits) + " " + unit)
-        # only size can have .
-        tokens = [t if t in str(digits) else t.replace(".", "") for t in name.split()]
-        name = " ".join(tokens)
     except SizingException:
         pass
     finally:
+        # only size can have .
+        tokens = []
+        for t in name.split():
+            if len(t) <= 1:
+                continue
+            if not t.replace(".", "").isdigit():
+                tokens.append(t.replace(".", " "))
+            else:
+                tokens.append(t)
+
+        name = " ".join(tokens)
         return id, name, digits, unit, size_match
 
 
@@ -181,13 +190,47 @@ class SKUGraphCreator(GenericGraph):
             return
 
         matches = set()
+
+        relax = True
         for id_group in candidate_groups:
             group_common = self.common_tokens.get(id_group, set())
             if not group_common:
                 continue
             if token_set.issuperset(group_common):
                 group_all = self.group_tokens.get(id_group, set())
+
+                include = False
                 if group_all.issuperset(token_set):
+                    include = True
+
+                if relax:
+
+                    relaxed_token_set = set(t for t in token_set if len(t) > 2 or t.isdigit())
+                    relaxed_token_set_size = len(relaxed_token_set)
+
+                    if (
+                            len(group_all.intersection(relaxed_token_set))
+                            == relaxed_token_set_size
+                    ):
+                        print("r1", token_set, relaxed_token_set, group_all)
+                        include = True
+                    if not include:
+                        relaxed_match_size = sum(
+                            1
+                            if token in group_all
+                               or (
+                                       len(token) > 3
+                                       and any(token in t or t in token for t in group_all)
+                               )
+                            else 0
+                            for token in relaxed_token_set
+                        )
+
+                        if relaxed_match_size == relaxed_token_set_size:
+                            print("r2", token_set, relaxed_token_set, group_all)
+                            include = True
+
+                if include:
                     common_set_size, diff_size = (
                         len(group_common),
                         len(group_all.difference(token_set)),
@@ -308,17 +351,77 @@ class SKUGraphCreator(GenericGraph):
                     self.stages.update({**dict.fromkeys(single_doc_ids, "exact_name")})
                     self.connected_ids.update(single_doc_ids)
 
-    def create_graph(self):
+    def test_set_match(self):
+        id_groups = self.create_connected_component_groups(self.sku_graph)
+        id_groups = [
+            [id for id in id_group if "clone" not in id] for id_group in id_groups
+        ]
+        id_groups = [g for g in id_groups if len(g) >= 3]
+
+        print("id_groups", id_groups)
+        # select 1 from a group, remove the edge, remove from connected, and later check if its matched
+        expected_neighbors = {}
+        for g in id_groups:
+            sample_size = 1 if len(g) < 5 else 2
+            test_nodes = random.sample(g, sample_size)
+            for test_node in test_nodes:
+                g.remove(test_node)
+                self.connected_ids.remove(test_node)
+                edges_of_test_node = self.sku_graph.edges(test_node)
+                self.sku_graph.remove_edges_from(list(edges_of_test_node))
+
+            for test_node in test_nodes:
+                expected_neighbors[test_node] = g
+
+        self.exact_name_match()
+        self.set_match()
+
+        ok = set()
+        matched_to_another_group = set()
+        id_groups = self.create_connected_component_groups(self.sku_graph)
+        for g in id_groups:
+            for node in g:
+                if node in expected_neighbors:
+                    expected = expected_neighbors.get(node)
+                    if set(g).issuperset(set(expected)):
+                        expected_neighbors.pop(node)
+                        ok.add(node)
+                    else:
+                        matched_to_another_group.add(node)
+
+        # the remaining in check_table failed
+        logging.info(f"{len(ok)} is ok, {len(expected_neighbors)} is failed")
+
+        def get_name_and_cleaned_name(id):
+            doc = self.id_doc_pairs.get(id)
+            name = doc.get("name")
+            clean_name = doc.get("clean_name")
+            return (name, clean_name)
+
+        failed_names = {}
+        for test_node_id, group in expected_neighbors.items():
+            if test_node_id in matched_to_another_group:
+                continue
+            group_names = tuple(get_name_and_cleaned_name(id) for id in group)
+            failed_names[str(get_name_and_cleaned_name(test_node_id))] = group_names
+
+        services.save_json("failed_names.json", failed_names)
+
+    def create_graph(self, debug=True):
         self.init_sku_graph()
 
         print("barcode match..")
         self.barcode_match()
 
-        print("set match..")
-        self.set_match()
+        if debug:
+            self.test_set_match()
 
-        print("exact_name_match..")
-        self.exact_name_match()
+        else:
+            print("exact_name_match..")
+            self.exact_name_match()
+
+            print("set match..")
+            self.set_match()
 
         print("promoted match..")
         self.promoted_match()

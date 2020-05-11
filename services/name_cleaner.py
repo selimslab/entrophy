@@ -2,6 +2,7 @@ import re
 import unicodedata
 
 
+
 def clean_name(name: str) -> str:
     if not name:
         return ""
@@ -10,8 +11,10 @@ def clean_name(name: str) -> str:
         name.lower()
             .replace("ı", "i")
             .replace("&", " ")
-            .replace("'", " ")
+            # .replace("'", "")
+            .replace("-", " ")
             .replace(",", ".")
+            .replace("*", " * ")
     )
     name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
     allowed_chars = re.compile("[^a-zA-Z0-9,.* ]")

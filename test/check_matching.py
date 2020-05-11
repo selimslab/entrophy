@@ -41,8 +41,8 @@ def check_sync_only():
 
 def check_partial():
     pairs = services.read_json("id_doc_pairs.json")
-    run_matcher(name="partial", sync=False, id_doc_pairs=pairs)
-    # id_doc_pairs=dict(itertools.islice(id_doc_pairs.items(), 10000, 11000)),
+    pairs = dict(itertools.islice(pairs.items(), 100000, 120000))
+    run_matcher(name="20k", sync=False, id_doc_pairs=pairs)
 
 
 def check_query():
@@ -53,7 +53,11 @@ def check_query():
     run_matcher(name="query", sync=False, id_doc_pairs=pairs)
 
 
+def check_set_match():
+    pass
+
+
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_query()
+    check_partial()

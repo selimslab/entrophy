@@ -61,5 +61,12 @@ def bar():
     print(d, l)
 
 
+def brand():
+    count = items_collection.count_documents(
+        {keys.BRAND: {"$exists": True, "$in": links}},
+        {"_id": 0, keys.LINK: 1, keys.SKU_ID: 1},
+    )
+
+
 if __name__ == "__main__":
-    bar()
+    brand()
