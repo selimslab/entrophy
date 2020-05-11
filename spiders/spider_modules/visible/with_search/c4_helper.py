@@ -35,6 +35,8 @@ class CarrefourHelper:
         if not price:
             return {}
 
+        cat = product_div.css("input#productMainCategoryPost::attr(value)").get()
+
         src = product_div.css("img::attr(data-src)").extract_first()
         href = product_div.css("a::attr(href)").extract_first().strip()
 
@@ -45,6 +47,7 @@ class CarrefourHelper:
             keys.PRICE: price,
             keys.MARKET: keys.CARREFOUR,
             keys.OUT_OF_STOCK: False,
+            keys.CATEGORIES: [cat]
         }
 
 
