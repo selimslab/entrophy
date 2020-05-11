@@ -159,6 +159,8 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     }
     sku_name = get_name(names)
     doc_names = list(names.values())
+    clean_names = [doc.get("clean_name") for doc in docs]
+    clean_names = [n for n in clean_names if n]
 
     sku_src = get_image(docs)
 
@@ -195,6 +197,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         links=links,
         most_common_tokens=most_common_tokens,
         names=doc_names,
+        clean_names=clean_names,
         digits=digits,
         unit=unit,
         size=size,

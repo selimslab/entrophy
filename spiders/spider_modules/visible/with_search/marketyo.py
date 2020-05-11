@@ -9,6 +9,7 @@ import constants as keys
 from spiders.spider_modules.base import BaseSpider
 from spiders.test_spider import debug_spider
 
+import pprint
 
 class MarketyoSpider(BaseSpider):
     name = "marketyo"
@@ -29,6 +30,7 @@ class MarketyoSpider(BaseSpider):
 
     def parse(self, response):
         json_response = json.loads(response.body_as_unicode())
+        pprint.pprint(json_response)
         products = json_response.get("data")
         market = response.meta.get("client")
         if not products:
@@ -44,6 +46,9 @@ class MarketyoSpider(BaseSpider):
             p[keys.NAME] = product.get("name")
             p[keys.PRICE] = product.get("price")
             p[keys.BRAND] = product.get("brand", {}).get("name")
+            cats = [cat.get("name") for cat in product.get("categories", [])]
+            cats = [c for c in cats if c]
+            p[keys.CATEGORIES] = cats
             images = product.get("images")
             if images:
                 p[keys.SRC] = images.pop()

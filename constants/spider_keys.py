@@ -8,6 +8,9 @@ PRICE = "price"
 LINK = "link"
 SRC = "src"
 BRAND = "brand"
+CATEGORIES = "category"
+SUB_CATEGORIES = "sub_category"
+
 OUT_OF_STOCK = "out_of_stock"
 
 HISTORICAL_PRICES = "historical_prices"
@@ -25,7 +28,6 @@ SIZE = "size"
 # gratis
 VARIANT_NAME = "variant_name"
 
-
 ALLOWED_KEYS = {
     BARCODES,
     NAME,
@@ -42,6 +44,8 @@ ALLOWED_KEYS = {
     UNIT,
     SIZE,
     VARIANT_NAME,
+    CATEGORIES,
+    SUB_CATEGORIES
 }
 
 # helpers

@@ -38,4 +38,5 @@ class SKU(BasicSKU):
     most_common_tokens: list = None
     variants: list = None
     names: list = None
+    clean_names: list = None
     digits_units: list = None
