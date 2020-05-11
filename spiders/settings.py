@@ -5,7 +5,6 @@ SPIDER_MODULES = [
     "spiders.spider_modules.visible.with_search",
     "spiders.spider_modules.visible.barcode_sources",
     "spiders.spider_modules.visible.ty",
-    "spiders.spider_modules.visible.hb",
     "spiders.spider_modules.helper_markets",
     "spiders.spider_modules.google",
 ]

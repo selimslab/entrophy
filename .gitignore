@@ -11,4 +11,5 @@ image_match
 test/*.json
 *.env
 *.xlsx
+*.json
 
