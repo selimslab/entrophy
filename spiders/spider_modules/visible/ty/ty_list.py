@@ -65,6 +65,7 @@ class TrendyolSpider(BaseSpider):
 
         for product in products:
             product = {k: v for k, v in product.items() if k in keys_parse}
+            product["market"] = "ty"
             pprint(product)
             yield product
 
