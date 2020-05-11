@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-from json import JSONDecodeError
-
 import scrapy
-
 from spiders.spider_modules.base import BaseSpider
 from spiders.test_spider import debug_spider
 import json
