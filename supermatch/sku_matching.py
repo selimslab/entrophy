@@ -235,6 +235,7 @@ class SKUGraphCreator(services.GenericGraph):
 
         add_clean_name(self.id_doc_pairs)
 
+        logging.info("creating inverted index..")
         for id_group in tqdm(id_groups):
             names = [
                 self.id_doc_pairs.get(id).get("clean_name")
@@ -268,6 +269,8 @@ class SKUGraphCreator(services.GenericGraph):
             self.match_singles(id, name) for id, name in tqdm(single_names) if name
         ]
         matched_names = [m for m in matched_names if m]
+
+        logging.info("saving matched_names..")
         services.save_json("matched_names.json", matched_names)
 
     def exact_name_match(self):

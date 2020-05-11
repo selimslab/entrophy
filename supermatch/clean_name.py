@@ -6,7 +6,6 @@ import services
 from services.size_finder import size_finder, SizingException
 import multiprocessing
 
-
 def tokenize(s):
     stopwords = {"ml", "gr", "adet", "ve", "and", "ile"}
     try:
