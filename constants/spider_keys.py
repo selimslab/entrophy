@@ -8,8 +8,8 @@ PRICE = "price"
 LINK = "link"
 SRC = "src"
 BRAND = "brand"
-CATEGORIES = "category"
-SUB_CATEGORIES = "sub_category"
+CATEGORIES = "categories"
+SUB_CATEGORIES = "sub_categories"
 
 OUT_OF_STOCK = "out_of_stock"
 
@@ -45,7 +45,7 @@ ALLOWED_KEYS = {
     SIZE,
     VARIANT_NAME,
     CATEGORIES,
-    SUB_CATEGORIES
+    SUB_CATEGORIES,
 }
 
 # helpers

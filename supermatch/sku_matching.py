@@ -205,7 +205,9 @@ class SKUGraphCreator(GenericGraph):
 
                 if relax:
 
-                    relaxed_token_set = set(t for t in token_set if len(t) > 2 or t.isdigit())
+                    relaxed_token_set = set(
+                        t for t in token_set if len(t) > 2 or t.isdigit()
+                    )
                     relaxed_token_set_size = len(relaxed_token_set)
 
                     if (

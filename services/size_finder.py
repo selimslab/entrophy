@@ -60,12 +60,18 @@ class SizeFinder:
         patterns = list()
         for (unit_pattern, clean_unit) in units:
             # "30 ml"
-            pats = [" ".join((digit_pattern, unit_pattern)) for digit_pattern in digit_patterns]
+            pats = [
+                " ".join((digit_pattern, unit_pattern))
+                for digit_pattern in digit_patterns
+            ]
             # create a single regex to match 10x faster
             patterns.append(("|".join(pats), clean_unit))
 
             # "30ml"
-            pats = ["".join((digit_pattern, unit_pattern)) for digit_pattern in digit_patterns]
+            pats = [
+                "".join((digit_pattern, unit_pattern))
+                for digit_pattern in digit_patterns
+            ]
             patterns.append(("|".join(pats), clean_unit))
 
         return patterns

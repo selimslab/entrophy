@@ -69,17 +69,14 @@ class TrendyolSpider(BaseSpider):
             yield product
 
         if products:
-            category_name = response.meta.get('category_name')
+            category_name = response.meta.get("category_name")
             page_number = response.meta.get(keys.PAGE_NUMBER, 1)
             page_number += 1
             next_page_url = f"https://api.trendyol.com/websearchgw/api/infinite-scroll{category_name}?pi={page_number}&storefrontId=1&culture=tr-TR&userGenderId=2&searchStrategyType=DEFAULT&pId=ILKx9K99Gg&scoringAlgorithmId=3&categoryRelevancyEnabled=undefined&legalRequirement=True"
 
             yield response.follow(
                 next_page_url,
-                meta={
-                    "category_name": category_name,
-                    keys.PAGE_NUMBER: page_number,
-                },
+                meta={"category_name": category_name, keys.PAGE_NUMBER: page_number, },
                 callback=self.parse,
             )
 

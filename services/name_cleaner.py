@@ -2,7 +2,6 @@ import re
 import unicodedata
 
 
-
 def clean_name(name: str) -> str:
     if not name:
         return ""

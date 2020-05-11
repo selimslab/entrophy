@@ -11,6 +11,7 @@ from spiders.test_spider import debug_spider
 
 import pprint
 
+
 class MarketyoSpider(BaseSpider):
     name = "marketyo"
 
@@ -30,7 +31,6 @@ class MarketyoSpider(BaseSpider):
 
     def parse(self, response):
         json_response = json.loads(response.body_as_unicode())
-        pprint.pprint(json_response)
         products = json_response.get("data")
         market = response.meta.get("client")
         if not products:

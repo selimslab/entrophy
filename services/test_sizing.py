@@ -27,7 +27,6 @@ def test_sizing():
         ("a Gazlı İçecek Portakal 1.75 L", (1750, "ml")),
         ("780GR 4 LÜ", (780, "gr")),
         ("dasd 4 LU 780 GR asasd", (780, "gr")),
-
         ("süt 1/1 litre sadsad", (1000, "ml")),
         ("coca cola 1 lt.light", (1000, "ml")),
         ("ULKER 117 175GR PETIBOR ", (175, "gr")),
