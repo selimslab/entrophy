@@ -38,24 +38,18 @@ class TrendyolSpider(BaseSpider):
 
     def start_requests(self):
         links = self.get_links_to_crawl()
-        for _, url in links.items():
+        for _, category_name in links.items():
             page = 1
-            page_url = f"https://api.trendyol.com/websearchgw/api/infinite-scroll{url}?pi={page}&storefrontId=1&culture=tr-TR&userGenderId=2&searchStrategyType=DEFAULT&pId=ILKx9K99Gg&scoringAlgorithmId=3&categoryRelevancyEnabled=undefined&legalRequirement=True"
+            page_url = f"https://api.trendyol.com/websearchgw/api/infinite-scroll{category_name}?pi={page}&storefrontId=1&culture=tr-TR&userGenderId=2&searchStrategyType=DEFAULT&pId=ILKx9K99Gg&scoringAlgorithmId=3&categoryRelevancyEnabled=undefined&legalRequirement=True"
             yield scrapy.Request(
                 page_url,
                 callback=self.parse,
-                meta={"url": url, keys.PAGE_NUMBER: 1},
+                meta={"category_name": category_name, keys.PAGE_NUMBER: 1},
             )
 
     def parse(self, response):
         parsed_json = json.loads(response.body, strict=False)
         products = parsed_json.get("result", {}).get("products")
-        url = response.meta.get('url')
-
-        current_page_number = response.meta.get(keys.PAGE_NUMBER, 1)
-        next_page = current_page_number + 1
-
-        next_page_url = f"https://api.trendyol.com/websearchgw/api/infinite-scroll{url}?pi={next_page}&storefrontId=1&culture=tr-TR&userGenderId=2&searchStrategyType=DEFAULT&pId=ILKx9K99Gg&scoringAlgorithmId=3&categoryRelevancyEnabled=undefined&legalRequirement=True"
 
         keys_parse = {
             "name",
@@ -77,20 +71,17 @@ class TrendyolSpider(BaseSpider):
             pprint(product)
             yield product
 
-        try:
-            r = requests.get(next_page_url).text
-            json.loads(r, strict=False)
-            next_page = True
-        except JSONDecodeError:
-            next_page = False
+        if products:
+            category_name = response.meta.get('category_name')
+            page_number = response.meta.get(keys.PAGE_NUMBER, 1)
+            page_number += 1
+            next_page_url = f"https://api.trendyol.com/websearchgw/api/infinite-scroll{category_name}?pi={page_number}&storefrontId=1&culture=tr-TR&userGenderId=2&searchStrategyType=DEFAULT&pId=ILKx9K99Gg&scoringAlgorithmId=3&categoryRelevancyEnabled=undefined&legalRequirement=True"
 
-        if next_page:
             yield response.follow(
                 next_page_url,
                 meta={
-                    "url": url,
-                    "next_page_url": next_page_url,
-                    keys.PAGE_NUMBER: next_page,
+                    "category_name": category_name,
+                    keys.PAGE_NUMBER: page_number,
                 },
                 callback=self.parse,
             )
