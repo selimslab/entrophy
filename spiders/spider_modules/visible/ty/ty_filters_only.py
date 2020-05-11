@@ -1,7 +1,7 @@
 import requests
 import bs4
 from pprint import pprint
-
+import services
 import json
 
 
@@ -24,16 +24,22 @@ def get_links_to_crawl():
     return cats
 
 
+all_cats = []
+
+
 def get_sub_cats(category_name):
     url = f"https://api.trendyol.com/websearchgw/api/aggregations/{category_name}?culture=tr-TR&storefrontId=1&categoryRelevancyEnabled=undefined&priceAggregationType=DYNAMIC_GAUSS"
     r = requests.get(url)
     body = json.loads(r.content, strict=False)
     aggregations = body.get("result").get("aggregations")
+    all_sub_cats = []
     for agg in aggregations:
         name = agg.get("group")
         filters = [val.get("beautifiedName") for val in agg.get("values")]
+        all_sub_cats.append((name, filters))
         print(name)
         pprint(filters)
+    all_cats.append((category_name, all_sub_cats))
 
 
 # cats = get_links_to_crawl()
@@ -95,5 +101,7 @@ cats = ['camasir-yikama-urunleri',
         'banyo--dus-urunleri',
         'bakim-yaglari+bitkisel-bakim-yagi']
 
-for url in cats[:1]:
+for url in cats:
     get_sub_cats(url)
+
+services.save_json("ty_filters.json", all_cats)
