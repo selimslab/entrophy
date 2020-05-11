@@ -1,6 +1,6 @@
 import requests
 import bs4
-from watsons_helper import WatsonsHelper
+from .watsons_helper import WatsonsHelper
 from pprint import pprint
 import services
 
