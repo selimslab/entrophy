@@ -62,4 +62,4 @@ def check_all():
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_partial()
+    check_all()

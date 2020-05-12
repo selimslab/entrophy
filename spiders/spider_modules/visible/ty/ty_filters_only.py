@@ -103,7 +103,8 @@ cats = [
     "bakim-yaglari+bitkisel-bakim-yagi",
 ]
 
-for url in cats:
-    get_sub_cats(url)
+if __name__ == "__main__":
+    for url in cats:
+        get_sub_cats(url)
 
-services.save_json("ty_filters.json", all_cats)
+    services.save_json("ty_filters.json", all_cats)
