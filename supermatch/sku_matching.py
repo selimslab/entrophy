@@ -184,6 +184,7 @@ class SKUGraphCreator(services.GenericGraph):
             return name, group_names, common_set, diff_set
 
     def set_match(self):
+
         id_groups = self.create_connected_component_groups(self.sku_graph)
 
         # filter without barcode
@@ -197,8 +198,6 @@ class SKUGraphCreator(services.GenericGraph):
         group_tokens = dict()
         self.inverted_index = collections.defaultdict(set)
         self.group_names = dict()
-
-        add_clean_name(self.id_doc_pairs)
 
         logging.info("creating inverted index..")
         for id_group in tqdm(id_groups):
@@ -250,6 +249,8 @@ class SKUGraphCreator(services.GenericGraph):
             barcodes = doc.get(keys.BARCODES, [])
             name_barcode_pairs[sorted_name].update(set(barcodes))
             name_id_pairs[sorted_name].add(doc_id)
+
+        print("name_barcode_pairs", len(name_barcode_pairs))
 
         for name, barcodes in name_barcode_pairs.items():
             if len(barcodes) <= 1:
@@ -305,7 +306,7 @@ class SKUGraphCreator(services.GenericGraph):
             doc = self.id_doc_pairs.get(id)
             name = doc.get("name")
             clean_name = doc.get("clean_name")
-            return (name, clean_name)
+            return name, clean_name
 
         failed_names = {}
         for test_node_id, group in expected_neighbors.items():
@@ -321,6 +322,8 @@ class SKUGraphCreator(services.GenericGraph):
 
         print("barcode match..")
         self.barcode_match()
+
+        add_clean_name(self.id_doc_pairs)
 
         if debug:
             self.test_set_match()
