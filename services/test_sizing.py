@@ -2,7 +2,6 @@ import services
 from services.size_finder import size_finder, SizingException
 
 
-
 def test_sizing():
     test_cases = (
         (" Gillette Tıraş Bıçağı Yedek Mach 3 2'li  fs335 ", (2, "adet")),
@@ -49,6 +48,7 @@ def test_sizing():
 
         except SizingException as e:
             print(e)
+
 
 if __name__ == "__main__":
     pass

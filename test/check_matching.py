@@ -16,7 +16,7 @@ from supermatch import id_doc_pairer
 def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True, sync=False):
     paths = get_paths(name)
 
-    full_skus = create_matching(docs_to_match=docs_to_match, id_doc_pairs=id_doc_pairs)
+    full_skus = create_matching(docs_to_match=docs_to_match, id_doc_pairs=id_doc_pairs, debug=True)
     json_util.save_json(paths.full_skus, full_skus)
 
     excel.create_excel(full_skus, id_doc_pairs, paths.excel)
@@ -60,4 +60,4 @@ def check_set_match():
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_query()
+    check_partial()

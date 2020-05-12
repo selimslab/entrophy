@@ -131,7 +131,6 @@ class SKUGraphCreator(services.GenericGraph):
 
         matches = set()
 
-        relax = True
         for id_group in candidate_groups:
             group_common = self.common_tokens.get(id_group, set())
             if not group_common:
@@ -139,40 +138,7 @@ class SKUGraphCreator(services.GenericGraph):
             if token_set.issuperset(group_common):
                 group_all = self.group_tokens.get(id_group, set())
 
-                include = False
                 if group_all.issuperset(token_set):
-                    include = True
-
-                if relax:
-
-                    relaxed_token_set = set(
-                        t for t in token_set if len(t) > 2 or t.isdigit()
-                    )
-                    relaxed_token_set_size = len(relaxed_token_set)
-
-                    if (
-                            len(group_all.intersection(relaxed_token_set))
-                            == relaxed_token_set_size
-                    ):
-                        print("r1", token_set, relaxed_token_set, group_all)
-                        include = True
-                    if not include:
-                        relaxed_match_size = sum(
-                            1
-                            if token in group_all
-                               or (
-                                       len(token) > 3
-                                       and any(token in t or t in token for t in group_all)
-                               )
-                            else 0
-                            for token in relaxed_token_set
-                        )
-
-                        if relaxed_match_size == relaxed_token_set_size:
-                            print("r2", token_set, relaxed_token_set, group_all)
-                            include = True
-
-                if include:
                     common_set_size, diff_size = (
                         len(group_common),
                         len(group_all.difference(token_set)),
@@ -190,7 +156,6 @@ class SKUGraphCreator(services.GenericGraph):
                             tuple(self.group_names.get(id_group)),
                         )
                     )
-
         if matches:
             max_common_size = max(matches, key=operator.itemgetter(0))[0]
             matches_with_max_common_size = [
