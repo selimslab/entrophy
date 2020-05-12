@@ -16,7 +16,8 @@ class BasePipeline:
         return {
             k: v
             for k, v in dict(item).items()
-            if k in keys.ALLOWED_KEYS and v not in [None, "", [], {}]
+            # a value can't be null or empty
+            if v or v is False
         }
 
     @staticmethod

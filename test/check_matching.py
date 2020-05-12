@@ -45,6 +45,7 @@ def check_partial():
     run_matcher(name="20k", sync=False, id_doc_pairs=pairs)
 
 
+
 def check_query():
     links = json_util.read_json("links.json")
     query = {keys.LINK: {"$in": flatten(links)}}
@@ -53,11 +54,12 @@ def check_query():
     run_matcher(name="query", sync=False, id_doc_pairs=pairs)
 
 
-def check_set_match():
-    pass
+def check_all():
+    pairs = services.read_json("id_doc_pairs.json")
+    run_matcher(name="all_docs", sync=False, id_doc_pairs=pairs)
 
 
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_partial()
+    check_all()

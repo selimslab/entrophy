@@ -16,6 +16,7 @@ def get_docs_to_match(query: dict):
         keys.VARIANTS: 1,
         keys.VARIANT_NAME: 1,
         keys.SKU_ID: 1,
+        # TODO add brand and cats
     }
     cursor = collections.items_collection.find(query, projection)
     return cursor

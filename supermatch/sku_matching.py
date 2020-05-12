@@ -268,7 +268,6 @@ class SKUGraphCreator(services.GenericGraph):
         ]
         id_groups = [g for g in id_groups if len(g) >= 3]
 
-        print("id_groups", id_groups)
         # select 1 from a group, remove the edge, remove from connected, and later check if its matched
         expected_neighbors = {}
         for g in id_groups:
