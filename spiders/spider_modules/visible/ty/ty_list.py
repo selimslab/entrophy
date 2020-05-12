@@ -66,7 +66,11 @@ class TrendyolSpider(BaseSpider):
         for product in products:
             product = {k: v for k, v in product.items() if k in keys_parse}
             product["market"] = "ty"
-            pprint(product)
+            product[keys.PRICE] = product.get("price", {}).get("sellingPrice")
+            product[keys.BRAND] = product.get("brand", {}).get("name")
+            product[keys.LINK] = "https://www.trendyol.com" + product.get("url")
+            product[keys.CATEGORIES] = product.get("categoryHierarchy", "").split("/")
+
             yield product
 
         if products:
