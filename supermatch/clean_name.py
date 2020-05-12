@@ -6,6 +6,7 @@ import services
 from services.size_finder import size_finder, SizingException
 import multiprocessing
 
+
 def tokenize(s):
     stopwords = {"ml", "gr", "adet", "ve", "and", "ile"}
     try:
@@ -24,8 +25,11 @@ def replace_size(id, name):
 
     digits = unit = size_match = None
     try:
-        digits, unit, size_match = size_finder.get_digits_unit_size(name)
-        name = name.replace(size_match, str(digits) + " " + unit)
+        size = size_finder.get_digits_unit_size(name)
+        if size:
+            digits, unit, size_match = size
+            best_size = " ".join([str(digits), unit])
+            name = name.replace(size_match, best_size)
     except SizingException:
         pass
 
@@ -40,7 +44,7 @@ def add_clean_name(id_doc_pairs):
         if "name" in doc and "clean_name" not in doc:
             to_clean.append((doc_id, doc.get("name")))
 
-    with multiprocessing.Pool(processes=2) as pool:
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         results = pool.starmap(replace_size, tqdm(to_clean))
         results = (r for r in results if r)
         for doc_id, clean_name, digits, unit, size_match in results:

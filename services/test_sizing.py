@@ -2,6 +2,7 @@ import services
 from services.size_finder import size_finder, SizingException
 
 
+
 def test_sizing():
     test_cases = (
         (" Gillette Tıraş Bıçağı Yedek Mach 3 2'li  fs335 ", (2, "adet")),
@@ -19,7 +20,7 @@ def test_sizing():
         ("ewtew 2/4 2*200 ML 46", (400, "ml")),
         ("dasd 4 x 200 ML 565dfds", (800, "ml")),
         ("2/1 360 ML ada", (360, "ml")),
-        (" 0.75  L adfa", (750, "ml")),
+        (" 0.75 L adfa", (750, "ml")),
         ("dasd 3 6.5 kg", (6500, "gr")),
         ("5 800 g", (800, "gr")),
         ("Persil Gülün Büyüsü 6 KG 40 Yıkama", (40, "yıkama")),
@@ -42,13 +43,12 @@ def test_sizing():
             result = size_finder.get_digits_unit_size(clean_name)
             try:
                 assert answer == tuple(result[:2])
-            except (AssertionError, AttributeError) as e:
+            except (AssertionError, AttributeError, IndexError, TypeError) as e:
                 print("FAIL", case, "#", clean_name, "#", answer, "#", result)
                 print(e)
 
         except SizingException as e:
             print(e)
-
 
 if __name__ == "__main__":
     pass
