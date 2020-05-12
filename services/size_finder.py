@@ -14,9 +14,9 @@ digit_patterns = [
 
 
 units = [
-    ("yıkama ", "yikama"),
+    ("yikama ", "yıkama"),
     ("tablet ", "tablet"),
-    ("kapsül ", "tablet"),
+    ("kapsul ", "tablet"),
     ("litre ", "lt"),
     ("tane ", "adet"),
     ("adet ", "adet"),
