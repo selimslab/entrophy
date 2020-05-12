@@ -36,7 +36,7 @@ def replace_size(id, name):
     return id, name, digits, unit, size_match
 
 
-def add_clean_name(id_doc_pairs):
+def add_clean_name(id_doc_pairs, debug):
     logging.info("add_clean_name..")
 
     to_clean = list()
@@ -47,7 +47,7 @@ def add_clean_name(id_doc_pairs):
     cpu_count = multiprocessing.cpu_count()
     logging.info(f"cpu_count {cpu_count}")
 
-    if cpu_count > 1:
+    if debug:
         with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
             results = pool.starmap(replace_size, tqdm(to_clean))
             results = (r for r in results if r)
@@ -60,6 +60,7 @@ def add_clean_name(id_doc_pairs):
                 }
                 id_doc_pairs[doc_id].update(info)
     else:
+        # memory not enough for multiple procs on the server
         for doc_id, name in to_clean:
             result = replace_size(doc_id, name)
             if result:

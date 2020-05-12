@@ -323,7 +323,7 @@ class SKUGraphCreator(services.GenericGraph):
         print("barcode match..")
         self.barcode_match()
 
-        add_clean_name(self.id_doc_pairs)
+        add_clean_name(self.id_doc_pairs, debug)
 
         if debug:
             self.test_set_match()
