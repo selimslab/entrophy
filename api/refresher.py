@@ -12,7 +12,7 @@ def create_new_matching():
         {keys.MARKET: {"$in": keys.MATCHING_MARKETS}}
     )
     skus: dict = create_matching(docs_to_match=docs_to_match)
-    syncer = Syncer(is_test=False)
+    syncer = Syncer(debug=False)
     syncer.sync_the_new_matching(skus)
 
 

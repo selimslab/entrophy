@@ -9,12 +9,12 @@ import logging
 
 
 class Syncer:
-    def __init__(self, is_test=None):
-        if is_test is None:
-            is_test = True
+    def __init__(self, debug=None):
+        if debug is None:
+            debug = True
 
-        self.is_test = is_test
-        if self.is_test:
+        self.debug = debug
+        if self.debug:
             logging.info("sync in test mode..")
             mongo_coll = mongo_collections.test_collection
             self.index = "test"

@@ -13,7 +13,7 @@ from supermatch.syncer import Syncer
 from supermatch import id_doc_pairer
 
 
-def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True, sync=False):
+def run_matcher(name, id_doc_pairs=None, docs_to_match=None, sync=False):
     paths = get_paths(name)
 
     full_skus = create_matching(docs_to_match=docs_to_match, id_doc_pairs=id_doc_pairs, debug=True)
@@ -23,7 +23,7 @@ def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True, sync=
 
     json_util.save_json(paths.processed_docs, id_doc_pairs)
 
-    syncer = Syncer(is_test)
+    syncer = Syncer(debug=True)
     basic_skus = syncer.strip_debug_fields(full_skus)
     json_util.save_json(paths.basic_skus, basic_skus)
 
@@ -34,7 +34,7 @@ def run_matcher(name, id_doc_pairs=None, docs_to_match=None, is_test=True, sync=
 def check_sync_only():
     paths = get_paths("end_to_end")
     full_skus = json_util.read_json(paths.full_skus)
-    syncer = Syncer(is_test=True)
+    syncer = Syncer(debug=True)
     # syncer.sync_the_new_matching(full_skus)
     syncer.sync_the_new_matching(dict(itertools.islice(full_skus.items(), 1000)))
 
