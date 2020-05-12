@@ -28,19 +28,8 @@ def replace_size(id, name):
         name = name.replace(size_match, str(digits) + " " + unit)
     except SizingException:
         pass
-    finally:
-        # only size can have .
-        tokens = []
-        for t in name.split():
-            if len(t) <= 1:
-                continue
-            if not t.replace(".", "").isdigit():
-                tokens.append(t.replace(".", " "))
-            else:
-                tokens.append(t)
 
-        name = " ".join(tokens)
-        return id, name, digits, unit, size_match
+    return id, name, digits, unit, size_match
 
 
 def add_clean_name(id_doc_pairs):
