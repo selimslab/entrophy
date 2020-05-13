@@ -24,7 +24,15 @@ def get_links_to_crawl():
     return cats
 
 
-all_cats = []
+# Define recursive dictionary
+from collections import defaultdict
+
+
+def tree():
+    return defaultdict(tree)
+
+
+category_tree = tree()
 
 
 def get_sub_cats(category_name):
@@ -32,22 +40,21 @@ def get_sub_cats(category_name):
     r = requests.get(url)
     body = json.loads(r.content, strict=False)
     aggregations = body.get("result").get("aggregations")
-    all_sub_cats = []
     for agg in aggregations:
-        name = agg.get("group")
-        filters = [val.get("beautifiedName") for val in agg.get("values")]
-        all_sub_cats.append((name, filters))
-        print(name)
-        pprint(filters)
-    all_cats.append((category_name, all_sub_cats))
+        filter_name = agg.get("group", "")
+        category_tree[category_name][filter_name.lower()] = [val.get("beautifiedName", "").lower()
+                                                             for val in agg.get("values")
+                                                             ]
+
+    pprint(category_tree)
 
 
 def get_cats():
-    for url in get_links_to_crawl():
-        get_sub_cats(url)
-
-    services.save_json("ty_filters.json", all_cats)
+    for category_name in get_links_to_crawl():
+        get_sub_cats(category_name)
+    pprint(category_tree)
+    services.save_json("ty_filters2.json", category_tree)
 
 
 if __name__ == "__main__":
-    pass
+    get_cats()

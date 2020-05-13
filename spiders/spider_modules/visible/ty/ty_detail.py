@@ -10,6 +10,9 @@ import data_services.mongo.collections as collections
 
 class TrendyolDetailSpider(BaseSpider):
     name = "ty_detail"
+    custom_settings = {
+        "CLOSESPIDER_TIMEOUT": 0,
+    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, base_domain="trendyol.com")
@@ -19,7 +22,7 @@ class TrendyolDetailSpider(BaseSpider):
             ]
         else:
             self.start_urls = collections.items_collection.distinct(
-                keys.LINK, {keys.MARKET: "ty"}
+                keys.LINK, {keys.MARKET: "ty", keys.BARCODES: {"$exists": False}}
             )
 
         self.instant_update_active = False
