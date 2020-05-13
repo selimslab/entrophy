@@ -42,69 +42,12 @@ def get_sub_cats(category_name):
     all_cats.append((category_name, all_sub_cats))
 
 
-# cats = get_links_to_crawl()
-
-cats = [
-    "camasir-yikama-urunleri",
-    "bulasik-yikama-urunleri",
-    "ev-temizlik-urunleri",
-    "temizlik-seti",
-    "caylar",
-    "kahve",
-    "kahvaltilik-urunler",
-    "atistirmaliklar",
-    "yag-ve-sos",
-    "sac-bakimi",
-    "tiras-agda-epilasyon",
-    "banyo--dus-urunleri",
-    "agiz-bakim",
-    "cilt-bakimi",
-    "cinsel-saglik-urunleri",
-    "kadin-hijyen",
-    "sporcu-besinleri-supplement",
-    "gida-takviyeleri-vitaminler",
-    "kedi-mamasi",
-    "kopek-mamasi",
-    "kedi-kumu",
-    "kedi-oyuncaklari+kopek-oyuncaklari",
-    "akvaryum-urunleri+kemirgen-urunleri+surungen-urunleri",
-    "ev-bakim-ve-temizlik",
-    "kozmetik",
-    "dogal-tutku+guzel-gida+kemal-kukrer+makarna-lutfen+wefood+kocamaar+kuru-yesil+aktar-diyari+herby+karali-cay",
-    "goz-makyaji",
-    "ten-makyaji",
-    "dudak-makyaji",
-    "makyaj-seti",
-    "oje",
-    "makyaj-cantasi",
-    "parfum",
-    "parfum-seti",
-    "deodorant",
-    "vucut-spreyi",
-    "nemlendirici-krem",
-    "yuz-temizleme",
-    "maske--peeling",
-    "goz-bakimi",
-    "gunes-urunleri",
-    "cilt-serumu",
-    "yaslanma-ve-kirisiklik-karsiti",
-    "sampuan",
-    "sac-sekillendirici",
-    "sac-maskesi",
-    "sac-boyasi",
-    "epilasyon-urunleri",
-    "tiras-bicagi",
-    "epilasyon-aleti",
-    "tiras-kopuk-ve-jelleri",
-    "cinsel-saglik-urunleri",
-    "kadin-hijyen",
-    "vucut-bakimi",
-    "banyo--dus-urunleri",
-    "bakim-yaglari+bitkisel-bakim-yagi",
-]
-
-if __name__ == "__main__":
-    for url in cats:
+def get_cats():
+    for url in get_links_to_crawl():
         get_sub_cats(url)
 
     services.save_json("ty_filters.json", all_cats)
+
+
+if __name__ == "__main__":
+    pass

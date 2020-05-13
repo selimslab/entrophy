@@ -4,7 +4,7 @@ from .watsons_helper import WatsonsHelper
 from pprint import pprint
 import services
 
-# urls = WatsonsHelper.get_category_urls("https://www.watsons.com.tr")
+urls = WatsonsHelper.get_category_urls("https://www.watsons.com.tr")
 
 urls = ['https://www.watsons.com.tr/c/kisisel-bakim-302', 'https://www.watsons.com.tr/c/sac-307',
         'https://www.watsons.com.tr/c/cilt-322', 'https://www.watsons.com.tr/c/makyaj-281',
