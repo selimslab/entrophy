@@ -15,7 +15,7 @@ class TrendyolSpider(BaseSpider):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, base_domain="trendyol.com")
-        self.start_urls = self.get_links_to_crawl()
+        self.instant_update_active = False
 
     @staticmethod
     def get_links_to_crawl():
@@ -34,7 +34,7 @@ class TrendyolSpider(BaseSpider):
         return link
 
     def start_requests(self):
-        for _, category_name in self.start_urls.items():
+        for _, category_name in self.get_links_to_crawl().items():
             page = 1
             page_url = f"https://api.trendyol.com/websearchgw/api/infinite-scroll{category_name}?pi={page}&storefrontId=1&culture=tr-TR&userGenderId=2&searchStrategyType=DEFAULT&pId=ILKx9K99Gg&scoringAlgorithmId=3&categoryRelevancyEnabled=undefined&legalRequirement=True"
             yield scrapy.Request(
@@ -86,4 +86,4 @@ class TrendyolSpider(BaseSpider):
 
 
 if __name__ == "__main__":
-    debug_spider(TrendyolSpider)
+    pass

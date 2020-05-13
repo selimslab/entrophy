@@ -16,6 +16,7 @@ class MarketPipeline(BasePipeline):
         self.batch_size = 256
         self.important_keys = {keys.LINK, keys.NAME, keys.PRICE, keys.MARKET, keys.SRC}
         self.bad_item_count = 0
+        self.instant_update_active = True
 
     @staticmethod
     def log_historical_price(item):
@@ -46,6 +47,7 @@ class MarketPipeline(BasePipeline):
 
     def process_batch(self):
         links = [item.get(keys.LINK) for item in self.batch]
+
         existing_links_cursor = data_services.get_sku_ids_by_links(links)
 
         existing_link_id_pairs = {
@@ -60,7 +62,8 @@ class MarketPipeline(BasePipeline):
         for item in self.batch:
             link = item.get(keys.LINK)
             if link in existing_link_id_pairs:
-                instant_update_batch.append((link, item))
+                if self.instant_update_active:
+                    instant_update_batch.append((link, item))
                 selector, command = self.get_updates_for_existing_item(item)
                 self.mongo_sync.add_update_one(selector, command)
             else:
@@ -88,7 +91,9 @@ class MarketPipeline(BasePipeline):
         item = self.clean_item(item)
         if any(key not in item for key in self.important_keys):
             self.bad_item_count += 1
-            return item
+
+        if hasattr(spider, "instant_update_active"):
+            self.instant_update_active = spider.instant_update_active
 
         self.batch.append(item)
         if len(self.batch) > self.batch_size:
@@ -107,7 +112,3 @@ class MarketPipeline(BasePipeline):
             raise ItemContentException(
                 f"{self.bad_item_count} bad items in {spider.name}"
             )
-
-
-if __name__ == "__main__":
-    pass

@@ -17,7 +17,7 @@ class BasePipeline:
             k: v
             for k, v in dict(item).items()
             # a value can't be null or empty
-            if v or v is False
+            if k not in {"_type"} and (v or v is False)
         }
 
     @staticmethod

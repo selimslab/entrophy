@@ -22,6 +22,8 @@ class TrendyolDetailSpider(BaseSpider):
                 keys.LINK, {keys.MARKET: "ty"}
             )
 
+        self.instant_update_active = False
+
     def parse(self, response):
         soup = bs4.BeautifulSoup(response.text, features="html.parser")
         script_tags = soup.findAll('script', type='application/ld+json', text=True)
