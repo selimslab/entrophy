@@ -91,5 +91,4 @@ class CivilSpider(BaseSpider):
 
 
 if __name__ == "__main__":
-    # debug_spider(CivilSpider)
-    TopLocalHelper.get_categories('https://www.civilim.com/')
+    debug_spider(CivilSpider)
