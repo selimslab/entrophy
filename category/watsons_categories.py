@@ -15,7 +15,7 @@ def get_category_urls(base_url):
     links = soup.findAll("a", {"class": "main-menu-link"})
     for link in links:
         href = link.get("href")
-        category = link.get_text().strip()
+        category = link.get("title")
         url = base_url + href
         if "sayfa" not in url and url not in urls:
             urls.append((category, url))
@@ -35,19 +35,16 @@ def tree():
 
 category_tree = tree()
 
-for cat, url in urls[:1]:
+for cat, url in urls:
     r = requests.get(url)
     soup = bs4.BeautifulSoup(r.content, "html.parser")
-    containers = soup.findAll("div", {"class": "filter-item"})
-    for con in containers:
-        name = con.find("div", {"class": "spec-filter-head"}) or con.find("span", {"class": "spec-filter-head"})
-        if name:
-            name = name.get("data-attribute-name") or name.get_text()
-            name = name.strip()
-        ul = con.find("ul")
-        filters = [li.getText().strip() for li in ul.findAll("a")]
+    cats = soup.find("div", {"class": "filter-item cats"})
+    filters = [li.getText().strip() for li in cats.find("ul").findAll("a")]
+    category_tree[cat]["cats"] = filters
 
-        category_tree[cat][name] = filters
+    brands = soup.find("div", {"class": "filter-item marka"})
+    filters = [li.getText().strip() for li in brands.find("ul").findAll("a")]
+    category_tree[cat]["marka"] = filters
 
-pprint(category_tree)
-# services.save_json("watsons_categories.json", all_cats)
+pprint(dict(category_tree))
+services.save_json("watsons_categories.json", dict(category_tree))
