@@ -91,4 +91,5 @@ class CivilSpider(BaseSpider):
 
 
 if __name__ == "__main__":
+
     debug_spider(CivilSpider)
