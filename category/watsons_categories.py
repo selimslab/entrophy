@@ -4,27 +4,50 @@ from spiders.spider_modules.visible.with_search.watsons_helper import WatsonsHel
 from pprint import pprint
 import services
 
-urls = WatsonsHelper.get_category_urls("https://www.watsons.com.tr")
 
-urls = ['https://www.watsons.com.tr/c/kisisel-bakim-302', 'https://www.watsons.com.tr/c/sac-307',
-        'https://www.watsons.com.tr/c/cilt-322', 'https://www.watsons.com.tr/c/makyaj-281',
-        'https://www.watsons.com.tr/c/anne-bebek-370', 'https://www.watsons.com.tr/c/erkek-298',
-        'https://www.watsons.com.tr/c/k-beauty-545', 'https://www.watsons.com.tr/c/parfum-ve-deodorant-287',
-        'https://www.watsons.com.tr/c/yasam-ve-spor-284', 'https://www.watsons.com.tr/c/elektronik-urunler-2882',
-        'https://www.watsons.com.tr/c/supermarket-3753']
+# urls = WatsonsHelper.get_category_urls("https://www.watsons.com.tr")
 
-all_cats = []
 
-for url in urls:
+def get_category_urls(base_url):
+    r = requests.get(base_url)
+    soup = bs4.BeautifulSoup(r.content, features="lxml")
+    urls = list()
+    links = soup.findAll("a", {"class": "main-menu-link"})
+    for link in links:
+        href = link.get("href")
+        category = link.get_text().strip()
+        url = base_url + href
+        if "sayfa" not in url and url not in urls:
+            urls.append((category, url))
+
+    return urls
+
+
+urls = get_category_urls("https://www.watsons.com.tr")
+
+# Define recursive dictionary
+from collections import defaultdict
+
+
+def tree():
+    return defaultdict(tree)
+
+
+category_tree = tree()
+
+for cat, url in urls[:1]:
     r = requests.get(url)
     soup = bs4.BeautifulSoup(r.content, "html.parser")
-    filters = soup.find("div", {"class": "filter-container"})
-    uls = filters.findAll("ul")
-    all_subcats = []
-    for ul in uls:
-        all_subcats += [li.getText().strip() for li in ul.findAll("a")]
+    containers = soup.findAll("div", {"class": "filter-item"})
+    for con in containers:
+        name = con.find("div", {"class": "spec-filter-head"}) or con.find("span", {"class": "spec-filter-head"})
+        if name:
+            name = name.get("data-attribute-name") or name.get_text()
+            name = name.strip()
+        ul = con.find("ul")
+        filters = [li.getText().strip() for li in ul.findAll("a")]
 
-    print(all_subcats)
-    all_cats.append((url.split("/")[-1], all_subcats))
+        category_tree[cat][name] = filters
 
-services.save_json("watsons_categories.json", all_cats)
+pprint(category_tree)
+# services.save_json("watsons_categories.json", all_cats)
