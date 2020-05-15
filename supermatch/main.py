@@ -1,7 +1,6 @@
 import logging
-from typing import Iterator
 import constants as keys
-from supermatch import id_doc_pairer, product_matching
+from supermatch import product_matching
 from supermatch.sku_matching import SKUGraphCreator
 from supermatch.doc_reducer import reduce_docs_to_sku
 import uuid
@@ -55,10 +54,7 @@ def add_product_info(groups_of_sku_ids, skus):
     return skus
 
 
-def create_matching(docs_to_match: Iterator, id_doc_pairs=None, debug=False) -> dict:
-    if id_doc_pairs is None:
-        id_doc_pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
-
+def create_matching(id_doc_pairs: dict, debug=False) -> dict:
     links_of_products = data_services.get_links_of_gratis_products(id_doc_pairs)
     # don't use gratis products for doc grouping
     id_doc_pairs = {

@@ -9,16 +9,6 @@ from spec.exceptions import MatchingException
 from supermatch.id_selector import select_unique_id
 
 
-def clean_price(price):
-    try:
-        if isinstance(price, str):
-            price = price.replace("TL", "").replace("₺", "").replace(" ", "").strip()
-        return convert_price(price)
-    except (TypeError, ValueError) as e:
-        print(e)
-        return
-
-
 def get_name_priorities():
     return {
         keys.GRATIS: 8,
@@ -80,7 +70,7 @@ def get_prices(docs):
         for market, price in prices.items()
         if market in keys.VISIBLE_MARKETS
     }
-    prices = {market: clean_price(price) for market, price in prices.items()}
+    prices = {market: convert_price(price) for market, price in prices.items()}
     prices = {market: price for market, price in prices.items() if price}
     if not prices:
         raise MatchingException("no prices")
@@ -159,8 +149,6 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     }
     sku_name = get_name(names)
     doc_names = list(names.values())
-    clean_names = [doc.get("clean_name") for doc in docs]
-    clean_names = [n for n in clean_names if n]
 
     sku_src = get_image(docs)
 
@@ -170,6 +158,8 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     barcodes = list(set(barcodes))
 
     clean_names = list(doc.get("clean_name") for doc in docs)
+    clean_names = [n for n in clean_names if n]
+
     tokens = token_util.get_tokens_of_a_group(clean_names)
     most_common_tokens = sorted(token_util.get_n_most_common_tokens(tokens, 3))
     tags = " ".join(sorted(list(set(tokens))))
@@ -178,9 +168,13 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     links = list(set(links))
 
     digits, unit, size, candidates = select_size(docs, sku_name)
+    candidates = set(tuple(c) for c in candidates)
     unit_price = None
     if digits:
         unit_price = round(best_price / digits, 2)
+
+    categories = list(doc.get(keys.CATEGORIES) for doc in docs)
+    brands = list(doc.get(keys.BRAND) for doc in docs)
 
     sku = SKU(
         doc_ids=doc_ids,
@@ -203,6 +197,8 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         size=size,
         unit_price=unit_price,
         digits_units=candidates,
+        categories=categories,
+        brands=brands,
     )
 
     return asdict(sku), sku_id
