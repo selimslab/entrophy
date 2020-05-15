@@ -3,9 +3,11 @@ from constants.marketyo import *
 from constants.top8 import *
 from constants.top_local import *
 
+TRENDYOL = "ty"
+
 TOP_LOCAL += MARKETYO_MARKET_NAMES
 
-ALL_MARKETS = TOP8 + TOP_LOCAL + HELPER_MARKETS
+ALL_MARKETS = TOP8 + TOP_LOCAL + HELPER_MARKETS + [TRENDYOL]
 
 MATCHING_MARKETS = [m for m in ALL_MARKETS if m not in {GROSERI}]
 
