@@ -42,9 +42,9 @@ def get_sub_cats(category_name):
     aggregations = body.get("result").get("aggregations")
     for agg in aggregations:
         filter_name = agg.get("group", "")
-        category_tree[category_name][filter_name.lower()] = [val.get("beautifiedName", "").lower()
-                                                             for val in agg.get("values")
-                                                             ]
+        category_tree[category_name][filter_name.lower()] = [
+            val.get("beautifiedName", "").lower() for val in agg.get("values")
+        ]
 
     pprint(category_tree)
 
