@@ -19,6 +19,9 @@ def clean_name(name: str) -> str:
     allowed_chars = re.compile("[^a-zA-Z0-9,.* ]")
     name = allowed_chars.sub("", name)
 
+    remove_whitespace_pattern = re.compile(r"\s+")
+    name = re.sub(remove_whitespace_pattern, " ", str(name)).strip()
+
     # only size can have .
     tokens = []
     for t in name.split():
@@ -29,8 +32,6 @@ def clean_name(name: str) -> str:
 
     name = " ".join(tokens)
 
-    remove_whitespace_pattern = re.compile(r"\s+")
-    name = re.sub(remove_whitespace_pattern, " ", str(name)).strip()
     return name
 
 

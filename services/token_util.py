@@ -6,7 +6,7 @@ from services import name_cleaner
 
 def tokenize(s):
     tokens = name_cleaner.clean_name(s).split()
-    return [t.strip() for t in tokens if len(t) > 2]
+    return [t.strip() for t in tokens]
 
 
 def get_tokens_of_a_group(strings: list):
