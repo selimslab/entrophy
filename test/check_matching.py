@@ -10,13 +10,13 @@ from supermatch.main import create_matching
 from test.test_logs.paths import get_paths
 
 from supermatch.syncer import Syncer
-from supermatch import id_doc_pairer
+from supermatch import preprocess
 
 
-def run_matcher(name, id_doc_pairs=None, docs_to_match=None, sync=False):
+def run_matcher(name: str, id_doc_pairs: dict, sync=False):
     paths = get_paths(name)
 
-    full_skus = create_matching(docs_to_match=docs_to_match, id_doc_pairs=id_doc_pairs, debug=True)
+    full_skus = create_matching(id_doc_pairs=id_doc_pairs, debug=True)
     json_util.save_json(paths.full_skus, full_skus)
 
     excel.create_excel(full_skus, id_doc_pairs, paths.excel)
@@ -45,12 +45,11 @@ def check_partial():
     run_matcher(name="20k", sync=False, id_doc_pairs=pairs)
 
 
-
 def check_query():
     links = json_util.read_json("links.json")
     query = {keys.LINK: {"$in": flatten(links)}}
     docs_to_match = data_services.get_docs_to_match(query)
-    pairs = id_doc_pairer.create_id_doc_pairs(docs_to_match)
+    pairs = preprocess.create_id_doc_pairs(docs_to_match)
     run_matcher(name="query", sync=False, id_doc_pairs=pairs)
 
 
@@ -59,7 +58,19 @@ def check_all():
     run_matcher(name="all_docs", sync=False, id_doc_pairs=pairs)
 
 
+def refresh():
+    docs_to_match = data_services.get_docs_to_match(
+        {keys.MARKET: {"$in": keys.MATCHING_MARKETS}}
+    )
+    pairs = preprocess.pre_process(docs_to_match)
+    services.save_json("latest_clean_pairs.json", pairs)
+
+
+def check_latest():
+    pairs = services.read_json("latest_clean_pairs.json")
+    run_matcher(name="latest", sync=False, id_doc_pairs=pairs)
+
+
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    check_all()

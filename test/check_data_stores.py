@@ -61,14 +61,5 @@ def bar():
     print(d, l)
 
 
-def brand():
-    pro = {"_id": 0, keys.LINK: 1, keys.SKU_ID: 1}
-
-    count = items_collection.count_documents(
-        {keys.MARKET: "ty", keys.BARCODES: {"$exists": True}},
-    )
-    print(count)
-
-
 if __name__ == "__main__":
-    brand()
+    pass
