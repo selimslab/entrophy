@@ -1,5 +1,6 @@
 import data_services
 from supermatch.main import create_matching
+from supermatch.preprocess import pre_process
 from supermatch.syncer import Syncer
 import constants as keys
 import sentry_sdk
@@ -11,7 +12,8 @@ def create_new_matching():
     docs_to_match = data_services.get_docs_to_match(
         {keys.MARKET: {"$in": keys.MATCHING_MARKETS}}
     )
-    skus: dict = create_matching(docs_to_match=docs_to_match)
+    pairs = pre_process(docs_to_match)
+    skus: dict = create_matching(id_doc_pairs=pairs)
     syncer = Syncer(debug=False)
     syncer.sync_the_new_matching(skus)
 
