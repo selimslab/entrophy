@@ -86,4 +86,4 @@ class TrendyolSpider(BaseSpider):
 
 
 if __name__ == "__main__":
-    pass
+    debug_spider(TrendyolSpider)

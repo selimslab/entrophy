@@ -24,7 +24,6 @@ class WatsonsHelper:
     def extract_product_info(product_div, base_url):
 
         brand = product_div.css(".productbox-name::text").extract_first().strip()
-        # name = product_div.css(".productbox-desc::text").extract_first().strip()
         name = (
             product_div.css(".product-box-zoom-image::attr(title)")
             .extract_first()

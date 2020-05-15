@@ -16,7 +16,6 @@ class MigrosHelper:
         urls = list()
         for link in links:
             a = link.find("a", href=True)
-            # category = a.getText().strip()
             href = a.get("href").strip()
             url = migros_url + href
             urls.append(url)
@@ -37,7 +36,11 @@ class MigrosHelper:
             return
 
         href = product_div.css(".product-link::attr(href)").extract_first().strip()
-        categories = product_div.css(".product-link::attr(data-monitor-category)").extract_first().strip()
+        categories = (
+            product_div.css(".product-link::attr(data-monitor-category)")
+                .extract_first()
+                .strip()
+        )
 
         src = product_div.css("img::attr(data-src)").extract_first()
 
@@ -48,7 +51,7 @@ class MigrosHelper:
             keys.PRICE: price,
             keys.MARKET: keys.MIGROS,
             keys.OUT_OF_STOCK: False,
-            keys.CATEGORIES: categories
+            keys.CATEGORIES: categories,
         }
 
 

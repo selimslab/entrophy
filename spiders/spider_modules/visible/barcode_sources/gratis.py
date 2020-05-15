@@ -10,6 +10,7 @@ from spiders.test_spider import debug_spider
 
 import pprint
 
+
 class GratisHelper:
     @staticmethod
     def get_category_urls(base_url):

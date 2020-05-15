@@ -48,7 +48,7 @@ class CarrefourHelper:
             keys.MARKET: keys.CARREFOUR,
             keys.OUT_OF_STOCK: False,
             keys.CATEGORIES: [cat],
-            keys.BRAND: brand
+            keys.BRAND: brand,
         }
 
 

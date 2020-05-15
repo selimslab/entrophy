@@ -29,7 +29,7 @@ class TrendyolDetailSpider(BaseSpider):
 
     def parse(self, response):
         soup = bs4.BeautifulSoup(response.text, features="html.parser")
-        script_tags = soup.findAll('script', type='application/ld+json', text=True)
+        script_tags = soup.findAll("script", type="application/ld+json", text=True)
         for script_tag in script_tags:
             s = script_tag.string
             if '"@type": "Product"' in s:

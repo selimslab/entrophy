@@ -9,7 +9,7 @@ import constants as keys
 from spiders.spider_modules.base import BaseSpider
 from spiders.test_spider import debug_spider
 
-import pprint
+from pprint import pprint
 
 
 class MarketyoSpider(BaseSpider):
@@ -22,9 +22,9 @@ class MarketyoSpider(BaseSpider):
         shuffle(keys.MARKETYO_MARKET_HEADERS)
         for headers in keys.MARKETYO_MARKET_HEADERS:
             print(headers)
-            for categoryId in self.category_id_generator(headers):
+            for category_id in self.category_id_generator(headers):
                 products_url = "https://core.marketyo.net/api/v1/Products?categoryId="
-                cat_url = products_url + categoryId
+                cat_url = products_url + category_id
                 yield scrapy.Request(
                     cat_url, callback=self.parse, headers=headers, meta=headers
                 )
