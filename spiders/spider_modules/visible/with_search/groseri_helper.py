@@ -1,5 +1,5 @@
 import constants as keys
-from services import flattener
+import services.collections_util
 from services.convertor import convert_price
 from services.get_soup import get_soup
 
@@ -10,7 +10,7 @@ class TopLocalHelper:
         soup = get_soup(url)
         uls = soup.findAll("ul", {"class": "nav-tabs"})
         lis = [ul.findAll("li", recursive=False) for ul in uls]
-        lis = flattener.flatten(lis)
+        lis = services.collections_util.flatten(lis)
         hrefs = [li.find("a", href=True).get("href").strip() for li in lis]
         cat_urls = [url + href for href in hrefs]
         return cat_urls

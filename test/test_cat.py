@@ -2,6 +2,8 @@ import services
 import collections
 from pprint import pprint
 
+import services.collections_util
+
 
 def test_cat():
     cats = [
@@ -18,22 +20,24 @@ def test_cat():
         ["Cipsler"],
     ]
 
-    cat_tokens = services.get_tokens_of_a_group(services.flatten(cats))
+    cat_tokens = services.get_tokens_of_a_nested_list(services.collections_util.flatten(cats))
     cat_token_freq = collections.Counter(cat_tokens)
 
     subcats = []
-    for c in cats:
-        if isinstance(c, list):
-            subcat = c[-1].split("/")[-1]
-            subcats.append(subcat)
+    for cat in cats:
+        if isinstance(cat, list):
+            subcats.append(cat[-1])
         else:
-            subcats.append(c)
+            subcats.append(cat)
+
+    subcats = [sub.split("/")[-1] for sub in subcats]
+
+    pprint(subcats)
 
     subcats = [services.clean_name(c).split() for c in subcats if c]
-    subcats = services.flatten(subcats)
+    subcats = services.collections_util.flatten(subcats)
     cat_freq = collections.Counter(subcats)
 
     pprint(cat_freq)
 
     pprint(cat_token_freq)
-

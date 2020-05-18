@@ -18,15 +18,16 @@ print(x)
 
 def foo(d, l):
     d[3][2] = 8
-    l.append(5)
+    l.append(4)
+    l = [i for i in range(2)]
 
 
 def bar():
     d = {3: {2: 4}}
-    l = []
+    l = [6]
     foo(d, l)
     print(d, l)
 
 
 if __name__ == "__main__":
-    pass
+    bar()

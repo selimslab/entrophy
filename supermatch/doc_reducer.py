@@ -1,10 +1,9 @@
 import collections
 from dataclasses import asdict
+
 import services
 import constants as keys
 from spec.model.sku import SKU
-from services import convert_price
-from services import token_util
 from spec.exceptions import MatchingException
 from supermatch.id_selector import select_unique_id
 
@@ -70,7 +69,7 @@ def get_prices(docs):
         for market, price in prices.items()
         if market in keys.VISIBLE_MARKETS
     }
-    prices = {market: convert_price(price) for market, price in prices.items()}
+    prices = {market: services.convert_price(price) for market, price in prices.items()}
     prices = {market: price for market, price in prices.items() if price}
     if not prices:
         raise MatchingException("no prices")
@@ -153,13 +152,13 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     sku_src = get_image(docs)
 
     barcodes = [doc.get(keys.BARCODES) for doc in docs]
-    barcodes = services.flatten(barcodes)
+    barcodes = services.collections_util.flatten(barcodes)
     barcodes = list(set(barcodes))
 
     clean_names = list(doc.get("clean_name") for doc in docs)
 
-    tokens = token_util.get_tokens_of_a_group(clean_names)
-    most_common_tokens = sorted(token_util.get_n_most_common_tokens(tokens, 3))
+    tokens = services.get_tokens_of_a_nested_list(clean_names)
+    most_common_tokens = sorted(services.get_n_most_common_list_elements(tokens, 3))
     tags = " ".join(sorted(list(set(tokens))))
 
     links = [doc.get(keys.LINK) for doc in docs]
