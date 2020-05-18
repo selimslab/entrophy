@@ -63,12 +63,15 @@ def clean_groups():
     groups = services.read_json("groups.json")
     cat_index = services.read_json("cat_index.json")
     brand_index = services.read_json("brand_index.json")
+    clean_groups = []
 
     for product_id, skus in tqdm(groups.items()):
         for sku_id, sku in skus.items():
             if "cat" not in sku or "brand" not in sku:
                 doc = guess(sku, cat_index, brand_index)
                 guess_tree[product_id][sku_id] = doc
+                if "cat_candidates" in doc or "brand_candidates" in doc:
+                    clean_groups.append(doc)
                 if "top_cat_guess" in doc:
                     cat_guess.append(doc)
                 if "top_brand_guess" in doc:
@@ -77,6 +80,7 @@ def clean_groups():
     services.save_json("guess.json", dict(guess_tree))
     services.save_json("cat_guess.json", cat_guess)
     services.save_json("brand_guess.json", brand_guess)
+    services.save_json("clean_groups.json", clean_groups)
 
 
 def go():
