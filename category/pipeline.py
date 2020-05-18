@@ -58,15 +58,11 @@ def get_the_guess_doc(sku):
     guess_doc = {
         # "names": sku.get("names"),
         "clean_names": clean_names,
-
         "cats": cats,
         "clean_cats": clean_cats,
-
         "subcats": subcats,
-
         "brands": brands,
         "clean_brands": clean_brands,
-
         "cat_freq": Counter(cat_tokens),
         "subcat_freq": Counter(subcat_tokens),
         "brand_freq": Counter(brand_tokens),
@@ -76,15 +72,9 @@ def get_the_guess_doc(sku):
 
 
 def create_guess_docs(full_skus):
-    guess_docs = [
-        get_the_guess_doc(sku)
-        for sku in tqdm(full_skus)
-    ]
+    guess_docs = [get_the_guess_doc(sku) for sku in tqdm(full_skus)]
 
-    guess_docs = [
-        services.filter_empty_or_null_dict_values(doc)
-        for doc in guess_docs
-    ]
+    guess_docs = [services.filter_empty_or_null_dict_values(doc) for doc in guess_docs]
 
     return guess_docs
 
@@ -114,18 +104,14 @@ def select_cat_and_brand(guess_docs, brand_index, cat_index):
             doc["top_cat_guess"] = top_guess
 
     docs_with_brand_and_cat = [
-        services.filter_empty_or_null_dict_values(doc)
-        for doc in guess_docs
+        services.filter_empty_or_null_dict_values(doc) for doc in guess_docs
     ]
 
     return docs_with_brand_and_cat
 
 
 def count_fields(docs: List[Dict], target_key):
-    return sum(
-        1 if target_key in doc else 0
-        for doc in docs
-    )
+    return sum(1 if target_key in doc else 0 for doc in docs)
 
 
 def stat(docs):
@@ -137,10 +123,7 @@ def stat(docs):
     with_cat_guess = count_fields(docs, "top_cat_guess")
 
     print(
-        with_brand,
-        with_brand_guess,
-        with_cat,
-        with_cat_guess,
+        with_brand, with_brand_guess, with_cat, with_cat_guess,
     )
 
 
@@ -165,9 +148,14 @@ def add_cat_and_brand():
 
 def summarize_cats():
     docs_with_brand_and_cat = services.read_json(docs_with_brand_and_cat_path)
-    catbr_summary = [{k: v for k, v in doc.items()
-                      if k in {"clean_names", "brand", "cat", "top_brand_guess", "top_cat_guess"}}
-                     for doc in docs_with_brand_and_cat]
+    catbr_summary = [
+        {
+            k: v
+            for k, v in doc.items()
+            if k in {"clean_names", "brand", "cat", "top_brand_guess", "top_cat_guess"}
+        }
+        for doc in docs_with_brand_and_cat
+    ]
     services.save_json(catbr_summary_path, catbr_summary)
 
     stat(docs_with_brand_and_cat)

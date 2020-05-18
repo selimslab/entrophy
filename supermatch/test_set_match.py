@@ -25,9 +25,7 @@ def get_expected_neighbours(self, id_groups):
 
 def test_set_match(self):
     id_groups = self.create_connected_component_groups(self.sku_graph)
-    id_groups = [
-        [id for id in id_group if "clone" not in id] for id_group in id_groups
-    ]
+    id_groups = [[id for id in id_group if "clone" not in id] for id_group in id_groups]
     id_groups = [g for g in id_groups if len(g) >= 3]
 
     expected_neighbors = get_expected_neighbours(self, id_groups)

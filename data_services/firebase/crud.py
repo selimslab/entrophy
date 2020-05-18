@@ -3,8 +3,6 @@ import constants as keys
 from tqdm import tqdm
 
 
-
-
 def batch_process(docs, collection, batch, func, id_key=None):
     if id_key is None:
         id_key = keys.SKU_ID

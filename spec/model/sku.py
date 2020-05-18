@@ -45,4 +45,3 @@ class SKU(BasicSKU):
     digits_units: list = None
     brands: list = field(default_factory=list)
     categories: list = field(default_factory=list)
-

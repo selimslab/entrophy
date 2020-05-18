@@ -4,12 +4,7 @@ from tqdm import tqdm
 
 
 def clean_promoted_link(promoted_name, link):
-    if any(
-            [
-                market_name in promoted_name
-                for market_name in keys.ALLOWED_MARKET_LINKS
-            ]
-    ):
+    if any([market_name in promoted_name for market_name in keys.ALLOWED_MARKET_LINKS]):
         if link[-1] == "/":
             link = link[:-1]
 

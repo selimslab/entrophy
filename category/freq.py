@@ -33,6 +33,5 @@ def all_name_freq():
     services.save_json("freq/name_freq.json", name_freq)
 
 
-
 if __name__ == "__main__":
     ...

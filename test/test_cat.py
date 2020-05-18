@@ -20,7 +20,9 @@ def test_cat():
         ["Cipsler"],
     ]
 
-    cat_tokens = services.get_tokens_of_a_nested_list(services.collections_util.flatten(cats))
+    cat_tokens = services.get_tokens_of_a_nested_list(
+        services.collections_util.flatten(cats)
+    )
     cat_token_freq = collections.Counter(cat_tokens)
 
     subcats = []
