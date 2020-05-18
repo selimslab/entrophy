@@ -89,7 +89,7 @@ def get_variant_name(docs):
     """
 
     variant_names = [
-        doc.get(keys.VARIANT_NAME) for doc in docs if doc.get(keys.VARIANT_NAME)
+        doc.get(keys.VARIANT_NAME) for doc in docs if keys.VARIANT_NAME in doc
     ]
 
     variants = [doc.get(keys.VARIANTS, {}) for doc in docs]
@@ -128,12 +128,12 @@ def select_size(docs, sku_name):
 
 def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     if not docs:
-        return None, None
+        return ()
 
     try:
         prices = get_prices(docs)
-    except MatchingException as e:
-        return None, None
+    except MatchingException:
+        return ()
 
     markets = list(set(prices.keys()))
     market_count = len(markets)
@@ -154,11 +154,9 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
 
     barcodes = [doc.get(keys.BARCODES) for doc in docs]
     barcodes = services.flatten(barcodes)
-    barcodes = [b for b in barcodes if b]
     barcodes = list(set(barcodes))
 
     clean_names = list(doc.get("clean_name") for doc in docs)
-    clean_names = [n for n in clean_names if n]
 
     tokens = token_util.get_tokens_of_a_group(clean_names)
     most_common_tokens = sorted(token_util.get_n_most_common_tokens(tokens, 3))
@@ -167,16 +165,14 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     links = [doc.get(keys.LINK) for doc in docs]
     links = list(set(links))
 
-    digits, unit, size, candidates = select_size(docs, sku_name)
-    candidates = set(tuple(c) for c in candidates)
+    digits, unit, size, all_digits_units = select_size(docs, sku_name)
+    all_digits_units = list(set(tuple(c) for c in all_digits_units))
     unit_price = None
     if digits:
         unit_price = round(best_price / digits, 2)
 
-    cats = (doc.get(keys.CATEGORIES) for doc in docs)
-    categories = [c for c in cats if c]
-    brands = (doc.get(keys.BRAND) for doc in docs)
-    brands = [b for b in brands if b]
+    cats = [doc.get(keys.CATEGORIES) for doc in docs]
+    brands = [doc.get(keys.BRAND) for doc in docs]
 
     sku = SKU(
         doc_ids=doc_ids,
@@ -198,9 +194,13 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         unit=unit,
         size=size,
         unit_price=unit_price,
-        digits_units=list(candidates),
-        categories=categories,
+        digits_units=all_digits_units,
+        categories=cats,
         brands=brands,
     )
 
-    return asdict(sku), sku_id
+    sku = asdict(sku)
+    sku = services.remove_null_dict_values(sku)
+    sku = services.remove_nulls_from_list_values_of_a_dict(sku)
+
+    return sku, sku_id

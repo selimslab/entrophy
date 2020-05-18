@@ -1,11 +1,13 @@
 import logging
+import uuid
+from tqdm import tqdm
+
 import constants as keys
 from supermatch import product_matching
 from supermatch.sku_matching import SKUGraphCreator
 from supermatch.doc_reducer import reduce_docs_to_sku
-import uuid
-from tqdm import tqdm
 import data_services
+import services
 
 
 def get_sku_groups(id_doc_pairs, debug):
@@ -39,10 +41,12 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
             continue
 
         docs = [id_doc_pairs.pop(doc_id, {}) for doc_id in doc_ids]
-        sku, sku_id = reduce_docs_to_sku(docs, doc_ids, used_ids)
-        if sku:
-            used_ids.add(sku_id)
-            skus[sku_id] = sku
+        result = reduce_docs_to_sku(docs, doc_ids, used_ids)
+        if result:
+            sku, sku_id = result
+            if sku:
+                used_ids.add(sku_id)
+                skus[sku_id] = sku
     return skus
 
 
@@ -76,7 +80,7 @@ def create_matching(id_doc_pairs: dict, debug=False) -> dict:
     skus = add_product_info(groups_of_sku_ids, skus)
 
     skus = {
-        sku_id: {k: v for k, v in sku.items() if isinstance(k, str) and v is not None}
+        sku_id: services.allow_string_keys_only(services.remove_null_dict_values(sku))
         for sku_id, sku in skus.items()
     }
 

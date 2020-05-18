@@ -308,6 +308,7 @@ class SKUGraphCreator(services.GenericGraph):
             clean_name = doc.get("clean_name")
             return name, clean_name
 
+        ## TODO fix failed_names, it becomes null
         failed_names = {}
         for test_node_id, group in expected_neighbors.items():
             if test_node_id in matched_to_another_group:
