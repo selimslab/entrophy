@@ -53,7 +53,7 @@ def get_cats():
     for category_name in get_links_to_crawl():
         get_sub_cats(category_name)
     pprint(category_tree)
-    services.save_json("ty_filters2.json", category_tree)
+    services.save_json("filters/ty_filters2.json", category_tree)
 
 
 if __name__ == "__main__":

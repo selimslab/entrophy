@@ -1,28 +1,30 @@
-import pathlib
 from tqdm import tqdm
 import itertools
-from collections import defaultdict, Counter
+from collections import Counter
+from typing import List, Dict
 
-from test.paths import get_path
+import services.collections_util
 import services
 import constants as keys
 
-cwd = pathlib.Path.cwd()
-test_logs_dir = cwd / "test_logs"
+from paths import *
 
 
 def get_top_guesses(index, tokens):
     tokens_in_index = tuple(t for t in tokens if t in index)
-    all_brands_or_cats_for_all_tokens = [index.get(t) for t in tokens]
-    all_brands_or_cats_for_all_tokens = [set(c) for c in all_brands_or_cats_for_all_tokens if c]
+    index_values = [index.get(t) for t in tokens]
+    index_values = [set(c) for c in index_values if c]
     all_guesses = []
-    for comb in itertools.combinations(all_brands_or_cats_for_all_tokens, 2):
+    for comb in itertools.combinations(index_values, 2):
         g = set.intersection(*comb)
         if g:
             all_guesses.append(list(g))
 
-    candidates = services.flatten(all_guesses)
-    # candidates = [c for c in candidates if all(t in c for t in tokens_in_index)]
+    if not all_guesses:
+        all_guesses = [list(v) for v in index_values]
+
+    candidates = services.collections_util.flatten(all_guesses)
+
     top_guess = None
     if all_guesses:
         top_guess = sorted(candidates, key=len)[0]
@@ -32,57 +34,144 @@ def get_top_guesses(index, tokens):
     return tokens_in_index, all_guesses, top_guess
 
 
-def guess(sku, cat_index, brand_index):
-    tokens = sku.get("name_freq").keys()
-    doc = {key: sku[key] for key in ["clean_names"]}
-    if "brand" not in sku:
-        candidate_tokens, all_guesses, top_guess = get_top_guesses(
-            brand_index, tokens
-        )
-        doc["brand_candidates"] = candidate_tokens
-        doc["brand_all_guesses"] = all_guesses
-        doc["top_brand_guess"] = top_guess
+def get_the_guess_doc(sku):
+    cats = sku.get(keys.CATEGORIES, [])
+    clean_cats = services.clean_list_of_strings(services.flatten(cats))
+    cat_tokens = services.get_cleaned_tokens_of_a_nested_list(cats)
+    subcats = []
+    for cat in cats:
+        if isinstance(cat, list):
+            subcats.append(cat[-1])
+        else:
+            subcats.append(cat)
 
-    if "cat" not in sku:
-        candidate_tokens, all_guesses, top_guess = get_top_guesses(
-            cat_index, tokens
-        )
-        doc["cat_candidates"] = candidate_tokens
-        doc["cat_all_guesses"] = all_guesses
-        doc["top_cat_guess"] = top_guess
+    subcats = [sub.split("/")[-1] for sub in subcats]
+    subcat_tokens = services.get_cleaned_tokens_of_a_nested_list(subcats)
 
-    doc = {k: v for k, v in doc.items() if k and v}
-    return doc
+    brands = sku.get(keys.BRAND)
+    clean_brands = services.clean_list_of_strings(services.flatten(brands))
+    brand_tokens = services.get_cleaned_tokens_of_a_nested_list(brands)
+
+    clean_names = sku.get("clean_names")
+    name_tokens = services.get_cleaned_tokens_of_a_nested_list(clean_names)
+
+    guess_doc = {
+        # "names": sku.get("names"),
+        "clean_names": clean_names,
+
+        "cats": cats,
+        "clean_cats": clean_cats,
+
+        "subcats": subcats,
+
+        "brands": brands,
+        "clean_brands": clean_brands,
+
+        "cat_freq": Counter(cat_tokens),
+        "subcat_freq": Counter(subcat_tokens),
+        "brand_freq": Counter(brand_tokens),
+        "name_freq": Counter(name_tokens),
+    }
+    return guess_doc
 
 
-def add_cat_and_brand(full_skus):
-    for sku_id, sku in tqdm(full_skus.items()):
-        cats = sku.get(keys.CATEGORIES, [])
+def create_guess_docs(full_skus):
+    guess_docs = [
+        get_the_guess_doc(sku)
+        for sku in tqdm(full_skus)
+    ]
 
-        subcats = [
-            cat[-1].split("/")[-1]
-            if isinstance(cat, list) else cat
-            for cat in cats
-        ]
+    guess_docs = [
+        services.filter_empty_or_null_dict_values(doc)
+        for doc in guess_docs
+    ]
 
-        subcats = [services.clean_name(c).split() for c in subcats if c]
-        subcats = services.flatten(subcats)
+    return guess_docs
 
-        brands = sku.get(keys.BRAND)
-        clean_brands = [services.clean_name(b) for b in brands if b]
 
-        clean_names = sku.get("clean_names")
-        name_tokens = services.get_tokens_of_a_group(clean_names)
+def select_cat_and_brand(guess_docs, brand_index, cat_index):
+    for doc in tqdm(guess_docs):
+        tokens = doc.get("name_freq").keys()
 
-        sku.update(
-            {
-                "subcat_freq": Counter(subcats),
-                "brand_freq": Counter(clean_brands),
-                "name_freq": Counter(name_tokens),
-            }
-        )
+        if "brand_freq" in doc:
+            doc["brand"] = services.get_most_frequent_key(doc.get("brand_freq"))
+        else:
+            candidate_tokens, all_guesses, top_guess = get_top_guesses(
+                brand_index, tokens
+            )
+            doc["brand_candidates"] = candidate_tokens
+            doc["brand_all_guesses"] = all_guesses
+            doc["top_brand_guess"] = top_guess
+
+        if "subcat_freq" in doc:
+            doc["cat"] = services.get_most_frequent_key(doc.get("subcat_freq"))
+        else:
+            candidate_tokens, all_guesses, top_guess = get_top_guesses(
+                cat_index, tokens
+            )
+            doc["cat_candidates"] = candidate_tokens
+            doc["cat_all_guesses"] = all_guesses
+            doc["top_cat_guess"] = top_guess
+
+    docs_with_brand_and_cat = [
+        services.filter_empty_or_null_dict_values(doc)
+        for doc in guess_docs
+    ]
+
+    return docs_with_brand_and_cat
+
+
+def count_fields(docs: List[Dict], target_key):
+    return sum(
+        1 if target_key in doc else 0
+        for doc in docs
+    )
+
+
+def stat(docs):
+    """ how many is guessed ? """
+    with_brand = count_fields(docs, "brand")
+    with_cat = count_fields(docs, "cat")
+
+    with_brand_guess = count_fields(docs, "top_brand_guess")
+    with_cat_guess = count_fields(docs, "top_cat_guess")
+
+    print(
+        with_brand,
+        with_brand_guess,
+        with_cat,
+        with_cat_guess,
+    )
+
+
+def add_cat_and_brand():
+    full_skus_path = temp / "full_skus.json"
+
+    full_skus = services.read_json(full_skus_path)
+
+    guess_docs = create_guess_docs(full_skus.values())
+
+    services.save_json(guess_docs_path, guess_docs)
+
+    brand_index = services.read_json(brand_index_path)
+    cat_index = services.read_json(cat_index_path)
+
+    docs_with_brand_and_cat = select_cat_and_brand(guess_docs, brand_index, cat_index)
+
+    services.save_json(docs_with_brand_and_cat_path, docs_with_brand_and_cat)
+
+    stat(docs_with_brand_and_cat)
+
+
+def summarize_cats():
+    docs_with_brand_and_cat = services.read_json(docs_with_brand_and_cat_path)
+    catbr_summary = [{k: v for k, v in doc.items()
+                      if k in {"clean_names", "brand", "cat", "top_brand_guess", "top_cat_guess"}}
+                     for doc in docs_with_brand_and_cat]
+    services.save_json(catbr_summary_path, catbr_summary)
+
+    stat(docs_with_brand_and_cat)
 
 
 if __name__ == "__main__":
-    full_skus_path = get_path("may18/full_skus.json")
-    full_skus = services.read_json(full_skus_path)
+    summarize_cats()

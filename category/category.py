@@ -8,6 +8,8 @@ import constants as keys
 from collections import defaultdict
 import uuid
 
+import services.collections_util
+
 
 def tree():
     return defaultdict(tree)
@@ -22,7 +24,7 @@ def group_names():
 
 
 def relevant_fields():
-    skus = services.read_json("../test/test_logs/latest/full_skus.json")
+    skus = services.read_json("temp/full_skus.json")
 
     pairs = services.read_json("../test/test_logs/old/latest_clean_pairs.json")
 
@@ -33,8 +35,8 @@ def relevant_fields():
 
         categories = [doc.get(keys.CATEGORIES) for doc in docs]
         categories = [c for c in categories if c]
-        flat_cats = services.flatten(cats)
-        cat_tokens = services.get_tokens_of_a_group(flat_cats)
+        flat_cats = services.collections_util.flatten(cats)
+        cat_tokens = services.get_tokens_of_a_nested_list(flat_cats)
         cat_token_freq = collections.Counter(cat_tokens)
 
         subcats = []
@@ -46,7 +48,7 @@ def relevant_fields():
                 subcats.append(c)
 
         subcats = [services.clean_name(c).split() for c in subcats if c]
-        flat_subcats = services.flatten(subcats)
+        flat_subcats = services.collections_util.flatten(subcats)
         cat_freq = collections.Counter(flat_subcats)
 
         brands = [doc.get(keys.BRAND) for doc in docs]
@@ -55,7 +57,7 @@ def relevant_fields():
         brand_freq = collections.Counter(clean_brands)
 
         clean_names = sku.get("clean_names")
-        name_tokens = services.get_tokens_of_a_group(clean_names)
+        name_tokens = services.get_tokens_of_a_nested_list(clean_names)
         name_freq = collections.Counter(name_tokens)
 
         sku = {
@@ -91,8 +93,8 @@ def group_products():
         digits_units = set(tuple(c) for c in sku.get("digits_units", []))
         sku["digits_units"] = tuple(digits_units)
 
-        flat_cats = services.flatten(sku.get("categories", []))
-        cat_tokens = services.get_tokens_of_a_group(flat_cats)
+        flat_cats = services.collections_util.flatten(sku.get("categories", []))
+        cat_tokens = services.get_cleaned_tokens_of_a_nested_list(flat_cats)
         sku["cat_token_freq"] = collections.Counter(cat_tokens)
 
         product_id = sku.get("product_id") or str(uuid.uuid4())

@@ -46,4 +46,4 @@ for cat, url in urls:
     category_tree[cat]["marka"] = filters
 
 pprint(dict(category_tree))
-services.save_json("watsons_categories.json", dict(category_tree))
+services.save_json("filters/watsons_categories.json", dict(category_tree))
