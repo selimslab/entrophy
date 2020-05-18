@@ -200,7 +200,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     )
 
     sku = asdict(sku)
-    sku = services.remove_null_dict_values(sku)
     sku = services.remove_nulls_from_list_values_of_a_dict(sku)
+    sku = services.remove_null_dict_values(sku)
 
     return sku, sku_id

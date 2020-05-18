@@ -71,6 +71,8 @@ def check_latest():
     pairs = services.read_json(paths.get_path("latest_pairs.json"))
     run_matcher(name="may18", sync=False, id_doc_pairs=pairs)
 
+
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
+    check_query()
