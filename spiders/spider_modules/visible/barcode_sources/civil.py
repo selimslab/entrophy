@@ -22,8 +22,9 @@ class TopLocalHelper:
     def get_categories(url):
         soup = get_soup(url)
         categories = dict()
+        categories['category'] = []
         for category in soup.findAll("a", class_="megamain-cat")[:-1]:
-            categories[category.text] = category.get("href")
+            categories['category'].append(category.text)
         return categories
 
     @staticmethod
@@ -91,5 +92,4 @@ class CivilSpider(BaseSpider):
 
 
 if __name__ == "__main__":
-
     debug_spider(CivilSpider)
