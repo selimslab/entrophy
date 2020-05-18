@@ -60,9 +60,9 @@ def guess(sku, cat_index, brand_index):
 
 
 def clean_groups():
-    groups = services.read_json("groups.json")
-    cat_index = services.read_json("cat_index.json")
-    brand_index = services.read_json("brand_index.json")
+    groups = services.read_json("../groups.json")
+    cat_index = services.read_json("../indexes/cat_index.json")
+    brand_index = services.read_json("../indexes/brand_index.json")
     clean_groups = []
 
     for product_id, skus in tqdm(groups.items()):
@@ -80,7 +80,7 @@ def clean_groups():
     services.save_json("guess.json", dict(guess_tree))
     services.save_json("cat_guess.json", cat_guess)
     services.save_json("brand_guess.json", brand_guess)
-    services.save_json("clean_groups.json", clean_groups)
+    services.save_json("../cleaner/clean_groups.json", clean_groups)
 
 
 def go():

@@ -11,8 +11,8 @@ import itertools
 all_brands = set()
 
 
-def clean_ty():
-    ty = services.read_json("ty_filters2.json")
+def merge_ty():
+    ty = services.read_json("filters/ty_filters2.json")
 
     merged = defaultdict(set)  # uses set to avoid duplicates
 
@@ -40,18 +40,18 @@ def select_brand(docs, tokens):
 
 
 def all_cats_and_brands():
-    brands = services.read_json("joined_brands.json")
-    cats = services.read_json("joined_categories.json")
+    brands = services.read_json("cleaner/joined_brands.json")
+    cats = services.read_json("cleaner/joined_categories.json")
 
     cats = cats.get("categories")
     print(len(cats))
     clean_cats = [services.clean_name(cat) for cat in cats]
     clean_cats = sorted(list(set(clean_cats)))
-    services.save_json("clean_cats.json", clean_cats)
+    services.save_json("cleaner/clean_cats.json", clean_cats)
 
     brands = brands.get("brands")
     clean_brands = [services.clean_name(b) for b in brands]
     clean_brands = sorted(list(set(clean_brands)))
     print(len(brands))
 
-    services.save_json("clean_brands.json", clean_brands)
+    services.save_json("cleaner/clean_brands.json", clean_brands)

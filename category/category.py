@@ -18,13 +18,13 @@ def group_names():
 
     names = [sku.get("names") for sku in fullskus.values()]
 
-    services.save_json("name_groups.json", names)
+    services.save_json("../test/test_logs/old/name_groups.json", names)
 
 
 def relevant_fields():
-    skus = services.read_json("latest/full_skus.json")
+    skus = services.read_json("../test/test_logs/latest/full_skus.json")
 
-    pairs = services.read_json("latest_clean_pairs.json")
+    pairs = services.read_json("../test/test_logs/old/latest_clean_pairs.json")
 
     cats = []
     for sku_id, sku in tqdm(skus.items()):
@@ -80,11 +80,11 @@ def relevant_fields():
         sku = {k: v for k, v in sku.items() if k and v}
         cats.append(sku)
 
-    services.save_json("latest/cat.json", cats)
+    services.save_json("../test/test_logs/latest/cat.json", cats)
 
 
 def group_products():
-    skus = services.read_json("latest/cat.json")
+    skus = services.read_json("../test/test_logs/latest/cat.json")
     groups = tree()
 
     for sku in tqdm(skus):
@@ -99,11 +99,11 @@ def group_products():
         sku_id = sku.pop("sku_id")
         groups[product_id][sku_id] = sku
 
-    services.save_json("../category/groups.json", dict(groups))
+    services.save_json("groups.json", dict(groups))
 
 
 def stat():
-    skus = services.read_json("latest/cat.json")
+    skus = services.read_json("../test/test_logs/latest/cat.json")
     with_brand = sum(1 if "brand" in sku else 0 for sku in skus)
     print(with_brand)
 
@@ -114,6 +114,13 @@ def stat():
 if __name__ == "__main__":
     stat()
 
+"""
+
+raw_docs -> skus -> get_relevant_fields 
+
+
+create brand and cat indexes 
+"""
 """
 137k SKU
 57786 with brand + 32k brand guess = 70k

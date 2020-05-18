@@ -173,8 +173,10 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     if digits:
         unit_price = round(best_price / digits, 2)
 
-    categories = list(doc.get(keys.CATEGORIES) for doc in docs)
-    brands = list(doc.get(keys.BRAND) for doc in docs)
+    cats = (doc.get(keys.CATEGORIES) for doc in docs)
+    categories = [c for c in cats if c]
+    brands = (doc.get(keys.BRAND) for doc in docs)
+    brands = [b for b in brands if b]
 
     sku = SKU(
         doc_ids=doc_ids,
@@ -196,7 +198,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         unit=unit,
         size=size,
         unit_price=unit_price,
-        digits_units=candidates,
+        digits_units=list(candidates),
         categories=categories,
         brands=brands,
     )

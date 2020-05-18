@@ -7,8 +7,8 @@ import itertools
 
 def brand_cat_freq():
     # but they are sets already, freq=1 ?
-    clean_brands = services.read_json("clean_brands.json")
-    clean_cats = services.read_json("clean_cats.json")
+    clean_brands = services.read_json("../cleaner/clean_brands.json")
+    clean_cats = services.read_json("../cleaner/clean_cats.json")
 
     brand_freq = Counter([t for brand in clean_brands for t in brand.split()])
     cat_freq = Counter([t for cat in clean_cats for t in cat.split()])
@@ -19,7 +19,7 @@ def brand_cat_freq():
 
 def all_name_freq():
     """ freq of tokens in all names """
-    groups = services.read_json("groups.json")
+    groups = services.read_json("../groups.json")
     names = (
         sku.get("clean_names")
         for product_id, skus in tqdm(groups.items())
@@ -33,7 +33,7 @@ def all_name_freq():
 
 def stat():
     """ how many is guessed ? """
-    groups = services.read_json("guess.json")
+    groups = services.read_json("../guesses/guess.json")
     with_brand_guess = sum(
         1 if "top_brand_guess" in sku else 0
         for product_id, skus in tqdm(groups.items())

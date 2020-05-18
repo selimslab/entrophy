@@ -15,12 +15,12 @@ def create_inverted_index(words):
 
 
 def create_indexes():
-    clean_brands = services.read_json("clean_brands.json")
-    clean_cats = services.read_json("clean_cats.json")
+    clean_brands = services.read_json("cleaner/clean_brands.json")
+    clean_cats = services.read_json("cleaner/clean_cats.json")
 
     brand_index = create_inverted_index(clean_brands)
-    services.save_json("brand_index.json", brand_index)
+    services.save_json("indexes/brand_index.json", brand_index)
 
     clean_cats.append("bebek bezi")
     cat_index = create_inverted_index(clean_cats)
-    services.save_json("cat_index.json", cat_index)
+    services.save_json("indexes/cat_index.json", cat_index)

@@ -7,7 +7,6 @@ import services
 
 # urls = WatsonsHelper.get_category_urls("https://www.watsons.com.tr")
 
-
 def get_category_urls(base_url):
     r = requests.get(base_url)
     soup = bs4.BeautifulSoup(r.content, features="lxml")
