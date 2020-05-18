@@ -1,3 +1,4 @@
+import requests
 import scrapy
 from bs4 import BeautifulSoup
 
@@ -10,8 +11,8 @@ class GittigidiyorSpider(BaseSpider):
     name = keys.GITTIGIFIYOR
 
     def __init__(self, *args, **kwargs):
-        super(GittigidiyorSpider, self).__init__(*args, base_domain="gittigidiyor.com/")
-        self.start_urls = {"supermarket", "/kozmetik-kisisel-bakim"}
+        super(GittigidiyorSpider, self).__init__(*args, base_domain="gittigidiyor.com")
+        self.start_urls = {"/supermarket", "/kozmetik-kisisel-bakim"}
 
     def start_requests(self):
         for url in self.start_urls:
@@ -31,9 +32,11 @@ class GittigidiyorSpider(BaseSpider):
             product_name = product['title']
             url = product['href']
             src = product.find("img", class_="img-cont")['src']
-            price = ((product.find("p", class_="fiyat robotobold price-txt")).text).replace(".", "").replace(",",
-                                                                                                             ".").replace(
-                "TL", "").strip()
+            price = ((product.find("p", class_="fiyat robotobold price-txt")).text) \
+                .replace(".", "") \
+                .replace(",", ".") \
+                .replace("TL", "") \
+                .strip()
             p = {
                 keys.LINK: url,
                 keys.NAME: product_name,
@@ -44,48 +47,47 @@ class GittigidiyorSpider(BaseSpider):
             }
             self.links_seen.add(p.get(keys.LINK))
             yield p
-            print(p)
 
-        # if self.next_page:
-        #     current_page_number = response.meta.get(keys.PAGE_NUMBER, 1)
-        #     next_page_number = current_page_number + 1
-        #     max_page_number = self.get_max_page_number(response)
-        #
-        #     if next_page_number <= max_page_number:
-        #         url = response.meta.get("url")
-        #         next_page_url = url + "?page=%s" % next_page_number
-        #         yield response.follow(
-        #             next_page_url,
-        #             meta={
-        #                 "url": url,
-        #                 "next_page_url": next_page_url,
-        #                 keys.PAGE_NUMBER: next_page_number,
-        #             },
-        #             callback=self.parse,
-        #         )
+        if self.next_page:
+            current_page_number = response.meta.get(keys.PAGE_NUMBER, 1)
+            next_page_number = current_page_number + 1
+            max_page_number = self.get_max_page_number(response)
 
-    # @staticmethod
-    # def get_max_page_number(response):
-    #     nav_items = response.css(".pagination").css("ul li")
-    #     page_numbers = list()
-    #     for nav in nav_items:
-    #         num = nav.css(".page-link::text").extract_first()
-    #         try:
-    #             page_numbers.append(int(num))
-    #         except ValueError:
-    #             continue
-    #
-    #     if page_numbers:
-    #         max_page_number = max(page_numbers)
-    #     else:
-    #         max_page_number = 1
-    #
-    #     return max_page_number
-    #
+            if next_page_number <= max_page_number:
+                url = response.meta.get("url")
+                next_page_url = url + "?page=%s" % next_page_number
+                yield response.follow(
+                    next_page_url,
+                    meta={
+                        "url": url,
+                        "next_page_url": next_page_url,
+                        keys.PAGE_NUMBER: next_page_number,
+                    },
+                    callback=self.parse,
+                )
+
+    @staticmethod
+    def get_max_page_number(url):
+        max_page = '1'
+        last_page = False
+        while not last_page:
+            next_page_url = f'{url}?sf={max_page}'
+            response = requests.get(next_page_url)
+            html_body = BeautifulSoup(response.text, "html.parser")
+            footer = html_body.find("div", class_="pager pt30 hidden-m gg-d-24")
+            pages = footer.findAll("li")
+            if not "next-link" in pages[-1]['class']:
+                last_page = True
+            else:
+                max_page = pages[-2].text
+
+        return max_page
+
     # def close(self, reason):
     #     self.logger.info("Spider closed: %s due to %s", self.name, reason)
     #     mark_out_of_stock(self.links_seen, self.name)
 
 
 if __name__ == "__main__":
-    debug_spider(GittigidiyorSpider)
+    # debug_spider(GittigidiyorSpider)
+    GittigidiyorSpider.get_max_page_number('https://www.gittigidiyor.com/supermarket')
