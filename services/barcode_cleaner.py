@@ -1,6 +1,6 @@
 from typing import Union
 
-from services import flattener
+import services
 
 
 class BarcodeCleaner:
@@ -9,7 +9,7 @@ class BarcodeCleaner:
         if not isinstance(barcodes, list):
             barcodes = barcodes.split(",")
         tokens = [token.split(",") for token in barcodes]
-        tokens = flattener.flatten(tokens)
+        tokens = services.flatten(tokens)
         tokens = [token.strip() for token in tokens]
         return tokens
 
