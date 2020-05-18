@@ -6,7 +6,7 @@ import constants as keys
 import logging
 
 
-def pre_process(docs_to_match: Iterator) -> dict:
+def get_clean_id_doc_pairs(docs_to_match: Iterator) -> dict:
     raw_pairs = create_id_doc_pairs(docs_to_match)
     clean_pairs = clean_id_doc_pairs(raw_pairs)
     return clean_pairs

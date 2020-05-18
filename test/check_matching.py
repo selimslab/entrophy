@@ -62,7 +62,7 @@ def refresh():
     docs_to_match = data_services.get_docs_to_match(
         {keys.MARKET: {"$in": keys.MATCHING_MARKETS}}
     )
-    pairs = preprocess.pre_process(docs_to_match)
+    pairs = preprocess.get_clean_id_doc_pairs(docs_to_match)
     services.save_json("latest_clean_pairs.json", pairs)
 
 
@@ -74,3 +74,9 @@ def check_latest():
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
+
+    docs_to_match = data_services.get_docs_to_match(
+        {keys.MARKET: "ty"}
+    )
+    pairs = preprocess.get_clean_id_doc_pairs(docs_to_match)
+    services.save_json("ty.json", pairs)
