@@ -16,11 +16,7 @@ def find_good_deals(skus):
         keys.A101,
     }
     for sku in skus:
-        name = sku.get(keys.NAME)
-        if name:
-            name = name.lower()
-        if any([antikw in name for antikw in antikws]):
-            continue
+        name = sku.get(keys.NAME, "").lower()
 
         price_pairs = {
             market: price

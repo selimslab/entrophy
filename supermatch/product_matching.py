@@ -23,8 +23,6 @@ def get_google_groups(skus, variants):
     """
     variants: [{'250 ml': '/shopping/product/17523461779494271950'}, {} ... ]
     """
-    # variants = data_services.get_google_variants()
-
     variant_id_pairs = dict()
 
     for i, var in enumerate(variants):
@@ -78,4 +76,4 @@ def group_skus(skus: dict, variants, links_of_products) -> list:
 
 
 if __name__ == "__main__":
-    pass
+    ...

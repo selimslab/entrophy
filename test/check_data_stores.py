@@ -49,6 +49,5 @@ def inspect_case(link):
     search_elastic(name)
 
 
-
 if __name__ == "__main__":
-    pass
+    ...

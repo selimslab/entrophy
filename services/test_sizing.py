@@ -51,4 +51,4 @@ def test_sizing():
 
 
 if __name__ == "__main__":
-    pass
+    ...

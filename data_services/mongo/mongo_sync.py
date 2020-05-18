@@ -78,4 +78,4 @@ def exec_remaining_ops(mongo_sync):
 
 
 if __name__ == "__main__":
-    pass
+    ...

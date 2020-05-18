@@ -153,4 +153,4 @@ class SizeFinder:
 size_finder = SizeFinder()
 
 if __name__ == "__main__":
-    pass
+    ...

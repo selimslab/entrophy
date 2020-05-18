@@ -37,4 +37,4 @@ def instant_price_update(existing_link_id_pairs, instant_update_batch):
 
 
 if __name__ == "__main__":
-    pass
+    ...

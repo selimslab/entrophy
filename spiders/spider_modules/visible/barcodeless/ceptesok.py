@@ -13,8 +13,10 @@ class SokHelper:
     def get_urls_sok():
 
         urls = [
-            "https://www.ceptesok.com/api/v1/products?store_id=12065",  # kağıthane
-            # "https://www.ceptesok.com/api/v1/products?store_id=11924",  # batıkent
+            # kağıthane
+            "https://www.ceptesok.com/api/v1/products?store_id=12065",
+            # batıkent
+            # "https://www.ceptesok.com/api/v1/products?store_id=11924",
         ]
 
         r = requests.get(urls[0])

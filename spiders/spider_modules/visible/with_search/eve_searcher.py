@@ -87,7 +87,6 @@ class EveShopSearcher(BaseSpider):
             res[keys.PRICE] = float(price)
         except TypeError as e:
             print(e)
-            pass
 
         return res
 

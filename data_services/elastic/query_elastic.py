@@ -42,4 +42,4 @@ def search_barcode(barcodes: list):
 
 
 if __name__ == "__main__":
-    pass
+    ...

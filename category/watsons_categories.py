@@ -1,11 +1,8 @@
 import requests
 import bs4
-from spiders.spider_modules.visible.with_search.watsons_helper import WatsonsHelper
 from pprint import pprint
 import services
 
-
-# urls = WatsonsHelper.get_category_urls("https://www.watsons.com.tr")
 
 def get_category_urls(base_url):
     r = requests.get(base_url)

@@ -35,4 +35,4 @@ def all_name_freq():
 
 
 if __name__ == "__main__":
-    stat()
+    ...

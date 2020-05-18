@@ -97,6 +97,7 @@ class GoogleDetailSpider(BaseSpider):
         variants_div = response.css("#variants")
         option_divs = variants_div.css("option")
         variants = dict()
+
         for option in option_divs:
             is_selected = option.css("::attr(selected)").extract_first()
             name = option.css("::text").extract_first()
@@ -106,7 +107,6 @@ class GoogleDetailSpider(BaseSpider):
             if is_selected:
                 link = "/shopping" + page_link.split("shopping")[1]
                 variants[link] = name
-                continue
             else:
                 link = option.css("::attr(value)").extract_first()
                 variants[link] = name

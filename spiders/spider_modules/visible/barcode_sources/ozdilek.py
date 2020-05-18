@@ -56,7 +56,6 @@ class TopLocalSpider(BaseSpider):
             .extract_first()
             .replace(replace_url, "")
         )
-        # link = "https://www.ozdilekteyim.com/shop/tr/ozdilekteyim/" + href
 
         src = product_div.css(".product-card-image img::attr(src)").extract_first()
 

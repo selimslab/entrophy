@@ -18,8 +18,6 @@ def create_excel(full_skus, id_doc_pairs, path):
         "market",
         "price",
         "barcodes",
-        # "variants",
-        # "promoted",
         keys.VARIANT_NAME,
         "stage",
     ]
@@ -43,4 +41,4 @@ def create_excel(full_skus, id_doc_pairs, path):
 
 
 if __name__ == "__main__":
-    pass
+    ...

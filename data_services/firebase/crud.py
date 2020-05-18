@@ -3,11 +3,6 @@ import constants as keys
 from tqdm import tqdm
 
 
-def commit_batch(batch):
-    try:
-        batch.commit()
-    finally:
-        return firestore_client.batch()
 
 
 def batch_process(docs, collection, batch, func, id_key=None):
@@ -22,10 +17,11 @@ def batch_process(docs, collection, batch, func, id_key=None):
         # batch.set(doc_ref, doc)
         count += 1
         if count == batch_size:
-            batch = commit_batch(batch)
+            batch.commit()
+            batch = firestore_client.batch()
             count = 0
 
-    commit_batch(batch)
+    batch.commit()
 
 
 def batch_update_firestore(docs, collection=None):
@@ -76,4 +72,4 @@ def firestore_delete_by_ids(ids_to_delete, collection=None):
 
 
 if __name__ == "__main__":
-    pass
+    ...
