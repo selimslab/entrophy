@@ -1,3 +1,4 @@
+import requests
 import scrapy
 from bs4 import BeautifulSoup
 
@@ -10,19 +11,36 @@ from spiders.test_spider import debug_spider
 class N11Spider(BaseSpider):
     name = keys.N11
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         super(N11Spider, self).__init__(*args, base_domain="n11.com")
-        self.start_urls = {"/supermarket", "/kozmetik-kisisel-bakim"}
+        self.start_urls = ['/supermarket'] + self.get_kozmetik_kisisel_bakim_urls(base_domain=self.base_url)
 
-    # def start_requests(self):
-    #     for url in self.start_urls:
-    #         page_url = self.base_url + url
-    #         yield scrapy.Request(
-    #             page_url,
-    #             callback=self.parse,
-    #             meta={"url": page_url, keys.PAGE_NUMBER: 1},
-    #         )
-    #
+    def get_kozmetik_kisisel_bakim_urls(self, base_domain):
+        categories_url = list()
+        response = requests.get(base_domain)
+        html_body = BeautifulSoup(response.text, "html.parser")
+        parsed_html = html_body.findAll("li", class_="catMenuItem")
+        category = ''
+        for category_div in parsed_html:
+            category = category_div.find('a')
+            if 'kozmetik' in (category.text).lower():
+                category = category_div
+                break
+        for subcategory in category.findAll("li", class_="subCatMenuItem"):
+            categories_url.append('/' + ((subcategory.find('a')['href']).split('/'))[-1])
+
+        return categories_url
+
+    def start_requests(self):
+        for url in self.start_urls:
+            page_url = self.base_url + url
+            print(page_url)
+            yield scrapy.Request(
+                page_url,
+                callback=self.parse,
+                meta={"url": page_url, keys.PAGE_NUMBER: 1},
+            )
+
     # def parse(self, response):
     #     html_body = BeautifulSoup(response.text, "html.parser")
     #     parsed_html = html_body.find("ul", class_="catalog-view clearfix products-container")
@@ -64,7 +82,7 @@ class N11Spider(BaseSpider):
     #             },
     #             callback=self.parse,
     #         )
-    #
+
     # @staticmethod
     # def check_next_page(response):
     #     html_body = BeautifulSoup(response.text, "html.parser")
@@ -85,3 +103,4 @@ class N11Spider(BaseSpider):
 
 if __name__ == "__main__":
     debug_spider(N11Spider)
+    # t = N11Spider()
