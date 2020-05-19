@@ -13,7 +13,7 @@ class N11Spider(BaseSpider):
 
     def __init__(self, *args, **kwargs):
         super(N11Spider, self).__init__(*args, base_domain="n11.com")
-        self.start_urls = ['/supermarket'] + self.get_kozmetik_kisisel_bakim_urls(base_domain=self.base_url)
+        self.start_urls = ['/supermarket']  # + self.get_kozmetik_kisisel_bakim_urls(base_domain=self.base_url)
 
     def get_kozmetik_kisisel_bakim_urls(self, base_domain):
         categories_url = list()
@@ -41,47 +41,61 @@ class N11Spider(BaseSpider):
                 meta={"url": page_url, keys.PAGE_NUMBER: 1},
             )
 
-    # def parse(self, response):
-    #     html_body = BeautifulSoup(response.text, "html.parser")
-    #     parsed_html = html_body.find("ul", class_="catalog-view clearfix products-container")
-    #     products = parsed_html.findAll("a")
-    #
-    #     for product in products:
-    #         product_name = product['title']
-    #         url = product['href']
-    #         src = product.find("img", class_="img-cont")['src']
-    #         price_div = product.find("div", class_="gg-w-24 gg-d-24 gg-t-24 gg-m-24 padding-none product-price-info")
-    #         price = (price_div.find("p")).text \
-    #             .replace(".", "") \
-    #             .replace(",", ".") \
-    #             .replace("TL", "") \
-    #             .strip()
-    #         p = {
-    #             keys.LINK: url,
-    #             keys.NAME: product_name,
-    #             keys.SRC: src,
-    #             keys.PRICE: price,
-    #             keys.MARKET: keys.GITTIGIFIYOR,
-    #             keys.OUT_OF_STOCK: False,
-    #         }
-    #         self.links_seen.add(p.get(keys.LINK))
-    #         yield p
-    #
-    #     self.next_page = self.check_next_page(response)
-    #     if self.next_page:
-    #         current_page_number = response.meta.get(keys.PAGE_NUMBER, 1)
-    #         next_page_number = current_page_number + 1
-    #         url = response.meta.get("url")
-    #         next_page_url = url + "?sf=%s" % next_page_number
-    #         yield response.follow(
-    #             next_page_url,
-    #             meta={
-    #                 "url": url,
-    #                 "next_page_url": next_page_url,
-    #                 keys.PAGE_NUMBER: next_page_number,
-    #             },
-    #             callback=self.parse,
-    #         )
+    def parse(self, response):
+        html_body = BeautifulSoup(response.text, "html.parser")
+        parsed_html = html_body.findAll("div", class_="pro")
+        for product_div in parsed_html:
+            product = product_div.find('a')
+            product_name = product['title']
+            url = product['href']
+            src = product_div.find("img")['data-original']
+            print(product_name)
+            print(url)
+            print(src)
+            print('************************************')
+            # price_div = product.find("div", class_="gg-w-24 gg-d-24 gg-t-24 gg-m-24 padding-none product-price-info")
+            # price = (price_div.find("p")).text \
+            #     .replace(".", "") \
+            #     .replace(",", ".") \
+            #     .replace("TL", "") \
+            #     .strip()
+
+        # for product in products:
+        #     product_name = product['title']
+        #     url = product['href']
+        #     src = product.find("img", class_="img-cont")['src']
+        #     price_div = product.find("div", class_="gg-w-24 gg-d-24 gg-t-24 gg-m-24 padding-none product-price-info")
+        #     price = (price_div.find("p")).text \
+        #         .replace(".", "") \
+        #         .replace(",", ".") \
+        #         .replace("TL", "") \
+        #         .strip()
+        #     p = {
+        #         keys.LINK: url,
+        #         keys.NAME: product_name,
+        #         keys.SRC: src,
+        #         keys.PRICE: price,
+        #         keys.MARKET: keys.GITTIGIFIYOR,
+        #         keys.OUT_OF_STOCK: False,
+        #     }
+        #     self.links_seen.add(p.get(keys.LINK))
+        #     yield p
+
+        # self.next_page = self.check_next_page(response)
+        # if self.next_page:
+        #     current_page_number = response.meta.get(keys.PAGE_NUMBER, 1)
+        #     next_page_number = current_page_number + 1
+        #     url = response.meta.get("url")
+        #     next_page_url = url + "?sf=%s" % next_page_number
+        #     yield response.follow(
+        #         next_page_url,
+        #         meta={
+        #             "url": url,
+        #             "next_page_url": next_page_url,
+        #             keys.PAGE_NUMBER: next_page_number,
+        #         },
+        #         callback=self.parse,
+        #     )
 
     # @staticmethod
     # def check_next_page(response):
