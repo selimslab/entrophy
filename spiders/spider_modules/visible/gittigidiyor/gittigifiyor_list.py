@@ -10,7 +10,7 @@ from spiders.test_spider import debug_spider
 class GittigidiyorSpider(BaseSpider):
     name = keys.GITTIGIFIYOR
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         super(GittigidiyorSpider, self).__init__(*args, base_domain="gittigidiyor.com")
         self.start_urls = {"/supermarket", "/kozmetik-kisisel-bakim"}
 
