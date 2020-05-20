@@ -25,7 +25,7 @@ class GittigidiyorHelper:
                 keys.LINK: url,
                 keys.NAME: product_name,
                 keys.SRC: src,
-                keys.PRICE: price,
+                keys.PRICE: convert_price(price),
                 keys.MARKET: keys.GITTIGIFIYOR,
             }
 
