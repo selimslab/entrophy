@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from services.convertor import convert_price
 
 import constants as keys
 
@@ -25,9 +26,8 @@ class N11Helper:
                 keys.LINK: url,
                 keys.NAME: product_name,
                 keys.SRC: src,
-                keys.PRICE: price,
+                keys.PRICE: convert_price(price),
                 keys.MARKET: keys.N11,
-                keys.OUT_OF_STOCK: False,
             }
 
         return p
