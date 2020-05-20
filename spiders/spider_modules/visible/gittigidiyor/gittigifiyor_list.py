@@ -5,6 +5,7 @@ import constants as keys
 from data_services import mark_out_of_stock
 from spiders.spider_modules.base import BaseSpider
 from spiders.test_spider import debug_spider
+from spiders.spider_modules.visible.gittigidiyor.gittigidiyor_helper import GittigidiyorHelper
 
 
 class GittigidiyorSpider(BaseSpider):
@@ -24,30 +25,9 @@ class GittigidiyorSpider(BaseSpider):
             )
 
     def parse(self, response):
-        html_body = BeautifulSoup(response.text, "html.parser")
-        parsed_html = html_body.find("ul", class_="catalog-view clearfix products-container")
-        products = parsed_html.findAll("a")
-
-        for product in products:
-            product_name = product['title']
-            url = product['href']
-            src = product.find("img", class_="img-cont")['src']
-            price_div = product.find("div", class_="gg-w-24 gg-d-24 gg-t-24 gg-m-24 padding-none product-price-info")
-            price = (price_div.find("p")).text \
-                .replace(".", "") \
-                .replace(",", ".") \
-                .replace("TL", "") \
-                .strip()
-            p = {
-                keys.LINK: url,
-                keys.NAME: product_name,
-                keys.SRC: src,
-                keys.PRICE: price,
-                keys.MARKET: keys.GITTIGIFIYOR,
-                keys.OUT_OF_STOCK: False,
-            }
-            self.links_seen.add(p.get(keys.LINK))
-            yield p
+        product = GittigidiyorHelper.extract_product_info(response)
+        self.links_seen.add(product.get(keys.LINK))
+        yield product
 
         self.next_page = self.check_next_page(response)
         if self.next_page:
