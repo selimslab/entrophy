@@ -24,8 +24,6 @@ pandas = "*"
 openpyxl = "*"
 xlrd = "*"
 pytest = "*"
-turkishstemmer = "*"
-async-timeout = "*"
 
 [requires]
 python_version = "3.7"
