@@ -14,7 +14,7 @@ class GittigidiyorHelper:
         for product in products:
             product_name = product['title']
             url = product['href']
-            src = product.find("img", class_="img-cont")['src']
+            src = product.find("img", class_="img-cont")['data-original']
             price_div = product.find("div", class_="gg-w-24 gg-d-24 gg-t-24 gg-m-24 padding-none product-price-info")
             price = (price_div.find("p")).text \
                 .replace(".", "") \
@@ -27,7 +27,6 @@ class GittigidiyorHelper:
                 keys.SRC: src,
                 keys.PRICE: price,
                 keys.MARKET: keys.GITTIGIFIYOR,
-                keys.OUT_OF_STOCK: False,
             }
 
         return p
