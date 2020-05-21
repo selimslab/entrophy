@@ -19,6 +19,15 @@ class TopLocalHelper:
         return cat_urls
 
     @staticmethod
+    def get_categories(url):
+        soup = get_soup(url)
+        categories = dict()
+        categories['category'] = []
+        for category in soup.findAll("a", class_="megamain-cat")[:-1]:
+            categories['category'].append(category.text)
+        return categories
+
+    @staticmethod
     def extract(product_div, base_url):
         link = base_url + product_div.css("a::attr(href)").extract_first().strip()
         name = product_div.css(".description h4::text").extract_first().strip()

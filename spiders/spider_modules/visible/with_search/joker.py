@@ -17,15 +17,27 @@ class TopLocalHelper:
         return cat_urls
 
     @staticmethod
+    def get_categories(url):
+        soup = get_soup(url)
+        categories = dict()
+        categories['category'] = []
+        soup = soup.findAll("ul", class_="dropdown-menu first-parent dress-special-menu mother-baby-nav-menu")
+        for submenu in soup:
+            for category in submenu.findAll("li"):
+                if not category.get('class'):
+                    categories['category'].append((category.find('a').text).replace('|', '').strip())
+        return categories
+
+    @staticmethod
     def extract_product_info(product_div, base_url):
         name = product_div.css(".product-title span::text").extract_first()
         price = product_div.css(".discount-price::text").extract_first()
         price = (
             price.replace("TL", "")
-            .replace(".", "")
-            .replace(",", ".")
-            .replace(" ", "")
-            .strip()
+                .replace(".", "")
+                .replace(",", ".")
+                .replace(" ", "")
+                .strip()
         )
         price = convert_price(price)
         if not price:
@@ -81,11 +93,4 @@ class JokerCollector(BaseSpider):
 
 
 if __name__ == "__main__":
-    # debug_spider(JokerCollector)
-    import requests
-
-    r = requests.get(
-        "https://www.joker.com.tr/arama/",
-        headers={"accept": "application/json", "accept-encoding": "gzip, deflate, br"},
-    )
-    print(r.json())
+    debug_spider(JokerCollector)
