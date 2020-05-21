@@ -45,12 +45,13 @@ def all_cats_and_brands():
 
     cats = cats.get("categories")
     print(len(cats))
-    clean_cats = [services.clean_name(cat) for cat in cats]
+    clean_cats = services.clean_list_of_strings_and_remove_nulls(cats)
     clean_cats = sorted(list(set(clean_cats)))
     services.save_json("cleaner/clean_cats.json", clean_cats)
 
     brands = brands.get("brands")
-    clean_brands = [services.clean_name(b) for b in brands]
+    services.remove_null_from_list(services.clean_list_of_strings(brands))
+    clean_brands = services.clean_list_of_strings_and_remove_nulls(brands)
     clean_brands = sorted(list(set(clean_brands)))
     print(len(brands))
 

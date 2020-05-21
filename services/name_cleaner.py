@@ -1,6 +1,5 @@
 import re
 import unicodedata
-from typing import List
 
 
 def clean_name(name: str) -> str:
@@ -34,10 +33,6 @@ def clean_name(name: str) -> str:
     name = " ".join(tokens)
 
     return name
-
-
-def clean_list_of_strings(l: List[str]):
-    return [clean_name(x) for x in l]
 
 
 if __name__ == "__main__":
