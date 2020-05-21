@@ -4,14 +4,16 @@ from pprint import pprint
 import services
 import json
 
+from paths import temp
 
-def get_links_to_crawl():
+
+def get_category_names():
     url = "https://www.trendyol.com"
     r = requests.get(url)
     soup = bs4.BeautifulSoup(r.content, "html.parser")
     nav = soup.find("ul", {"class": "main-nav"})
 
-    cats = []
+    category_names = []
     for menu in nav.findAll("li", class_="tab-link"):
         menu_title = menu.find("a", class_="category-header").text
         if "SÜPERMARKET" in menu_title or "KOZMETİK" in menu_title:
@@ -19,23 +21,11 @@ def get_links_to_crawl():
             for nav in navs:
                 links = nav.findAll("a")
                 hrefs = [link.get("href").split("/")[1] for link in links]
-                cats += hrefs
-    pprint(cats)
-    return cats
+                category_names += hrefs
+    return category_names
 
 
-# Define recursive dictionary
-from collections import defaultdict
-
-
-def tree():
-    return defaultdict(tree)
-
-
-category_tree = tree()
-
-
-def get_sub_cats(category_name):
+def update_category_tree(category_name, category_tree):
     url = f"https://api.trendyol.com/websearchgw/api/aggregations/{category_name}?culture=tr-TR&storefrontId=1&categoryRelevancyEnabled=undefined&priceAggregationType=DYNAMIC_GAUSS"
     r = requests.get(url)
     body = json.loads(r.content, strict=False)
@@ -46,14 +36,14 @@ def get_sub_cats(category_name):
             val.get("beautifiedName", "").lower() for val in agg.get("values")
         ]
 
-    pprint(category_tree)
-
 
 def get_cats():
-    for category_name in get_links_to_crawl():
-        get_sub_cats(category_name)
-    pprint(category_tree)
-    services.save_json("filters/ty_filters2.json", category_tree)
+    category_tree = services.tree()
+    category_names = get_category_names()
+    pprint(category_names)
+    for category_name in category_names:
+        update_category_tree(category_name, category_tree)
+    services.save_json(temp / "ty_cat_tree", category_tree)
 
 
 if __name__ == "__main__":
