@@ -34,6 +34,31 @@ def allow_string_keys_only(d: dict) -> dict:
     return {k: v for k, v in d.items() if isinstance(k, str) and v is not None}
 
 
+def merge_nested_dict(d: dict):
+    """
+    d = {
+        a: {
+            colors: ["white"]
+        },
+
+        b: {
+            colors: ["blue"]
+        },
+    }
+
+    merged = {
+    colors : ["white", "blue"]
+    }
+    """
+    merged = defaultdict(set)  # uses set to avoid duplicates
+
+    for key, nested_dict in d.items():
+        for k, v in nested_dict.items():  # use d.iteritems() in python 2
+            merged[k].update(v)
+
+    return merged
+
+
 ######### List util
 
 
