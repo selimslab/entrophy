@@ -161,5 +161,24 @@ def summarize_cats():
     stat(docs_with_brand_and_cat)
 
 
+def list_to_clean_set(strs: list):
+    res = services.clean_list_of_strings(strs)
+    res = services.remove_null_from_list(res)
+    res = sorted(list(set(res)))
+    return res
+
+
+def clean_cats_and_brands():
+    cats = services.read_json("cleaner/joined_categories.json")
+    cats = cats.get("categories")
+    clean_cats = list_to_clean_set(cats)
+    services.save_json("cleaner/clean_cats.json", clean_cats)
+
+    brands = services.read_json("cleaner/joined_brands.json")
+    brands = brands.get("brands")
+    clean_brands = list_to_clean_set(brands)
+    services.save_json("cleaner/clean_brands.json", clean_brands)
+
+
 if __name__ == "__main__":
     summarize_cats()

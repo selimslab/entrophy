@@ -39,20 +39,3 @@ def select_brand(docs, tokens):
                 return token
 
 
-def all_cats_and_brands():
-    brands = services.read_json("cleaner/joined_brands.json")
-    cats = services.read_json("cleaner/joined_categories.json")
-
-    cats = cats.get("categories")
-    print(len(cats))
-    clean_cats = services.clean_list_of_strings_and_remove_nulls(cats)
-    clean_cats = sorted(list(set(clean_cats)))
-    services.save_json("cleaner/clean_cats.json", clean_cats)
-
-    brands = brands.get("brands")
-    services.remove_null_from_list(services.clean_list_of_strings(brands))
-    clean_brands = services.clean_list_of_strings_and_remove_nulls(brands)
-    clean_brands = sorted(list(set(clean_brands)))
-    print(len(brands))
-
-    services.save_json("cleaner/clean_brands.json", clean_brands)
