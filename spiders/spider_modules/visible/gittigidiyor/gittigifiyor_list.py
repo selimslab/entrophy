@@ -25,9 +25,13 @@ class GittigidiyorSpider(BaseSpider):
             )
 
     def parse(self, response):
-        product = GittigidiyorHelper.extract_product_info(response)
-        self.links_seen.add(product.get(keys.LINK))
-        yield product
+        html_body = BeautifulSoup(response.text, "html.parser")
+        parsed_html = html_body.find("ul", class_="catalog-view clearfix products-container")
+        products = parsed_html.findAll("a")
+        for product_div in products:
+            product = GittigidiyorHelper.extract_product_info(product_div)
+            self.links_seen.add(product.get(keys.LINK))
+            yield product
 
         self.next_page = self.check_next_page(response)
         if self.next_page:
