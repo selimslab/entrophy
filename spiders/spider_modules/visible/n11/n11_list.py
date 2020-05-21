@@ -1,4 +1,3 @@
-import requests
 import scrapy
 from bs4 import BeautifulSoup
 
@@ -8,14 +7,13 @@ from spiders.spider_modules.base import BaseSpider
 from spiders.test_spider import debug_spider
 from spiders.spider_modules.visible.n11.n11_helper import N11Helper
 
+
 class N11Spider(BaseSpider):
     name = keys.N11
 
     def __init__(self, *args, **kwargs):
         super(N11Spider, self).__init__(*args, base_domain="n11.com")
         self.start_urls = ['/supermarket'] + N11Helper.get_kozmetik_kisisel_bakim_urls(base_domain=self.base_url)
-
-
 
     def start_requests(self):
         for url in self.start_urls:
@@ -27,9 +25,13 @@ class N11Spider(BaseSpider):
             )
 
     def parse(self, response):
-        product = N11Helper.extract_product_info(response)
-        self.links_seen.add(product.get(keys.LINK))
-        yield product
+        html_body = BeautifulSoup(str(response.text), "html.parser")
+        parsed_detail = html_body.findAll("div", class_="pro")
+        parsed_price = html_body.findAll("ins")
+        for product_div, price in zip(parsed_detail, parsed_price):
+            product = N11Helper.extract_product_info(product_div, price)
+            self.links_seen.add(product.get(keys.LINK))
+            yield product
 
         self.next_page = self.check_next_page(response)
         if self.next_page:

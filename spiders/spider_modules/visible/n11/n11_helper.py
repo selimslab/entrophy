@@ -7,28 +7,23 @@ import constants as keys
 
 class N11Helper:
     @staticmethod
-    def extract_product_info(response) -> dict:
-        html_body = BeautifulSoup(str(response.text), "html.parser")
-        parsed_detail = html_body.findAll("div", class_="pro")
-        parsed_price = html_body.findAll("ins")
-        p = dict()
-        for product_div, price in zip(parsed_detail, parsed_price):
-            product = product_div.find('a')
-            product_name = product['title']
-            url = product['href']
-            src = product_div.find("img")['data-original']
-            price = price.text \
-                .replace(".", "") \
-                .replace(",", ".") \
-                .replace("TL", "") \
-                .strip()
-            p = {
-                keys.LINK: url,
-                keys.NAME: product_name,
-                keys.SRC: src,
-                keys.PRICE: convert_price(price),
-                keys.MARKET: keys.N11,
-            }
+    def extract_product_info(product_div, price) -> dict:
+        product = product_div.find('a')
+        product_name = product['title']
+        url = product['href']
+        src = product_div.find("img")['data-original']
+        price = price.text \
+            .replace(".", "") \
+            .replace(",", ".") \
+            .replace("TL", "") \
+            .strip()
+        p = {
+            keys.LINK: url,
+            keys.NAME: product_name,
+            keys.SRC: src,
+            keys.PRICE: convert_price(price),
+            keys.MARKET: keys.N11,
+        }
 
         return p
 
