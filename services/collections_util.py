@@ -2,6 +2,7 @@
 useful functions for lists, dicts, tuples, ..
 """
 from collections import Counter, defaultdict
+from typing import Iterable
 
 
 ######### Dict util
@@ -13,6 +14,10 @@ def tree():
 def get_most_frequent_key(d: dict):
     if d:
         return max(d, key=d.get)
+
+
+def get_most_common_item(itr: Iterable):
+    return Counter(itr).most_common(1)[0][0]
 
 
 def remove_nulls_from_list_values_of_a_dict(d: dict) -> dict:
