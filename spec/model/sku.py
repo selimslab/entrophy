@@ -32,6 +32,9 @@ class BasicSKU:
 
     barcodes: list = field(default_factory=list)
 
+    color: str = None
+    reviews: list = None
+
 
 @dataclass
 class SKU(BasicSKU):
