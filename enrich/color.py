@@ -1,7 +1,6 @@
 import os
 import re
 
-import services.collections_util
 import services
 import constants as keys
 
@@ -27,7 +26,7 @@ def get_all_colors():
 
 
 def clean_colors(colors):
-    clean_colors = list_to_clean_set(colors)
+    clean_colors = services.list_to_clean_set(colors)
     clean_colors = [c for c in clean_colors
                     if not c.isdigit() and "nocolor" not in c]
 
