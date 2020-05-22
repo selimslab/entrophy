@@ -173,6 +173,9 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     cats = [doc.get(keys.CATEGORIES) for doc in docs]
     brands = [doc.get(keys.BRAND) for doc in docs]
 
+    # TODO add color
+    # TODO add reviews
+
     sku = SKU(
         doc_ids=doc_ids,
         sku_id=sku_id,
