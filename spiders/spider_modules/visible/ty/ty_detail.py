@@ -18,6 +18,7 @@ class TrendyolDetailSpider(BaseSpider):
         super().__init__(*args, **kwargs, base_domain="trendyol.com")
         if self.debug:
             self.start_urls = [
+                "https://www.trendyol.com/puma/acsent-erkek-gunluk-spor-ayakkabi-37131304-p-34722085?boutiqueId=481141&merchantId=109687",
                 "https://www.trendyol.com/l-oreal-paris/nem-terapisi-aloe-vera-suyu-kuru-ve-hassas-ciltler-icin-su-bazli-gunluk-bakim-p-2279199"
             ]
         else:
@@ -32,8 +33,11 @@ class TrendyolDetailSpider(BaseSpider):
         script_tags = soup.findAll("script", type="application/ld+json", text=True)
         for script_tag in script_tags:
             s = script_tag.string
+            product = json.loads(s)
+            pprint(product)
             if '"@type": "Product"' in s:
                 product = json.loads(s)
+                pprint(product)
                 product[keys.BARCODES] = product.pop("gtin13", [])
                 product[keys.LINK] = product.pop("url", "")
                 product[keys.BRAND] = product.get("brand", {}).get("name")

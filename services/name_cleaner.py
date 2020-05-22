@@ -1,7 +1,7 @@
 import re
 import unicodedata
 from typing import List
-
+import services
 
 def clean_name(name: str) -> str:
     if not name:
@@ -38,6 +38,13 @@ def clean_name(name: str) -> str:
 
 def clean_list_of_strings(l: List[str]):
     return [clean_name(x) for x in l]
+
+
+def list_to_clean_set(strs: list):
+    res = clean_list_of_strings(strs)
+    res = services.remove_null_from_list(res)
+    res = sorted(list(set(res)))
+    return res
 
 
 if __name__ == "__main__":
