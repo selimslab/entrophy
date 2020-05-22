@@ -24,6 +24,7 @@ pandas = "*"
 openpyxl = "*"
 xlrd = "*"
 pytest = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.7"
