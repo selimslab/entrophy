@@ -20,12 +20,22 @@ def stat(docs):
     with_cat_guess = count_fields(docs, "top_cat_guess")
 
     print(
+        "total",
+        len(docs),
+        "\n",
+
         "with_brand",
         with_brand,
+        "\n",
+
         "with_brand_guess",
         with_brand_guess,
+        "\n",
+
         "with_cat",
         with_cat,
+        "\n",
+
         "with_cat_guess",
         with_cat_guess,
     )

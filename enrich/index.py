@@ -1,9 +1,8 @@
 from collections import defaultdict, Counter
+from typing import List
+
 import services
 from paths import *
-from tqdm import tqdm
-
-from typing import List
 
 
 def create_inverted_index(words: set):
@@ -29,9 +28,9 @@ def create_index(words: List[str], name: str) -> dict:
     clean_file = name + "_clean.json"
     index_file = name + "_index.json"
 
-    services.save_json(temp / freq_file, word_freq)
-    services.save_json(temp / clean_file, words)
-    services.save_json(temp / index_file, index)
+    services.save_json(output_dir / freq_file, word_freq)
+    services.save_json(output_dir / clean_file, words)
+    services.save_json(output_dir / index_file, index)
 
     return index
 

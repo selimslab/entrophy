@@ -19,15 +19,15 @@ def add_cat_and_brand():
     6.
     """
 
-    full_skus = services.read_json(full_skus_path)
+    full_skus = services.read_json(input_dir / "full_skus.json")
     name_freq = get_name_freq(full_skus)
-    services.save_json(temp / "name_freq.json", name_freq)
+    services.save_json(output_dir / "name_freq.json", name_freq)
 
     guess_docs = create_guess_docs(full_skus.values())
-    services.save_json(guess_docs_path, guess_docs)
+    services.save_json(output_dir / "guess_docs.json", guess_docs)
 
-    brands = services.read_json("cleaner/joined_brands.json").get("brands")
-    cats = services.read_json("cleaner/joined_categories.json").get("categories")
+    brands = services.read_json(input_dir / "joined_brands.json").get("brands")
+    cats = services.read_json(input_dir / "joined_categories.json").get("categories")
     brand_index = create_index(brands, "brands")
     cat_index = create_index(cats, "cats")
 
@@ -38,7 +38,7 @@ def add_cat_and_brand():
         services.filter_empty_or_null_dict_values(doc) for doc in guess_docs
     ]
 
-    services.save_json(temp / "docs_with_brand_and_cat.json", docs_with_brand_and_cat)
+    services.save_json(output_dir / "docs_with_brand_and_cat.json", docs_with_brand_and_cat)
 
     stat(docs_with_brand_and_cat)
 
