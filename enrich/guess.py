@@ -54,6 +54,7 @@ def select_brand(guess_docs, brand_index):
         if "brand_freq" in doc:
             doc["brand"] = services.get_most_frequent_key(doc.get("brand_freq"))
         else:
+            # a more frequent token should be a more relwvant guess
             all_guesses = generate_all_guesses(brand_index, tokens)
             tokens_in_index = tuple(t for t in tokens if t in brand_index)
             top_guess = get_top_guess(all_guesses, tokens_in_index)

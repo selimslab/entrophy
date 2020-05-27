@@ -20,7 +20,6 @@ def add_cat_and_brand():
     full_skus = services.read_json(full_skus_path)
 
     guess_docs = create_guess_docs(full_skus.values())
-
     services.save_json(guess_docs_path, guess_docs)
 
     brand_index = services.read_json(brand_index_path)
