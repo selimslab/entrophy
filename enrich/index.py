@@ -3,8 +3,10 @@ import services
 from paths import *
 from tqdm import tqdm
 
+from typing import List
 
-def create_inverted_index(words):
+
+def create_inverted_index(words: set):
     stopwords = {"ml", "gr", "adet", "ve", "and", "ile"}
     index = defaultdict(set)
     for word in words:
@@ -16,32 +18,23 @@ def create_inverted_index(words):
     return index
 
 
-def create_brand_index():
-    brands = services.read_json("cleaner/joined_brands.json")
-    brands = brands.get("brands")
-    clean_brands = services.list_to_clean_set(brands)
-    services.save_json(clean_brands_path, clean_brands)
-
-    brand_index = create_inverted_index(clean_brands)
-    services.save_json(brand_index_path, brand_index)
-
+def create_index(words: List[str], name: str):
+    words = services.clean_list_of_strings(words)
+    words = services.remove_null_from_list(words)
     # but they are sets already, freq=1 ?
-    brand_freq = Counter([t for brand in clean_brands for t in brand.split()])
-    services.save_json(temp / "brand_freq.json", brand_freq)
+    word_freq = Counter([t for brand in words for t in brand.split()])
+    index = create_inverted_index(set(words))
+
+    services.save_json(temp / name + "_freq.json", word_freq)
+    services.save_json(temp / "clean_" + name + ".json", words)
+    services.save_json(temp / name + "_index", index)
 
 
-def create_cat_index():
-    cats = services.read_json("cleaner/joined_categories.json")
-    cats = cats.get("categories")
-    clean_cats = services.list_to_clean_set(cats)
-    services.save_json(clean_cats_path, clean_cats)
-
-    clean_cats.append("bebek bezi")
-    cat_index = create_inverted_index(clean_cats)
-    services.save_json(cat_index_path, cat_index)
-
-    cat_freq = Counter([t for cat in clean_cats for t in cat.split()])
-    services.save_json(temp / "cat_freq.json", cat_freq)
+def create_brand_and_cat_index():
+    brands = services.read_json("cleaner/joined_brands.json").get("brands")
+    cats = services.read_json("cleaner/joined_categories.json").get("categories")
+    create_index(brands, "brand")
+    create_index(cats, "category")
 
 
 def all_name_freq():
