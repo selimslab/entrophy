@@ -33,8 +33,8 @@ def create_index(words: List[str], name: str):
 def create_brand_and_cat_index():
     brands = services.read_json("cleaner/joined_brands.json").get("brands")
     cats = services.read_json("cleaner/joined_categories.json").get("categories")
-    create_index(brands, "brand")
-    create_index(cats, "category")
+    create_index(brands, "brands")
+    create_index(cats, "cats")
 
 
 def all_name_freq():

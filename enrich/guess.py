@@ -1,7 +1,6 @@
 from tqdm import tqdm
 import itertools
 
-import services.collections_util
 import services
 
 
@@ -23,7 +22,7 @@ def generate_all_guesses(index, tokens):
 def get_top_guess(all_guesses, tokens_in_index):
     top_guess = None
     if all_guesses:
-        candidates = services.collections_util.flatten(all_guesses)
+        candidates = services.flatten(all_guesses)
         top_guess = sorted(candidates, key=len)[0]
     if not top_guess and len(tokens_in_index) == 1:
         top_guess = tokens_in_index[0]
