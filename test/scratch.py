@@ -30,4 +30,7 @@ def bar():
 
 
 if __name__ == "__main__":
-    bar()
+    d = {3: {2: 4}, 4: {}}
+    for k, v in d.items():
+        v.update({2: 7})
+    print(d)
