@@ -1,5 +1,6 @@
 from tqdm import tqdm
 from collections import Counter
+import logging
 
 import services.collections_util
 import services
@@ -44,6 +45,7 @@ def get_the_guess_doc(sku):
 
 
 def create_guess_docs(full_skus):
+    logging.info("create_guess_docs..")
     guess_docs = [get_the_guess_doc(sku) for sku in tqdm(full_skus)]
 
     guess_docs = [services.filter_empty_or_null_dict_values(doc) for doc in guess_docs]

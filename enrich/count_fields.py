@@ -20,20 +20,29 @@ def stat(docs):
     with_cat_guess = count_fields(docs, "top_cat_guess")
 
     print(
-        with_brand, with_brand_guess, with_cat, with_cat_guess,
+        "with_brand",
+        with_brand,
+        "with_brand_guess",
+        with_brand_guess,
+        "with_cat",
+        with_cat,
+        "with_cat_guess",
+        with_cat_guess,
     )
 
 
-def get_name_freq(full_skus):
+def get_name_freq(full_skus: dict):
     """ freq of tokens in all names """
-    names = [doc.get("clean_names") for doc in full_skus]
+    names = [doc.get("clean_names") for doc in full_skus.values()]
     names = services.collections_util.flatten(names)
     name_freq = Counter([word for name in names if name for word in name.split()])
     return name_freq
 
 
 def markets_with_cat():
-    markets_with_cat = items_collection.distinct(keys.MARKET, {keys.CATEGORIES: {"$exists": True}})
+    markets_with_cat = items_collection.distinct(
+        keys.MARKET, {keys.CATEGORIES: {"$exists": True}}
+    )
     pprint(markets_with_cat)
     """
 ['basgimpa',

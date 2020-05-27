@@ -5,7 +5,9 @@ import constants as keys
 from data_services import mark_out_of_stock
 from spiders.spider_modules.base import BaseSpider
 from spiders.test_spider import debug_spider
-from spiders.spider_modules.visible.gittigidiyor.gittigidiyor_helper import GittigidiyorHelper
+from spiders.spider_modules.visible.gittigidiyor.gittigidiyor_helper import (
+    GittigidiyorHelper,
+)
 
 
 class GittigidiyorSpider(BaseSpider):
@@ -26,7 +28,9 @@ class GittigidiyorSpider(BaseSpider):
 
     def parse(self, response):
         html_body = BeautifulSoup(response.text, "html.parser")
-        parsed_html = html_body.find("ul", class_="catalog-view clearfix products-container")
+        parsed_html = html_body.find(
+            "ul", class_="catalog-view clearfix products-container"
+        )
         products = parsed_html.findAll("a")
         for product_div in products:
             product = GittigidiyorHelper.extract_product_info(product_div)
@@ -55,7 +59,7 @@ class GittigidiyorSpider(BaseSpider):
         footer = html_body.find("div", class_="pager pt30 hidden-m gg-d-24")
         pages = footer.findAll("li")
 
-        if "next-link" in pages[-1]['class']:
+        if "next-link" in pages[-1]["class"]:
             next_page = True
         else:
             next_page = False

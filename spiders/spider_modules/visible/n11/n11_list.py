@@ -13,7 +13,9 @@ class N11Spider(BaseSpider):
 
     def __init__(self, *args, **kwargs):
         super(N11Spider, self).__init__(*args, base_domain="n11.com")
-        self.start_urls = ['/supermarket'] + N11Helper.get_kozmetik_kisisel_bakim_urls(base_domain=self.base_url)
+        self.start_urls = ["/supermarket"] + N11Helper.get_kozmetik_kisisel_bakim_urls(
+            base_domain=self.base_url
+        )
 
     def start_requests(self):
         for url in self.start_urls:
@@ -55,7 +57,7 @@ class N11Spider(BaseSpider):
         footer = html_body.find("div", class_="pagination")
         pages = footer.findAll("a")
 
-        if "nextBlock" in pages[-1]['class']:
+        if "nextBlock" in pages[-1]["class"]:
             next_page = True
         else:
             next_page = False

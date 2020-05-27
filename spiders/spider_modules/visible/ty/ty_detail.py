@@ -19,7 +19,7 @@ class TrendyolDetailSpider(BaseSpider):
         if self.debug:
             self.start_urls = [
                 "https://www.trendyol.com/puma/acsent-erkek-gunluk-spor-ayakkabi-37131304-p-34722085?boutiqueId=481141&merchantId=109687",
-                "https://www.trendyol.com/l-oreal-paris/nem-terapisi-aloe-vera-suyu-kuru-ve-hassas-ciltler-icin-su-bazli-gunluk-bakim-p-2279199"
+                "https://www.trendyol.com/l-oreal-paris/nem-terapisi-aloe-vera-suyu-kuru-ve-hassas-ciltler-icin-su-bazli-gunluk-bakim-p-2279199",
             ]
         else:
             self.start_urls = collections.items_collection.distinct(

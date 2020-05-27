@@ -20,12 +20,17 @@ class TopLocalHelper:
     def get_categories(url):
         soup = get_soup(url)
         categories = dict()
-        categories['category'] = []
-        soup = soup.findAll("ul", class_="dropdown-menu first-parent dress-special-menu mother-baby-nav-menu")
+        categories["category"] = []
+        soup = soup.findAll(
+            "ul",
+            class_="dropdown-menu first-parent dress-special-menu mother-baby-nav-menu",
+        )
         for submenu in soup:
             for category in submenu.findAll("li"):
-                if not category.get('class'):
-                    categories['category'].append((category.find('a').text).replace('|', '').strip())
+                if not category.get("class"):
+                    categories["category"].append(
+                        (category.find("a").text).replace("|", "").strip()
+                    )
         return categories
 
     @staticmethod

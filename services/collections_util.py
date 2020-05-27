@@ -7,6 +7,7 @@ from typing import Iterable
 
 ######### Dict util
 
+
 def tree():
     return defaultdict(tree)
 

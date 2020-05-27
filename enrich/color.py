@@ -27,16 +27,12 @@ def get_all_colors():
 
 def clean_colors(colors):
     clean_colors = services.list_to_clean_set(colors)
-    clean_colors = [c for c in clean_colors
-                    if not c.isdigit() and "nocolor" not in c]
+    clean_colors = [c for c in clean_colors if not c.isdigit() and "nocolor" not in c]
 
     letters_only = re.compile(r"[^a-z]")
 
     clean_colors = [
-        " ".join(
-            re.sub(letters_only, "", t).strip()
-            for t in color.split()
-        ).strip()
+        " ".join(re.sub(letters_only, "", t).strip() for t in color.split()).strip()
         for color in clean_colors
     ]
     clean_colors = list(set(clean_colors))

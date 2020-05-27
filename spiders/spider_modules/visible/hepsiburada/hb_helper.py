@@ -11,10 +11,10 @@ class HepsiburadaHelper:
 
     @staticmethod
     def get_categories(html_path):
-        soup = (open(html_path, mode='r', encoding='utf-8')).read()
+        soup = (open(html_path, mode="r", encoding="utf-8")).read()
         soup = BeautifulSoup(soup, "html.parser")
         categories = dict()
-        categories['category'] = []
+        categories["category"] = []
         hb_menu = soup.findAll("li", class_="MenuItems-1-U3X")
         print(hb_menu)
         # for submenu in soup:
@@ -24,4 +24,4 @@ class HepsiburadaHelper:
         # return categories
 
 
-HepsiburadaHelper.get_categories('Hepsiburada.com.html')
+HepsiburadaHelper.get_categories("Hepsiburada.com.html")

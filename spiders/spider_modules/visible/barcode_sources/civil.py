@@ -22,9 +22,9 @@ class TopLocalHelper:
     def get_categories(url):
         soup = get_soup(url)
         categories = dict()
-        categories['category'] = []
+        categories["category"] = []
         for category in soup.findAll("a", class_="megamain-cat")[:-1]:
-            categories['category'].append(category.text)
+            categories["category"].append(category.text)
         return categories
 
     @staticmethod

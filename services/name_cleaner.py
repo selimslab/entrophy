@@ -3,6 +3,7 @@ import unicodedata
 from typing import List
 import services
 
+
 def clean_name(name: str) -> str:
     if not name:
         return ""
