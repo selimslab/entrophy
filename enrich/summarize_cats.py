@@ -5,7 +5,7 @@ from .count_fields import stat
 
 
 def summarize_cats():
-    docs_with_brand_and_cat = services.read_json(docs_with_brand_and_cat_path)
+    docs_with_brand_and_cat = services.read_json(temp / "docs_with_brand_and_cat.json")
     catbr_summary = [
         {
             k: v
@@ -14,6 +14,6 @@ def summarize_cats():
         }
         for doc in docs_with_brand_and_cat
     ]
-    services.save_json(catbr_summary_path, catbr_summary)
+    services.save_json(temp / "cat_brand_summary.json", catbr_summary)
 
     stat(docs_with_brand_and_cat)

@@ -1,6 +1,10 @@
 from pprint import pprint
+from collections import Counter
+
 from data_services.mongo.collections import items_collection
 import constants as keys
+import services
+from paths import *
 
 
 def count_fields(docs, target_key):
@@ -18,6 +22,14 @@ def stat(docs):
     print(
         with_brand, with_brand_guess, with_cat, with_cat_guess,
     )
+
+
+def get_name_freq(full_skus):
+    """ freq of tokens in all names """
+    names = [doc.get("clean_names") for doc in full_skus]
+    names = services.collections_util.flatten(names)
+    name_freq = Counter([word for name in names if name for word in name.split()])
+    return name_freq
 
 
 def markets_with_cat():
