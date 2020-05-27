@@ -29,7 +29,6 @@ def get_the_guess_doc(sku):
     name_token_freq = services.get_ordered_token_freq_of_a_nested_list(clean_names)
 
     guess_doc = {
-        # "names": sku.get("names"),
         "clean_names": clean_names,
         "cats": cats,
         "clean_cats": clean_cats,
@@ -41,7 +40,10 @@ def get_the_guess_doc(sku):
         "subcat_token_freq": subcat_token_freq,
         "brand_token_freq": brand_token_freq,
         "name_token_freq": name_token_freq,
+
+        keys.PRODUCT_ID: sku.get(keys.PRODUCT_ID),
     }
+
     return guess_doc
 
 
