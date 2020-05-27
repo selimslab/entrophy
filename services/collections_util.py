@@ -1,8 +1,8 @@
 """
 useful functions for lists, dicts, tuples, ..
 """
-from collections import Counter, defaultdict
-from typing import Iterable
+from collections import Counter, defaultdict, ChainMap
+from typing import Iterable, List
 
 
 ######### Dict util
@@ -10,6 +10,10 @@ from typing import Iterable
 
 def tree():
     return defaultdict(tree)
+
+
+def merge_list_of_dicts(ld: List[dict]) -> dict:
+    return dict(ChainMap(*ld))
 
 
 def get_most_frequent_key(d: dict):

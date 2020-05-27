@@ -124,9 +124,10 @@ After all most of these selections are guesses only
         if keys.PRODUCT_ID in doc:
             product_groups[doc.get(keys.PRODUCT_ID)].add(keys.SKU_ID)
 
-    logging.info("selecting cats..")
-    select_brand(guess_docs, brand_index, product_groups)
-    select_cat(guess_docs, cat_index, product_groups)
+    logging.info(f"{len(product_groups)}, product_groups")
+
+    logging.info("adding cats and brands..")
+    add_brand_and_cat(guess_docs, brand_index, cat_index, product_groups)
 
     docs_with_brand_and_cat = [
         services.filter_empty_or_null_dict_values(doc)
