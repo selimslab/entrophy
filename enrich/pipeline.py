@@ -1,12 +1,6 @@
-from pprint import pprint
-
-import services
-import constants as keys
-
-import enrich
 from paths import *
-
-from data_services.mongo.collections import items_collection
+from prepare_docs_to_guess import *
+from guess import *
 
 
 def add_cat_and_brand():
@@ -25,15 +19,15 @@ def add_cat_and_brand():
 
     full_skus = services.read_json(full_skus_path)
 
-    guess_docs = enrich.create_guess_docs(full_skus.values())
+    guess_docs = create_guess_docs(full_skus.values())
 
     services.save_json(guess_docs_path, guess_docs)
 
     brand_index = services.read_json(brand_index_path)
     cat_index = services.read_json(cat_index_path)
 
-    enrich.select_brand(guess_docs, brand_index)
-    enrich.select_cat(guess_docs, cat_index)
+    select_brand(guess_docs, brand_index)
+    select_cat(guess_docs, cat_index)
 
     docs_with_brand_and_cat = [
         services.filter_empty_or_null_dict_values(doc) for doc in guess_docs
@@ -41,9 +35,8 @@ def add_cat_and_brand():
 
     services.save_json(docs_with_brand_and_cat_path, docs_with_brand_and_cat)
 
-    enrich.stat(docs_with_brand_and_cat)
+    # stat(docs_with_brand_and_cat)
 
 
 if __name__ == "__main__":
-    markets_with_cat = items_collection.distinct(keys.MARKET, {keys.CATEGORIES: {"$exists": True}})
-    pprint(markets_with_cat)
+    ...

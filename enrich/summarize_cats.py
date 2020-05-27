@@ -1,7 +1,7 @@
 import services
 
 from paths import *
-from .stat import stat
+from .count_fields import stat
 
 
 def summarize_cats():

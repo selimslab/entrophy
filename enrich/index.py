@@ -14,7 +14,6 @@ def create_inverted_index(words):
     return index
 
 
-
 def create_indexes():
     clean_brands = services.read_json("cleaner/clean_brands.json")
     brand_index = create_inverted_index(clean_brands)
