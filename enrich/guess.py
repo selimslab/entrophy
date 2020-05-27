@@ -35,7 +35,7 @@ def select_cat(guess_docs, cat_index):
         tokens = doc.get("name_freq").keys()
 
         if "subcat_freq" in doc:
-            doc["cat"] = services.get_most_frequent_key(doc.get("subcat_freq"))
+            doc["cat"] = services.get_most_frequent_key(doc.get("subcat_token_freq"))
         else:
             all_guesses = generate_all_guesses(cat_index, tokens)
             tokens_in_index = tuple(t for t in tokens if t in cat_index)
@@ -51,7 +51,7 @@ def select_brand(guess_docs, brand_index):
         tokens = doc.get("name_freq").keys()
 
         if "brand_freq" in doc:
-            doc["brand"] = services.get_most_frequent_key(doc.get("brand_freq"))
+            doc["brand"] = services.get_most_frequent_key(doc.get("brand_token_freq"))
         else:
             # a more frequent token should be a more relwvant guess
             all_guesses = generate_all_guesses(brand_index, tokens)

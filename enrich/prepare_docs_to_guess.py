@@ -1,6 +1,4 @@
 from tqdm import tqdm
-from collections import Counter
-import logging
 
 import services.collections_util
 import services
@@ -11,7 +9,8 @@ import multiprocessing
 def get_the_guess_doc(sku):
     cats = sku.get(keys.CATEGORIES, [])
     clean_cats = services.clean_list_of_strings(services.flatten(cats))
-    cat_tokens = services.get_cleaned_tokens_of_a_nested_list(cats)
+    cat_token_freq = services.get_ordered_token_freq_of_a_nested_list(cats)
+
     subcats = []
     for cat in cats:
         if isinstance(cat, list):
@@ -20,14 +19,14 @@ def get_the_guess_doc(sku):
             subcats.append(cat)
 
     subcats = [sub.split("/")[-1] for sub in subcats]
-    subcat_tokens = services.get_cleaned_tokens_of_a_nested_list(subcats)
+    subcat_token_freq = services.get_ordered_token_freq_of_a_nested_list(subcats)
 
     brands = sku.get(keys.BRAND)
     clean_brands = services.clean_list_of_strings(services.flatten(brands))
-    brand_tokens = services.get_cleaned_tokens_of_a_nested_list(brands)
+    brand_token_freq = services.get_ordered_token_freq_of_a_nested_list(brands)
 
     clean_names = sku.get("clean_names")
-    name_tokens = services.get_cleaned_tokens_of_a_nested_list(clean_names)
+    name_token_freq = services.get_ordered_token_freq_of_a_nested_list(clean_names)
 
     guess_doc = {
         # "names": sku.get("names"),
@@ -37,10 +36,11 @@ def get_the_guess_doc(sku):
         "subcats": subcats,
         "brands": brands,
         "clean_brands": clean_brands,
-        "cat_freq": Counter(cat_tokens),
-        "subcat_freq": Counter(subcat_tokens),
-        "brand_freq": Counter(brand_tokens),
-        "name_freq": Counter(name_tokens),
+
+        "cat_token_freq": cat_token_freq,
+        "subcat_token_freq": subcat_token_freq,
+        "brand_token_freq": brand_token_freq,
+        "name_token_freq": name_token_freq,
     }
     return guess_doc
 

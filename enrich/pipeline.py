@@ -2,7 +2,7 @@ from paths import *
 from prepare_docs_to_guess import *
 from guess import *
 from index import get_brand_index, get_cat_index
-from count_fields import get_name_freq, stat
+from count_fields import stat
 
 
 def add_cat_and_brand():
@@ -22,15 +22,16 @@ def add_cat_and_brand():
 
     full_skus = services.read_json(input_dir / "full_skus.json")
 
-    # why unused ?
-    name_freq = get_name_freq(full_skus)
-    services.save_json(output_dir / "name_freq.json", name_freq)
-
     guess_docs = create_guess_docs(full_skus.values())
     services.save_json(output_dir / "guess_docs.json", guess_docs)
 
-    brand_index = get_brand_index()
-    cat_index = get_cat_index()
+    ## bcats from docs should be in indexes
+
+    brands = [sku.get(keys.BRAND) for sku in full_skus]
+    brand_index = get_brand_index(brands)
+
+    cats = [sku.get(keys.CATEGORIES) for sku in full_skus]
+    cat_index = get_cat_index(cats)
     select_brand(guess_docs, brand_index)
     select_cat(guess_docs, cat_index)
 

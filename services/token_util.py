@@ -1,4 +1,5 @@
 import services
+from collections import Counter, OrderedDict
 
 
 def tokenize(s: str):
@@ -17,6 +18,11 @@ def get_tokens_of_a_nested_list(l: list):
 def get_cleaned_tokens_of_a_nested_list(l: list):
     tokens = get_tokens_of_a_nested_list(l)
     return services.clean_list_of_strings(tokens)
+
+
+def get_ordered_token_freq_of_a_nested_list(l: list):
+    tokens = get_cleaned_tokens_of_a_nested_list(l)
+    return OrderedDict(Counter(tokens).most_common())
 
 
 def test_get_tokens_of_a_group():

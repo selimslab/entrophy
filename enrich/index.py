@@ -21,8 +21,7 @@ def create_index(words: List[str], name: str) -> dict:
     words = services.clean_list_of_strings(words)
     words = services.remove_null_from_list(words)
     # but they are sets already, freq=1 ?
-    word_freq = Counter([t for brand in words for t in brand.split()])
-    word_freq = OrderedDict(word_freq.most_common())
+    word_freq = services.get_ordered_token_freq_of_a_nested_list(words)
     index = create_inverted_index(set(words))
 
     freq_file = name + "_freq.json"
@@ -36,17 +35,20 @@ def create_index(words: List[str], name: str) -> dict:
     return index
 
 
-def get_brand_index():
-    brands = services.read_json(
-        input_dir / "joined_brands.json").get("brands")
-    brand_index = create_index(brands, "brands")
+def get_brand_index(brands):
+    brand_list = services.read_json(input_dir / "joined_brands.json").get("brands")
+    brand_list += services.flatten(brands)
+    brand_index = create_index(brand_list, "brands")
+
     return brand_index
 
 
-def get_cat_index():
-    cats = services.read_json(
+def get_cat_index(cats):
+    cat_list = services.read_json(
         input_dir / "joined_categories.json").get("categories")
-    cat_index = create_index(cats, "cats")
+
+    cat_list += services.flatten(cats)
+    cat_index = create_index(cat_list, "cats")
     return cat_index
 
 
