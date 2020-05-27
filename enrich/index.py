@@ -1,4 +1,4 @@
-from collections import defaultdict, Counter
+from collections import defaultdict, Counter, OrderedDict
 from typing import List
 
 import services
@@ -22,6 +22,7 @@ def create_index(words: List[str], name: str) -> dict:
     words = services.remove_null_from_list(words)
     # but they are sets already, freq=1 ?
     word_freq = Counter([t for brand in words for t in brand.split()])
+    word_freq = OrderedDict(word_freq.most_common())
     index = create_inverted_index(set(words))
 
     freq_file = name + "_freq.json"
