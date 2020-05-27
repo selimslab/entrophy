@@ -4,7 +4,6 @@ from collections import Counter, OrderedDict
 from data_services.mongo.collections import items_collection
 import constants as keys
 import services
-from paths import *
 
 
 def count_fields(docs, target_key):
@@ -16,9 +15,6 @@ def stat(docs):
     with_brand = count_fields(docs, "brand")
     with_cat = count_fields(docs, "cat")
 
-    with_brand_guess = count_fields(docs, "top_brand_guess")
-    with_cat_guess = count_fields(docs, "top_cat_guess")
-
     print(
         "total",
         len(docs),
@@ -28,16 +24,9 @@ def stat(docs):
         with_brand,
         "\n",
 
-        "with_brand_guess",
-        with_brand_guess,
-        "\n",
-
         "with_cat",
         with_cat,
         "\n",
-
-        "with_cat_guess",
-        with_cat_guess,
     )
 
 

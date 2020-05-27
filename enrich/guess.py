@@ -41,8 +41,8 @@ def select_cat(guess_docs, cat_index):
             tokens_in_index = tuple(t for t in tokens if t in cat_index)
             top_guess = get_top_guess(all_guesses, tokens_in_index)
             doc["cat_candidates"] = tokens_in_index
-            doc["cat_all_guesses"] = all_guesses
-            doc["top_cat_guess"] = top_guess
+            doc["cat_guesses"] = all_guesses
+            doc["cat"] = top_guess
 
 
 def select_brand(guess_docs, brand_index):
@@ -59,5 +59,13 @@ def select_brand(guess_docs, brand_index):
             top_guess = get_top_guess(all_guesses, tokens_in_index)
 
             doc["brand_candidates"] = tokens_in_index
-            doc["brand_all_guesses"] = all_guesses
-            doc["top_brand_guess"] = top_guess
+            doc["brand_guesses"] = all_guesses
+            doc["brand"] = top_guess
+
+
+def select_cat_weighted(guess_docs, cat_index):
+    pass
+
+
+def select_brand_weighted(guess_docs, brand_index):
+    pass
