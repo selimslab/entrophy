@@ -36,6 +36,10 @@ def filter_empty_or_null_dict_values(d):
     return {k: v for k, v in d.items() if v or v is False}
 
 
+def filter_keys(d: dict, allowed_keys: set) -> dict:
+    return {k: v for k, v in d.items() if k in allowed_keys}
+
+
 def allow_string_keys_only(d: dict) -> dict:
     return {k: v for k, v in d.items() if isinstance(k, str) and v is not None}
 
