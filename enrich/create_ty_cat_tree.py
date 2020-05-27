@@ -4,7 +4,7 @@ from pprint import pprint
 import services
 import json
 
-from paths import temp
+from paths import input_dir
 
 
 def get_category_names():
@@ -43,7 +43,7 @@ def get_cats():
     pprint(category_names)
     for category_name in category_names:
         update_category_tree(category_name, category_tree)
-    services.save_json(temp / "ty_cat_tree", category_tree)
+    services.save_json(input_dir / "ty_cat_tree", category_tree)
 
 
 if __name__ == "__main__":
