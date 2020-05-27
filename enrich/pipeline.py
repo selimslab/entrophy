@@ -1,3 +1,5 @@
+import logging
+
 from paths import *
 from prepare_docs_to_guess import *
 from guess import *
@@ -22,16 +24,19 @@ def add_cat_and_brand():
 
     full_skus = services.read_json(input_dir / "full_skus.json")
 
+    logging.info("preparing..")
     guess_docs = create_guess_docs(full_skus.values())
     services.save_json(output_dir / "guess_docs.json", guess_docs)
 
     ## bcats from docs should be in indexes
 
-    brands = [sku.get(keys.BRAND) for sku in full_skus]
+    logging.info("indexing..")
+    brands = [sku.get(keys.BRAND) for sku in full_skus.values()]
     brand_index = get_brand_index(brands)
-
-    cats = [sku.get(keys.CATEGORIES) for sku in full_skus]
+    cats = [sku.get(keys.CATEGORIES) for sku in full_skus.values()]
     cat_index = get_cat_index(cats)
+
+    logging.info("selecting cats..")
     select_brand(guess_docs, brand_index)
     select_cat(guess_docs, cat_index)
 
@@ -63,4 +68,5 @@ def add_cat_and_brand():
 
 
 if __name__ == "__main__":
+    logging.getLogger().setLevel(logging.DEBUG)
     add_cat_and_brand()

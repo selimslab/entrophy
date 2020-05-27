@@ -32,7 +32,7 @@ def get_top_guess(all_guesses, tokens_in_index):
 
 def select_cat(guess_docs, cat_index):
     for doc in tqdm(guess_docs):
-        tokens = doc.get("name_freq").keys()
+        tokens = doc.get("name_token_freq").keys()
 
         if "subcat_freq" in doc:
             doc["cat"] = services.get_most_frequent_key(doc.get("subcat_token_freq"))
@@ -48,12 +48,12 @@ def select_cat(guess_docs, cat_index):
 def select_brand(guess_docs, brand_index):
     for doc in tqdm(guess_docs):
 
-        tokens = doc.get("name_freq").keys()
+        tokens = doc.get("name_token_freq").keys()
 
         if "brand_freq" in doc:
             doc["brand"] = services.get_most_frequent_key(doc.get("brand_token_freq"))
         else:
-            # a more frequent token should be a more relwvant guess
+            # a more frequent token should be a more relevant guess
             all_guesses = generate_all_guesses(brand_index, tokens)
             tokens_in_index = tuple(t for t in tokens if t in brand_index)
             top_guess = get_top_guess(all_guesses, tokens_in_index)
