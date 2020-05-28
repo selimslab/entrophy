@@ -19,7 +19,7 @@ def create_inverted_index(words: set):
 
 def create_index(words: List[str], name: str) -> dict:
     words = services.clean_list_of_strings(words)
-    words = services.remove_null_from_list(words)
+    words = [w for w in words if w]
     # but they are sets already, freq=1 ?
     word_freq = services.get_ordered_token_freq_of_a_nested_list(words)
     index = create_inverted_index(set(words))
