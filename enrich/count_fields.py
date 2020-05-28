@@ -5,7 +5,7 @@ from data_services.mongo.collections import items_collection
 import constants as keys
 import services
 
-from paths import input_dir
+from paths import input_dir, output_dir
 
 
 def count_fields(docs, target_key):
@@ -64,5 +64,11 @@ def first_word_freq():
     services.save_json(input_dir / "first_token_freq.json", first_token_freq)
 
 
+def inspect_brand():
+    skus_with_brand = services.read_json(output_dir / "skus_with_brand.json")
+    brands = [sku.get("brand") for sku in skus_with_brand]
+    brands = sorted(set(brands), key=len, reverse=True)
+    pprint(brands)
+
 if __name__ == "__main__":
-    first_word_freq()
+    inspect_brand()

@@ -5,6 +5,7 @@ from index import get_brand_index, get_cat_index
 from count_fields import stat
 import multiprocessing
 from collections import Counter
+import re
 
 
 def add_brand(sku):
@@ -22,6 +23,14 @@ def add_brand(sku):
         for brand in brands:
             if brand in name:
                 candidates.append(brand)
+
+    candidates = [
+        b for b in candidates
+        if len(b) > 2 and not any(
+            bad in b
+            for bad in {"brn ", "markasiz", "erkek", }
+        )
+    ]
 
     if candidates:
         candidates = list(set(candidates))
