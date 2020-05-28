@@ -118,3 +118,8 @@ if __name__ == "__main__":
 
     brands.update(set(first_token_freq.keys()))
     prep()
+    """
+    next: 
+    
+    how many brand in skus_with_brand are also in brand_tree?
+    """
