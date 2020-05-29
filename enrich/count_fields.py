@@ -1,8 +1,8 @@
 from pprint import pprint
 from collections import Counter, OrderedDict
-
+from data_services.mongo.collections import items_collection
+import constants as keys
 import services
-
 from paths import input_dir, output_dir
 
 
@@ -28,6 +28,18 @@ def stat(docs):
     )
 
 
+def markets_with_cat():
+    markets_with_cat = items_collection.distinct(
+        keys.MARKET, {keys.CATEGORIES: {"$exists": True}}
+    )
+    pprint(markets_with_cat)  # myo, wat, gratis, c4, ross, ty, migros
+
+    markets_with_brand = items_collection.distinct(
+        keys.MARKET, {keys.BRAND: {"$exists": True}}
+    )
+    pprint(markets_with_brand)  # myo, wat, gratis, c4, ross, ty
+
+
 def inspect_brand():
     skus_with_brand = services.read_json(output_dir / "skus_with_brand.json")
     brands = [sku.get("brand") for sku in skus_with_brand]
@@ -47,8 +59,5 @@ if __name__ == "__main__":
     """
     how many brand in skus_with_brand are also in brand_tree?
     
-    in_brand_tree 1727
-    sku brands 2559
-    common 949
-    diff 1610
+
     """

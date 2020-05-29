@@ -1,3 +1,9 @@
 with cat, myo, wat, gratis, c4, ross, ty, migros, joker, civil
 
 with brand, myo, wat, gratis, c4, ross, ty
+
+
+in_brand_tree 1727
+sku brands 2559
+common 949
+diff 1610

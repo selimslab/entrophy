@@ -10,10 +10,18 @@ from paths import input_dir, output_dir
 
 def clean_brands():
     """
-    "bebek bezi/bebek, oyuncak"
+     johnson s baby -> johnsons baby
     """
     ...
 
+
+def clean_cats():
+    """
+    "bebek bezi/bebek, oyuncak"
+
+    """
+
+    ...
 
 def create_trees():
     cat_tree = defaultdict(set)
