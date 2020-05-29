@@ -255,10 +255,15 @@ def add_brand_to_skus(full_skus, debug=False):
     skus = get_clean_skus(full_skus)
 
     # create and save brand subcat pairs
-    brand_subcats_pairs, clean_brand_original_brand_pairs = create_brand_subcats_pairs(skus)
+    brand_subcats_pairs, clean_brand_original_brand_pairs = create_brand_subcats_pairs(
+        skus
+    )
     if debug:
         services.save_json(output_dir / "brand_subcats_pairs.json", brand_subcats_pairs)
-        services.save_json(output_dir / "clean_brand_original_brand_pairs.json", clean_brand_original_brand_pairs)
+        services.save_json(
+            output_dir / "clean_brand_original_brand_pairs.json",
+            clean_brand_original_brand_pairs,
+        )
 
     brand_pool = get_brand_pool(brand_subcats_pairs, skus)
     for sku in skus:

@@ -41,6 +41,7 @@ def inspect_brand():
     print("common", len(in_brand_tree.intersection(brands)))
     print("diff", len(set(brands).difference(in_brand_tree)))
 
+
 if __name__ == "__main__":
     inspect_brand()
     """
