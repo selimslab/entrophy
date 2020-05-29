@@ -88,5 +88,4 @@ this results in a large set of candidates
 
 Brands and cats in SKU get more weight than others
 
-
-    After all most of these selections are guesses only
+After all most of these selections are guesses only

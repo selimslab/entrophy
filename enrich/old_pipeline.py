@@ -67,5 +67,5 @@ if __name__ == "__main__":
     hey brand could be easier 
     but we are treating it just the same? why?
 
-    "bebek bezi/bebek, oyuncak"
+    
     """

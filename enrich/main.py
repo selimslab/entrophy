@@ -7,6 +7,78 @@ import multiprocessing
 from collections import Counter
 import re
 
+from collections import defaultdict
+from pprint import pprint
+
+import services
+from paths import input_dir, output_dir
+from data_services.mongo.collections import items_collection
+import constants as keys
+
+
+def create_trees():
+    cat_tree = defaultdict(set)
+    brand_tree = defaultdict(set)
+
+    original_brands = {}
+    original_cats = {}
+
+    def update(brands, subcats):
+
+        clean_to_orig = {services.clean_name(b): b.lower() for b in brands}
+        original_brands.update(clean_to_orig)
+        brands = set(clean_to_orig.keys())
+
+        clean_to_orig = {services.clean_name(c): c.lower() for c in subcats}
+        original_cats.update(clean_to_orig)
+        subcats = set(clean_to_orig.keys())
+
+        for b in brands:
+            brand_tree[b].update(subcats)
+
+        for c in subcats:
+            cat_tree[c].update(brands)
+
+    ty_raw = services.read_json(input_dir / "ty_raw.json")
+    for main_cat, filters in ty_raw.items():
+        brands = filters.get("brand")
+        subcats = filters.get("category")
+
+        update(brands, subcats)
+
+    watsons_raw = services.read_json(input_dir / "watsons_raw.json")
+    for main_cat, filters in watsons_raw.items():
+        brands = set(filters.get("marka"))
+        subcats = set(filters.get("cats"))
+
+        update(brands, subcats)
+
+    pairs = services.read_json(input_dir / "brand_cat_pairs.json")
+    for cat in pairs:
+        brands = set(cat.get("brand"))
+        subcats = set(cat.get("categories"))
+
+        update(brands, subcats)
+
+    brand_tree = {
+        brand: [c for c in cats if c]
+        for brand, cats in brand_tree.items()
+        if len(brand) > 1
+    }
+    cat_tree = {
+        cat: [c for c in brands if c]
+        for cat, brands in cat_tree.items()
+        if len(cat) > 1
+    }
+
+    services.save_json(input_dir / "brand_tree.json", brand_tree)
+
+    services.save_json(input_dir / "cat_tree.json", cat_tree)
+
+    services.save_json(input_dir / "original_brands.json", original_brands)
+
+    services.save_json(input_dir / "original_cats.json", original_cats)
+
 
 def add_brand(sku):
     """
@@ -60,6 +132,11 @@ def clean_sku(sku):
         services.flatten(sku.get("brands", []))
     )
 
+    # add cats and brands in skus to brand tree
+
+    for brand in clean_brands:
+        brand_tree[brand] = brand_tree.get(brand, []) + clean_subcats
+
     sku.update(
         {
             "clean_brands": clean_brands,
@@ -95,6 +172,8 @@ def prep():
     services.save_json(output_dir / "skus_with_brand.json", skus_with_brand)
     services.save_json(output_dir / "skus_without_brand.json", skus_without_brand)
     # cat_tree = services.read_json(input_dir / "cat_tree.json")
+    # save the updated brand tree
+    services.save_json(output_dir / "brand_tree.json", brand_tree)
 
 
 if __name__ == "__main__":
@@ -106,9 +185,8 @@ if __name__ == "__main__":
 
     brands.update(set(first_token_freq.keys()))
     prep()
+
     """
-    next: 
+    brand tree logic is scattered, merge it
     
-     
-    how many brand in skus_with_brand are also in brand_tree?
     """

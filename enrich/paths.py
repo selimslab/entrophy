@@ -1,5 +1,5 @@
 import pathlib
 
 cwd = pathlib.Path.cwd()
-input_dir = cwd / "input_files"
-output_dir = cwd / "output_files"
+input_dir = cwd / "source_files"
+output_dir = cwd / "derived_files"
