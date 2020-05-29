@@ -44,8 +44,9 @@ def get_brand_index(brands):
 
 
 def get_cat_index(cats):
-    cat_list = services.read_json(
-        input_dir / "joined_categories.json").get("categories")
+    cat_list = services.read_json(input_dir / "joined_categories.json").get(
+        "categories"
+    )
 
     cat_list += services.flatten(cats)
     cat_index = create_index(cat_list, "cats")

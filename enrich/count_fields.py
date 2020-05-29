@@ -21,11 +21,9 @@ def stat(docs):
         "total",
         len(docs),
         "\n",
-
         "with_brand",
         with_brand,
         "\n",
-
         "with_cat",
         with_cat,
         "\n",
@@ -60,7 +58,9 @@ def first_word_freq():
     first_tokens = [n for n in first_tokens if len(n) > 2]
 
     first_token_freq = services.get_ordered_token_freq_of_a_nested_list(first_tokens)
-    first_token_freq = {token: freq for token, freq in first_token_freq.items() if freq > 100}
+    first_token_freq = {
+        token: freq for token, freq in first_token_freq.items() if freq > 100
+    }
     services.save_json(input_dir / "first_token_freq.json", first_token_freq)
 
 
@@ -69,6 +69,7 @@ def inspect_brand():
     brands = [sku.get("brand") for sku in skus_with_brand]
     brands = sorted(set(brands), key=len, reverse=True)
     pprint(brands)
+
 
 if __name__ == "__main__":
     inspect_brand()

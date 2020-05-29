@@ -35,7 +35,9 @@ def get_top_guess(all_guesses, tokens_in_index):
 def get_cat_metadata(doc, cat_index):
     cat_metadata = {}
     if "subcat_freq" in doc:
-        cat_metadata["cat"] = services.get_most_frequent_key(doc.get("subcat_token_freq"))
+        cat_metadata["cat"] = services.get_most_frequent_key(
+            doc.get("subcat_token_freq")
+        )
     else:
         name_tokens = doc.get("name_token_freq").keys()
         all_guesses = generate_all_guesses(cat_index, name_tokens)
@@ -49,7 +51,11 @@ def get_cat_metadata(doc, cat_index):
 
 
 def get_brand_metadata(doc, brand_index):
-    brand_metadata = {"brand_from_freq": services.get_most_frequent_key(doc.get("brand_token_freq", {}))}
+    brand_metadata = {
+        "brand_from_freq": services.get_most_frequent_key(
+            doc.get("brand_token_freq", {})
+        )
+    }
 
     name_tokens = doc.get("name_token_freq").keys()
     # a more frequent token should be a more relevant guess

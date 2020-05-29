@@ -52,15 +52,16 @@ def create_trees():
 
         update(brands, subcats)
 
-    brand_tree = {brand: [c for c in cats if c]
-                  for brand, cats in brand_tree.items()
-                  if len(brand) > 1
-                  }
-    cat_tree = {cat: [c for c in brands if c]
-                for cat, brands in cat_tree.items()
-                if len(cat) > 1
-
-                }
+    brand_tree = {
+        brand: [c for c in cats if c]
+        for brand, cats in brand_tree.items()
+        if len(brand) > 1
+    }
+    cat_tree = {
+        cat: [c for c in brands if c]
+        for cat, brands in cat_tree.items()
+        if len(cat) > 1
+    }
 
     services.save_json(input_dir / "brand_tree.json", brand_tree)
 

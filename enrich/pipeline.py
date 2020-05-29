@@ -39,26 +39,21 @@ def add_cat_and_brand():
     add_brand_and_cat(guess_docs, brand_index, cat_index, product_groups)
 
     docs_with_brand_and_cat = [
-        services.filter_empty_or_null_dict_values(doc)
-        for doc in guess_docs.values()
+        services.filter_empty_or_null_dict_values(doc) for doc in guess_docs.values()
     ]
     services.save_json(
-        output_dir / "docs_with_brand_and_cat.json",
-        docs_with_brand_and_cat)
+        output_dir / "docs_with_brand_and_cat.json", docs_with_brand_and_cat
+    )
 
-    summary_keys = {
-        "brand", "cat",
-        "clean_names"
-    }
-    summary_brand_and_cat = [services.filter_keys(doc, summary_keys)
-                             for doc in docs_with_brand_and_cat]
+    summary_keys = {"brand", "cat", "clean_names"}
+    summary_brand_and_cat = [
+        services.filter_keys(doc, summary_keys) for doc in docs_with_brand_and_cat
+    ]
 
     for doc in summary_brand_and_cat:
         doc["name"] = doc.pop("clean_names")[0]
 
-    services.save_json(
-        output_dir / "summary_brand_and_cat.json",
-        summary_brand_and_cat)
+    services.save_json(output_dir / "summary_brand_and_cat.json", summary_brand_and_cat)
 
     stat(docs_with_brand_and_cat)
 
