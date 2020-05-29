@@ -28,7 +28,7 @@ def get_most_common_item(itr: Iterable):
 def remove_nulls_from_list_values_of_a_dict(d: dict) -> dict:
     for k, v in d.items():
         if isinstance(v, list):
-            d[k] = remove_null_from_list(v)
+            d[k] = remove_none_from_list(v)
     return d
 
 
@@ -80,8 +80,12 @@ def get_n_most_common_list_elements(l: list, n: int) -> list:
     return [pair[0] for pair in Counter(l).most_common(n)]
 
 
-def remove_null_from_list(l: list) -> list:
+def remove_none_from_list(l: list) -> list:
     return [x for x in l if x is not None]
+
+
+def remove_empty_or_false_values_from_list(l: list) -> list:
+    return [x for x in l if x]
 
 
 def flatten(l: list) -> list:

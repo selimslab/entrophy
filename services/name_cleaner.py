@@ -43,7 +43,7 @@ def clean_list_of_strings(l: List[str]):
 
 def list_to_clean_set(strs: list):
     res = clean_list_of_strings(strs)
-    res = services.remove_null_from_list(res)
+    res = services.remove_none_from_list(res)
     res = sorted(list(set(res)))
     return res
 
