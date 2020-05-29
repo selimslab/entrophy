@@ -27,7 +27,7 @@ def get_promoted_links(promoted: dict) -> list:
         for promoted_name, link in promoted.items()
     ]
 
-    promoted_links = services.remove_null_from_list(promoted_links)
+    promoted_links = services.remove_none_from_list(promoted_links)
 
     return promoted_links
 
