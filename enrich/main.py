@@ -2,13 +2,11 @@ import multiprocessing
 from collections import defaultdict
 from tqdm import tqdm
 import logging
+from typing import List
 
 import services
 import constants as keys
 from paths import input_dir, output_dir
-
-
-
 
 
 def create_trees():
@@ -71,7 +69,7 @@ def create_trees():
     services.save_json(input_dir / "original_cats.json", original_cats)
 
 
-def create_brand_subcats_pairs(skus) -> tuple:
+def create_brand_subcats_pairs(clean_skus: List[dict]) -> tuple:
     brand_subcats_pairs = defaultdict(set)
     clean_brand_original_brand_pairs = {}
 
@@ -109,7 +107,7 @@ def create_brand_subcats_pairs(skus) -> tuple:
 
     add_ty()
     add_watsons()
-    add_from_skus(skus)
+    add_from_skus(clean_skus)
     return brand_subcats_pairs, clean_brand_original_brand_pairs
 
 
@@ -253,7 +251,7 @@ def summarize(skus):
     services.save_json(output_dir / "skus_without_brand.json", skus_without_brand)
 
 
-def add_brand_to_skus(full_skus, debug=False):
+def add_brand_to_skus(clean_skus: List[dict], debug=False):
     """
     0. cat and subcat are different things, beware
     1. clean well
@@ -267,26 +265,20 @@ def add_brand_to_skus(full_skus, debug=False):
     3.
 
     """
-    skus = get_clean_skus(full_skus)
 
-    # create and save brand subcat pairs
-    brand_subcats_pairs, clean_brand_original_brand_pairs = create_brand_subcats_pairs(
-        skus
-    )
-    if debug:
-        services.save_json(output_dir / "brand_subcats_pairs.json", brand_subcats_pairs)
-        services.save_json(
-            output_dir / "clean_brand_original_brand_pairs.json",
-            clean_brand_original_brand_pairs,
-        )
-
-    brand_pool = get_brand_pool(brand_subcats_pairs, skus)
-    for sku in skus:
+    brand_pool = get_brand_pool(brand_subcats_pairs, clean_skus)
+    for sku in tqdm(clean_skus):
         brand_candidates = get_brand_candidates(sku, brand_pool)
         sku[keys.BRAND_CANDIDATES] = brand_candidates
         sku[keys.BRAND] = select_brand(brand_candidates)
 
-    summarize(skus)
+    summarize(clean_skus)
+
+    return clean_skus
+
+
+def add_sub_cat_to_skus(skus_with_brand: List[dict], debug=False) -> List[dict]:
+    return skus_with_brand
 
 
 def clean_brands():
@@ -305,9 +297,28 @@ def clean_cats():
     ...
 
 
-if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.DEBUG)
-
+def enrich_sku_data():
     full_skus = services.read_json(input_dir / "full_skus.json")
 
-    add_brand_to_skus(full_skus, debug=True)
+    clean_skus = get_clean_skus(full_skus)
+
+    # create and save brand subcat pairs
+    brand_subcats_pairs, clean_brand_original_brand_pairs = create_brand_subcats_pairs(
+        clean_skus
+    )
+
+    brand_subcats_pairs = services.convert_dict_set_values_to_list(brand_subcats_pairs)
+    services.save_json(output_dir / "brand_subcats_pairs.json", brand_subcats_pairs)
+    services.save_json(
+        output_dir / "clean_brand_original_brand_pairs.json",
+        clean_brand_original_brand_pairs,
+    )
+
+    skus_with_brand = add_brand_to_skus(clean_skus, debug=True)
+
+    skus_with_brand_and_sub_cat = add_sub_cat_to_skus(skus_with_brand, debug=True)
+
+
+if __name__ == "__main__":
+    logging.getLogger().setLevel(logging.DEBUG)
+    enrich_sku_data()

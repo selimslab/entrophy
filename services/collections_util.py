@@ -73,6 +73,10 @@ def merge_nested_dict(d: dict):
     return merged
 
 
+def convert_dict_set_values_to_list(d: dict) -> dict:
+    return {k: list(v) for k, v in d.items()}
+
+
 ######### List util
 
 
