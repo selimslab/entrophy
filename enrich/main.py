@@ -391,26 +391,7 @@ def enrich_sku_data():
     services.save_json(output_dir / "name_brand_subcat.json", name_brand_subcat)
 
 
-def go():
-    create_subcat_index()
-
-
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     enrich_sku_data()
 
-    """
-    skus_with_brands = services.read_json(output_dir / "skus_with_brands.json")
-    brand_subcats_pairs = services.read_json(output_dir / "brand_subcats_pairs.json")
-    subcat_index = services.read_json(output_dir / "subcat_index.json")
-
-    all_name_tokens_for_this_sku = services.get_tokens_of_a_nested_list(clean_names)
-
-    subcat_index_for_this_brand = subcat_index.get(brand, {})
-
-    for token in all_name_tokens_for_this_sku:
-        possible_subcats_for_this_token = subcat_index_for_this_brand.get(token)
-
-    sub_cat_candidates += list(set(services.flatten(possible_subcats_for_this_brand)))
-    sub_cat_candidates = services.flatten(sub_cat_candidates)
-    """
