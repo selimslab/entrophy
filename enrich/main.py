@@ -417,6 +417,12 @@ def inspect_results():
         "with_sub",
         with_sub,
         "\n",
+        "without_brand_or_sub",
+        len(without_brand_or_sub),
+        "\n",
+        "with_brand_and_sub",
+        len(with_brand_and_sub),
+        "\n",
     )
 
 
