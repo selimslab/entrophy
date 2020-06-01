@@ -187,6 +187,7 @@ def filter_brands(brands: list) -> list:
 
 
 def select_brand(brand_candidates: list) -> str:
+    # TODO beware position
     if brand_candidates:
         brand_candidates = list(set(brand_candidates))
         brand = sorted(brand_candidates, key=len)[-1]
@@ -289,6 +290,7 @@ def add_sub_cat_to_skus(
     for sku in tqdm(skus):
         sub_cat_candidates = []
 
+        # TODO check in name
         sub_cat_candidates += sku.get(keys.CLEAN_SUBCATS)
 
         clean_names = sku.get(keys.CLEAN_NAMES, [])
@@ -357,7 +359,6 @@ def enrich_sku_data(clean_skus: List[dict]):
         skus_with_brands
     3. select a category by restricting possible cats for this brand and prioritizing markets
         skus_with_brand_and_sub_cat
-
     """
     brand_subcats_pairs, sub_cat_market_pairs = create_indexes()
 
@@ -449,3 +450,7 @@ if __name__ == "__main__":
     brand_subcats_pairs_path = output_dir / "brand_subcats_pairs.json"
     refresh()
     inspect_results()
+    """
+    elixir 
+    limon 
+    """

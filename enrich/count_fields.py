@@ -55,9 +55,4 @@ def inspect_brand():
 
 
 if __name__ == "__main__":
-    inspect_brand()
-    """
-    how many brand in skus_with_brand are also in brand_tree?
-    
-
-    """
+    pass
