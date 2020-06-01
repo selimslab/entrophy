@@ -193,7 +193,9 @@ def select_brand(brand_candidates: list) -> str:
         return brand
 
 
-def get_brand_candidates(sku: dict, brands_with_multiple_tokens: set, brand_pool: set) -> list:
+def get_brand_candidates(
+        sku: dict, brands_with_multiple_tokens: set, brand_pool: set
+) -> list:
     """
     find brand first,
     there only a few possible cats for this brand
@@ -233,10 +235,15 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict):
     brand_pool = get_brand_pool(brand_subcats_pairs, clean_skus)
     brands_with_multiple_tokens = {b for b in brand_pool if len(b.split()) > 1}
     services.save_json(output_dir / "brand_pool.json", list(brand_pool))
-    services.save_json(output_dir / "brands_with_multiple_tokens.json", list(brands_with_multiple_tokens))
+    services.save_json(
+        output_dir / "brands_with_multiple_tokens.json",
+        list(brands_with_multiple_tokens),
+    )
 
     for sku in tqdm(clean_skus):
-        brand_candidates = get_brand_candidates(sku, brands_with_multiple_tokens, brand_pool)
+        brand_candidates = get_brand_candidates(
+            sku, brands_with_multiple_tokens, brand_pool
+        )
         sku[keys.BRAND_CANDIDATES] = brand_candidates
         sku[keys.BRAND] = select_brand(brand_candidates)
 
