@@ -274,7 +274,7 @@ def add_parent_cat(sku):
     ...
 
 
-def get_sku_summary(skus_with_brand_and_sub_cat: List[dict]):
+def get_sku_summary(skus_with_brand_and_sub_cat: List[dict]) -> List[dict]:
     summary_keys = {keys.CLEAN_NAMES, keys.BRAND, keys.SUBCAT}
     summary = [
         services.filter_keys(doc, summary_keys) for doc in skus_with_brand_and_sub_cat
@@ -282,13 +282,13 @@ def get_sku_summary(skus_with_brand_and_sub_cat: List[dict]):
     for doc in summary:
         doc["names"] = list(set(doc.pop(keys.CLEAN_NAMES)))[:3]
 
-    summary = services.remove_null_dict_values(summary)
+    summary = [services.remove_null_dict_values(doc) for doc in summary]
     return summary
 
 
-def select_subcat(sub_cat_candidates: list,
-                  sub_cat_market_pairs: Dict[str, list],
-                  ):
+def select_subcat(
+        sub_cat_candidates: list, sub_cat_market_pairs: Dict[str, list],
+):
     """
     HB-->TY-->Gratis-->Watsons--> Migros--> Random
     """
@@ -299,7 +299,9 @@ def select_subcat(sub_cat_candidates: list,
         sorted_by_length = sorted(sub_cat_candidates, key=len, reverse=True)
         for sub in sorted_by_length:
             markets_for_this_sub = sub_cat_market_pairs.get(sub, [])
-            if markets_for_this_sub and any(m in priority_markets for m in markets_for_this_sub):
+            if markets_for_this_sub and any(
+                    m in priority_markets for m in markets_for_this_sub
+            ):
                 return sub
 
         #  as a last resort, select longest
@@ -397,8 +399,14 @@ def inspect_results():
     brands_in_results = [doc.get(keys.BRAND) for doc in docs]
     subcats_in_results = [doc.get(keys.SUBCAT) for doc in docs]
 
-    services.save_json(output_dir / "brands_in_results.json", sorted(services.dedup_denull(brands_in_results)))
-    services.save_json(output_dir / "subcats_in_results.json", sorted(services.dedup_denull(subcats_in_results)))
+    services.save_json(
+        output_dir / "brands_in_results.json",
+        sorted(services.dedup_denull(brands_in_results)),
+    )
+    services.save_json(
+        output_dir / "subcats_in_results.json",
+        sorted(services.dedup_denull(subcats_in_results)),
+    )
 
     with_brand = count_fields(docs, keys.BRAND)
     with_sub = count_fields(docs, keys.SUBCAT)
