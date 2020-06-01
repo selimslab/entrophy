@@ -302,8 +302,8 @@ def select_subcat(sub_cat_candidates: list,
         priority_markets = [keys.TRENDYOL, keys.GRATIS, keys.WATSONS, keys.MIGROS]
         sorted_by_length = sorted(sub_cat_candidates, key=len, reverse=True)
         for sub in sorted_by_length:
-            markets_for_this_sub = sub_cat_market_pairs.get(sub)
-            if any(m in priority_markets for m in markets_for_this_sub):
+            markets_for_this_sub = sub_cat_market_pairs.get(sub, [])
+            if markets_for_this_sub and any(m in priority_markets for m in markets_for_this_sub):
                 return sub
 
         #  as a last resort, select longest
@@ -394,4 +394,3 @@ def enrich_sku_data():
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     enrich_sku_data()
-
