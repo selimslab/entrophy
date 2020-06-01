@@ -246,9 +246,6 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict):
         return brand_candidates
 
     def select_brand(brand_candidates: list) -> str:
-        """
-        HB-->TY-->Gratis-->Watsons--> Migros--> Random
-        """
         if brand_candidates:
             brand_candidates = list(set(brand_candidates))
             brand = sorted(brand_candidates, key=len)[-1]
@@ -293,10 +290,24 @@ def get_sku_summary(skus_with_brand_and_sub_cat: List[dict]):
     return summary
 
 
-def select_subcat(sub_cat_candidates: list):
+def select_subcat(sub_cat_candidates: list,
+                  sub_cat_market_pairs: Dict[str, list],
+                  ):
+    """
+    HB-->TY-->Gratis-->Watsons--> Migros--> Random
+    """
+
     if sub_cat_candidates:
-        # select longest
-        sub_cat = sorted(sub_cat_candidates, key=len)[-1]
+        # prioritize markets
+        priority_markets = [keys.TRENDYOL, keys.GRATIS, keys.WATSONS, keys.MIGROS]
+        sorted_by_length = sorted(sub_cat_candidates, key=len, reverse=True)
+        for sub in sorted_by_length:
+            markets_for_this_sub = sub_cat_market_pairs.get(sub)
+            if any(m in priority_markets for m in markets_for_this_sub):
+                return sub
+
+        #  as a last resort, select longest
+        sub_cat = sorted_by_length[0]
         return sub_cat
 
 
@@ -327,7 +338,7 @@ def add_sub_cat_to_skus(
 
         sku[keys.SUBCAT_CANDIDATES] = sub_cat_candidates
         if sub_cat_candidates:
-            sku[keys.SUBCAT] = select_subcat(sub_cat_candidates)
+            sku[keys.SUBCAT] = select_subcat(sub_cat_candidates, sub_cat_market_pairs)
 
     return skus
 
