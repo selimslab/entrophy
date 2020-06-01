@@ -8,20 +8,8 @@ import constants as keys
 from paths import input_dir, output_dir
 
 
-def clean_brands():
-    """
-     johnson s baby -> johnsons baby
-    """
-    ...
 
 
-def clean_cats():
-    """
-    "bebek bezi/bebek, oyuncak"
-
-    """
-
-    ...
 
 def create_trees():
     cat_tree = defaultdict(set)
@@ -229,10 +217,29 @@ def get_brand_candidates(sku: dict, brand_pool: set) -> list:
 
 
 def select_brand(brand_candidates: list) -> str:
+    """
+    HB-->TY-->Gratis-->Watsons--> Migros--> Random
+    """
     if brand_candidates:
         brand_candidates = list(set(brand_candidates))
         brand = sorted(brand_candidates, key=len)[-1]
         return brand
+
+
+def add_gender(sku):
+    ...
+
+
+def add_color(sku):
+    ...
+
+
+def add_sub_cat(sku):
+    ...
+
+
+def add_parent_cat(sku):
+    ...
 
 
 def summarize(skus):
@@ -282,14 +289,25 @@ def add_brand_to_skus(full_skus, debug=False):
     summarize(skus)
 
 
+def clean_brands():
+    """
+     johnson s baby -> johnsons baby
+    """
+    ...
+
+
+def clean_cats():
+    """
+    "bebek bezi/bebek, oyuncak"
+
+    """
+
+    ...
+
+
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
 
     full_skus = services.read_json(input_dir / "full_skus.json")
 
     add_brand_to_skus(full_skus, debug=True)
-
-    """
-    brand tree logic is scattered, merge it
-
-    """
