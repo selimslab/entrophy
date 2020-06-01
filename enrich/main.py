@@ -73,10 +73,12 @@ def create_brand_subcats_pairs(clean_skus: List[dict]) -> tuple:
         raw_docs_path = output_dir / "raw_docs.json"
         if not os.path.exists(raw_docs_path):
             cursor = items_collection.find(
-                {keys.MARKET: {"$exists": True},
-                 keys.CATEGORIES: {"$exists": True},
-                 keys.MARKETS: {"$nin": [keys.TRENDYOL, keys.WATSONS]}},
-                {keys.MARKET: 1, keys.CATEGORIES: 1, keys.BRAND: 1, "_id": 0}
+                {
+                    keys.MARKET: {"$exists": True},
+                    keys.CATEGORIES: {"$exists": True},
+                    keys.MARKETS: {"$nin": [keys.TRENDYOL, keys.WATSONS]},
+                },
+                {keys.MARKET: 1, keys.CATEGORIES: 1, keys.BRAND: 1, "_id": 0},
             )
             raw_docs = list(cursor)
             services.save_json(raw_docs_path, raw_docs)
@@ -107,9 +109,7 @@ def clean_brands(brands: list) -> list:
     """
      johnson s baby -> johnsons baby
     """
-    return services.clean_list_of_strings(
-        services.flatten(brands)
-    )
+    return services.clean_list_of_strings(services.flatten(brands))
 
 
 def add_clean_brand(sku: dict) -> dict:
@@ -203,7 +203,8 @@ def filter_brands(brands: list) -> list:
     return [
         b
         for b in brands
-        if len(b) > 2 and not any(bad in b for bad in {"brn ", "markasiz", "erkek", "kadin"})
+        if len(b) > 2
+           and not any(bad in b for bad in {"brn ", "markasiz", "erkek", "kadin"})
     ]
 
 
@@ -284,8 +285,9 @@ def add_parent_cat(sku):
 
 def get_sku_summary(skus_with_brand_and_sub_cat: List[dict]):
     summary_keys = {keys.CLEAN_NAMES, keys.BRAND, keys.SUBCAT}
-    summary = [services.filter_keys(doc, summary_keys)
-               for doc in skus_with_brand_and_sub_cat]
+    summary = [
+        services.filter_keys(doc, summary_keys) for doc in skus_with_brand_and_sub_cat
+    ]
     for doc in summary:
         doc["names"] = list(set(doc.pop(keys.CLEAN_NAMES)))[:3]
     return summary
@@ -298,9 +300,11 @@ def select_subcat(sub_cat_candidates: list):
         return sub_cat
 
 
-def add_sub_cat_to_skus(skus: List[dict],
-                        brand_subcats_pairs: Dict[str, list],
-                        sub_cat_market_pairs: Dict[str, list]) -> List[dict]:
+def add_sub_cat_to_skus(
+        skus: List[dict],
+        brand_subcats_pairs: Dict[str, list],
+        sub_cat_market_pairs: Dict[str, list],
+) -> List[dict]:
     for sku in tqdm(skus):
         sub_cat_candidates = []
 
@@ -317,7 +321,9 @@ def add_sub_cat_to_skus(skus: List[dict],
                 sub_cat_candidates.append(sub)
 
         # dedup, remove very long sub_cats, they are mostly wrong
-        sub_cat_candidates = list(set([s for s in sub_cat_candidates if s and len(s) < 15]))
+        sub_cat_candidates = list(
+            set([s for s in sub_cat_candidates if s and len(s) < 15])
+        )
 
         sku[keys.SUBCAT_CANDIDATES] = sub_cat_candidates
         if sub_cat_candidates:
@@ -342,11 +348,15 @@ def enrich_sku_data():
     full_skus = services.read_json(input_dir / "full_skus.json")
     clean_skus = get_clean_skus(full_skus)
     # create and save brand subcat pairs
-    brand_subcats_pairs, clean_brand_original_brand_pairs, sub_cat_market_pairs = create_brand_subcats_pairs(
-        clean_skus
-    )
+    (
+        brand_subcats_pairs,
+        clean_brand_original_brand_pairs,
+        sub_cat_market_pairs,
+    ) = create_brand_subcats_pairs(clean_skus)
 
-    sub_cat_market_pairs = services.convert_dict_set_values_to_list(sub_cat_market_pairs)
+    sub_cat_market_pairs = services.convert_dict_set_values_to_list(
+        sub_cat_market_pairs
+    )
     services.save_json(output_dir / "sub_cat_market_pairs.json", sub_cat_market_pairs)
 
     brand_subcats_pairs = services.convert_dict_set_values_to_list(brand_subcats_pairs)
@@ -359,8 +369,12 @@ def enrich_sku_data():
     skus_with_brands = add_brand_to_skus(clean_skus, brand_subcats_pairs)
     services.save_json(output_dir / "skus_with_brands.json", skus_with_brands)
 
-    skus_with_brand_and_sub_cat = add_sub_cat_to_skus(skus_with_brands, brand_subcats_pairs, sub_cat_market_pairs)
-    services.save_json(output_dir / "skus_with_brand_and_sub_cat.json", skus_with_brand_and_sub_cat)
+    skus_with_brand_and_sub_cat = add_sub_cat_to_skus(
+        skus_with_brands, brand_subcats_pairs, sub_cat_market_pairs
+    )
+    services.save_json(
+        output_dir / "skus_with_brand_and_sub_cat.json", skus_with_brand_and_sub_cat
+    )
 
     name_brand_subcat = get_sku_summary(skus_with_brand_and_sub_cat)
     services.save_json(output_dir / "name_brand_subcat.json", name_brand_subcat)
