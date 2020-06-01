@@ -251,7 +251,7 @@ def summarize(skus):
     services.save_json(output_dir / "skus_without_brand.json", skus_without_brand)
 
 
-def add_brand_to_skus(clean_skus: List[dict], debug=False):
+def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs):
     """
     0. cat and subcat are different things, beware
     1. clean well
@@ -277,7 +277,7 @@ def add_brand_to_skus(clean_skus: List[dict], debug=False):
     return clean_skus
 
 
-def add_sub_cat_to_skus(skus_with_brand: List[dict], debug=False) -> List[dict]:
+def add_sub_cat_to_skus(skus_with_brand: List[dict]) -> List[dict]:
     return skus_with_brand
 
 
@@ -314,9 +314,9 @@ def enrich_sku_data():
         clean_brand_original_brand_pairs,
     )
 
-    skus_with_brand = add_brand_to_skus(clean_skus, debug=True)
+    skus_with_brand = add_brand_to_skus(clean_skus, brand_subcats_pairs)
 
-    skus_with_brand_and_sub_cat = add_sub_cat_to_skus(skus_with_brand, debug=True)
+    skus_with_brand_and_sub_cat = add_sub_cat_to_skus(skus_with_brand)
 
 
 if __name__ == "__main__":
