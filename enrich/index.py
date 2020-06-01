@@ -10,7 +10,7 @@ def create_index(words: List[str], name: str) -> dict:
     words = [w for w in words if w]
     # but they are sets already, freq=1 ?
     word_freq = services.get_ordered_token_freq_of_a_nested_list(words)
-    index = create_inverted_index(set(words))
+    index = services.create_inverted_index(set(words))
 
     freq_file = name + "_freq.json"
     clean_file = name + "_clean.json"

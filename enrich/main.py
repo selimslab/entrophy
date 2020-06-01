@@ -1,12 +1,15 @@
 import multiprocessing
+import os
 from collections import defaultdict
 from tqdm import tqdm
 import logging
-from typing import List
+from typing import List, Iterable
 
 import services
 import constants as keys
 from paths import input_dir, output_dir
+
+from data_services.mongo.collections import items_collection
 
 
 def create_brand_subcats_pairs(clean_skus: List[dict]) -> tuple:
@@ -26,8 +29,12 @@ def create_brand_subcats_pairs(clean_skus: List[dict]) -> tuple:
     """
     brand_subcats_pairs = defaultdict(set)
     clean_brand_original_brand_pairs = {}
+    sub_cat_market_pairs = {}
 
-    def update_brand_subcats_pairs(brands, subcats):
+    def update_brand_subcats_pairs(brands: Iterable, subcats: Iterable, market=None):
+        brands = list(set(brands))
+        subcats = list(set(subcats))
+
         clean_to_original = {services.clean_name(b): b for b in brands}
         clean_brand_original_brand_pairs.update(clean_to_original)
         clean_brands = set(b for b in clean_to_original.keys() if len(b) > 1)
@@ -35,23 +42,25 @@ def create_brand_subcats_pairs(clean_skus: List[dict]) -> tuple:
         clean_subcats = services.clean_list_of_strings(subcats)
         clean_subcats = services.remove_empty_or_false_values_from_list(clean_subcats)
 
+        sub_cat_market_pairs.update({sub: market for sub in clean_subcats})
+
         for b in clean_brands:
             brand_subcats_pairs[b].update(clean_subcats)
 
     def add_ty():
         ty_raw = services.read_json(input_dir / "ty_raw.json")
         for main_cat, filters in ty_raw.items():
-            brands = filters.get("brand")
-            subcats = filters.get("category")
-            update_brand_subcats_pairs(brands, subcats)
+            brands: list = filters.get("brand")
+            subcats: list = filters.get("category")
+            update_brand_subcats_pairs(brands, subcats, keys.TRENDYOL)
 
     def add_watsons():
         watsons_raw = services.read_json(input_dir / "watsons_raw.json")
         for main_cat, filters in watsons_raw.items():
-            brands = set(filters.get("marka"))
-            subcats = set(filters.get("cats"))
+            brands = filters.get("marka")
+            subcats = filters.get("cats")
 
-            update_brand_subcats_pairs(brands, subcats)
+            update_brand_subcats_pairs(brands, subcats, keys.WATSONS)
 
     def add_from_skus(skus):
         for sku in skus:
@@ -59,8 +68,28 @@ def create_brand_subcats_pairs(clean_skus: List[dict]) -> tuple:
             subcats = sku.get(keys.CLEAN_SUBCATS, [])
             update_brand_subcats_pairs(brands, subcats)
 
+    def add_from_raw_docs():
+        raw_docs_path = output_dir / "raw_docs.json"
+        if not os.path.exists(raw_docs_path):
+            cursor = items_collection.find(
+                {keys.CATEGORIES: {"$exists": True}, keys.MARKETS: {"$nin": [keys.TRENDYOL, keys.WATSONS]}},
+                {keys.MARKET: 1, keys.CATEGORIES: 1, keys.BRAND: 1, "_id": 0}
+            )
+            services.save_json(raw_docs_path, list(cursor))
+        else:
+            raw_docs = services.read_json(raw_docs_path)
+
+        for doc in raw_docs:
+            brand = doc.get(keys.BRAND)
+            cats = doc.get(keys.CATEGORIES)
+
+            brands = [brand]
+            subcats = []
+            update_brand_subcats_pairs(brands, subcats)
+
     add_ty()
     add_watsons()
+
     add_from_skus(clean_skus)
     return brand_subcats_pairs, clean_brand_original_brand_pairs
 
@@ -69,25 +98,31 @@ def create_subcat_brands_pairs() -> dict:
     ...
 
 
-def clean_brands(sku):
+def clean_brands(brands: list) -> list:
     """
      johnson s baby -> johnsons baby
     """
-    clean_brands = services.clean_list_of_strings(
-        services.flatten(sku.get("brands", []))
+    return services.clean_list_of_strings(
+        services.flatten(brands)
     )
-    sku[keys.CLEAN_BRANDS] = clean_brands
+
+
+def add_clean_brand(sku: dict) -> dict:
+    sku[keys.CLEAN_BRANDS] = clean_brands(sku.get("brands", []))
     return sku
 
 
-def clean_cats(sku):
+def clean_cats(cats: list) -> list:
+    return services.clean_list_of_strings(services.flatten(cats))
+
+
+def add_clean_cats(sku: dict) -> dict:
     cats = sku.get(keys.CATEGORIES, [])
-    clean_cats = services.clean_list_of_strings(services.flatten(cats))
-    sku[keys.CLEAN_CATS] = clean_cats
+    sku[keys.CLEAN_CATS] = clean_cats(cats)
     return sku
 
 
-def clean_sub_cats(sku):
+def clean_sub_cats(cats: list) -> list:
     """
     her market için ayrı
     "okul kırtasiye, aksesuarları/kırtasiye/ev, pet" -> migros
@@ -96,7 +131,7 @@ def clean_sub_cats(sku):
     """
 
     subcats = []
-    for cat in sku.get(keys.CATEGORIES, []):
+    for cat in cats:
         if isinstance(cat, list):
             subcats.append(cat[-1])
         else:
@@ -108,7 +143,12 @@ def clean_sub_cats(sku):
     # subcats = [sub.split(",")[-1] for sub in subcats]
 
     clean_subcats = services.clean_list_of_strings(services.flatten(subcats))
-    sku[keys.CLEAN_SUBCATS] = clean_subcats
+    return clean_subcats
+
+
+def add_clean_subcats(sku: dict) -> dict:
+    cats = sku.get(keys.CATEGORIES, [])
+    sku[keys.CLEAN_SUBCATS] = clean_sub_cats(cats)
     return sku
 
 
@@ -116,9 +156,9 @@ def get_clean_skus(full_skus):
     skus = get_skus_with_relevant_fields(full_skus)
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-        skus = pool.map(clean_brands, tqdm(skus))
-        skus = pool.map(clean_cats, tqdm(skus))
-        skus = pool.map(clean_sub_cats, tqdm(skus))
+        skus = pool.map(add_clean_brand, tqdm(skus))
+        skus = pool.map(add_clean_cats, tqdm(skus))
+        skus = pool.map(add_clean_subcats, tqdm(skus))
 
     return skus
 
@@ -248,6 +288,7 @@ def get_sku_summary(skus_with_brand_and_sub_cat: List[dict]):
 
 def select_subcat(sub_cat_candidates: list):
     if sub_cat_candidates:
+        # select longest
         sub_cat = sorted(sub_cat_candidates, key=len)[-1]
         return sub_cat
 
@@ -321,7 +362,7 @@ def go():
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
-    add_sub_cat()
+    enrich_sku_data()
 
     """
     skus_with_brands = services.read_json(output_dir / "skus_with_brands.json")
