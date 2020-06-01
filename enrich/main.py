@@ -9,67 +9,21 @@ import constants as keys
 from paths import input_dir, output_dir
 
 
-def create_trees():
-    cat_tree = defaultdict(set)
-    brand_tree = defaultdict(set)
-
-    original_brands = {}
-    original_cats = {}
-
-    def update(brands, subcats):
-
-        clean_to_orig = {services.clean_name(b): b.lower() for b in brands}
-        original_brands.update(clean_to_orig)
-        brands = set(clean_to_orig.keys())
-
-        clean_to_orig = {services.clean_name(c): c.lower() for c in subcats}
-        original_cats.update(clean_to_orig)
-        subcats = set(clean_to_orig.keys())
-
-        for b in brands:
-            brand_tree[b].update(subcats)
-
-        for c in subcats:
-            cat_tree[c].update(brands)
-
-    ty_raw = services.read_json(input_dir / "ty_raw.json")
-    for main_cat, filters in ty_raw.items():
-        brands = filters.get("brand")
-        subcats = filters.get("category")
-
-        update(brands, subcats)
-
-    watsons_raw = services.read_json(input_dir / "watsons_raw.json")
-    for main_cat, filters in watsons_raw.items():
-        brands = set(filters.get("marka"))
-        subcats = set(filters.get("cats"))
-
-        update(brands, subcats)
-
-    pairs = services.read_json(input_dir / "brand_cat_pairs.json")
-    for cat in pairs:
-        brands = set(cat.get("brand"))
-        subcats = set(cat.get("categories"))
-
-        update(brands, subcats)
-
-    brand_tree = {
-        brand: [c for c in cats if c]
-        for brand, cats in brand_tree.items()
-        if len(brand) > 1
-    }
-    cat_tree = {
-        cat: [c for c in brands if c]
-        for cat, brands in cat_tree.items()
-        if len(cat) > 1
-    }
-
-    services.save_json(input_dir / "cat_tree.json", cat_tree)
-
-    services.save_json(input_dir / "original_cats.json", original_cats)
-
-
 def create_brand_subcats_pairs(clean_skus: List[dict]) -> tuple:
+    """
+        "finish": [
+        "yumusaticilar",
+        "p g urunleri",
+        "genel temizlik urunleri",
+        "bulasik tuzu",
+        "hali ve tul yikama",
+        "finish",
+        "kirec onleyici",
+        "bulasik yikama urunleri",
+        ...
+        ]
+
+    """
     brand_subcats_pairs = defaultdict(set)
     clean_brand_original_brand_pairs = {}
 
@@ -115,7 +69,10 @@ def create_subcat_brands_pairs() -> dict:
     ...
 
 
-def add_clean_brands(sku):
+def clean_brands(sku):
+    """
+     johnson s baby -> johnsons baby
+    """
     clean_brands = services.clean_list_of_strings(
         services.flatten(sku.get("brands", []))
     )
@@ -123,14 +80,18 @@ def add_clean_brands(sku):
     return sku
 
 
-def add_clean_cats(sku):
+def clean_cats(sku):
     cats = sku.get(keys.CATEGORIES, [])
     clean_cats = services.clean_list_of_strings(services.flatten(cats))
     sku[keys.CLEAN_CATS] = clean_cats
     return sku
 
 
-def add_clean_sub_cats(sku):
+def clean_sub_cats(sku):
+    """
+    "bebek bezi/bebek, oyuncak" -> oyuncak
+    """
+
     subcats = []
     for cat in sku.get(keys.CATEGORIES, []):
         if isinstance(cat, list):
@@ -139,9 +100,22 @@ def add_clean_sub_cats(sku):
             subcats.append(cat)
 
     subcats = [sub.split("/")[-1] for sub in subcats]
+    subcats = [sub.split(",")[-1] for sub in subcats]
+
     clean_subcats = services.clean_list_of_strings(services.flatten(subcats))
     sku[keys.CLEAN_SUBCATS] = clean_subcats
     return sku
+
+
+def get_clean_skus(full_skus):
+    skus = get_skus_with_relevant_fields(full_skus)
+
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        skus = pool.map(clean_brands, tqdm(skus))
+        skus = pool.map(clean_cats, tqdm(skus))
+        skus = pool.map(clean_sub_cats, tqdm(skus))
+
+    return skus
 
 
 def get_first_token_freq(skus):
@@ -161,17 +135,6 @@ def get_first_token_freq(skus):
 def get_skus_with_relevant_fields(full_skus):
     relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES}
     skus = [services.filter_keys(doc, relevant_keys) for doc in full_skus.values()]
-
-    return skus
-
-
-def get_clean_skus(full_skus):
-    skus = get_skus_with_relevant_fields(full_skus)
-
-    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-        skus = pool.map(add_clean_brands, tqdm(skus))
-        skus = pool.map(add_clean_cats, tqdm(skus))
-        skus = pool.map(add_clean_sub_cats, tqdm(skus))
 
     return skus
 
@@ -224,22 +187,6 @@ def select_brand(brand_candidates: list) -> str:
         return brand
 
 
-def add_gender(sku):
-    ...
-
-
-def add_color(sku):
-    ...
-
-
-def add_sub_cat(sku):
-    ...
-
-
-def add_parent_cat(sku):
-    ...
-
-
 def summarize(skus):
     summary_keys = {"brand", "clean_names"}
     skus = [services.filter_keys(doc, summary_keys) for doc in skus]
@@ -281,22 +228,6 @@ def add_sub_cat_to_skus(skus_with_brand: List[dict]) -> List[dict]:
     return skus_with_brand
 
 
-def clean_brands():
-    """
-     johnson s baby -> johnsons baby
-    """
-    ...
-
-
-def clean_cats():
-    """
-    "bebek bezi/bebek, oyuncak"
-
-    """
-
-    ...
-
-
 def enrich_sku_data():
     full_skus = services.read_json(input_dir / "full_skus.json")
 
@@ -317,6 +248,18 @@ def enrich_sku_data():
     skus_with_brand = add_brand_to_skus(clean_skus, brand_subcats_pairs)
 
     skus_with_brand_and_sub_cat = add_sub_cat_to_skus(skus_with_brand)
+
+
+def add_gender(sku):
+    ...
+
+
+def add_color(sku):
+    ...
+
+
+def add_parent_cat(sku):
+    ...
 
 
 if __name__ == "__main__":
