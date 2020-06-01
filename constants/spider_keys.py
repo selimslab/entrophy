@@ -10,7 +10,6 @@ SRC = "src"
 BRAND = "brand"
 BRAND_CANDIDATES = "brand_candidates"
 BRANDS_MULTIPLE = "brands"
-
 CLEAN_BRANDS = "clean_brands"
 
 CATEGORIES = "categories"
@@ -18,6 +17,10 @@ CLEAN_CATS = "clean_cats"
 
 SUB_CATEGORIES = "sub_categories"
 CLEAN_SUBCATS = "clean_subcats"
+SUBCAT_CANDIDATES = "subcat_candidates"
+
+CATEGORY = "cat"
+SUBCAT = "subcat"
 
 OUT_OF_STOCK = "out_of_stock"
 
