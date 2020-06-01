@@ -12,7 +12,7 @@ from paths import input_dir, output_dir
 from data_services.mongo.collections import items_collection
 
 
-def create_brand_subcats_pairs(clean_skus: List[dict]) -> tuple:
+def create_brand_subcats_pairs() -> tuple:
     """
         "finish": [
         "yumusaticilar",
@@ -63,11 +63,6 @@ def create_brand_subcats_pairs(clean_skus: List[dict]) -> tuple:
 
             update_brand_subcats_pairs(brands, subcats, keys.WATSONS)
 
-    def add_from_skus(skus):
-        for sku in skus:
-            brands = sku.get(keys.CLEAN_BRANDS, [])
-            subcats = sku.get(keys.CLEAN_SUBCATS, [])
-            update_brand_subcats_pairs(brands, subcats, None)
 
     def add_from_raw_docs():
         raw_docs_path = output_dir / "raw_docs.json"
@@ -96,7 +91,6 @@ def create_brand_subcats_pairs(clean_skus: List[dict]) -> tuple:
 
     add_ty()
     add_watsons()
-    # add_from_skus(clean_skus)
     add_from_raw_docs()
     return brand_subcats_pairs, clean_brand_original_brand_pairs, sub_cat_market_pairs
 
@@ -363,7 +357,7 @@ def enrich_sku_data():
         brand_subcats_pairs,
         clean_brand_original_brand_pairs,
         sub_cat_market_pairs,
-    ) = create_brand_subcats_pairs(clean_skus)
+    ) = create_brand_subcats_pairs()
 
     sub_cat_market_pairs = services.convert_dict_set_values_to_list(
         sub_cat_market_pairs
