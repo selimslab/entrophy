@@ -79,7 +79,6 @@ def convert_dict_set_values_to_list(d: dict) -> dict:
 
 ######### List util
 
-
 def get_n_most_common_list_elements(l: list, n: int) -> list:
     return [pair[0] for pair in Counter(l).most_common(n)]
 
@@ -88,8 +87,8 @@ def remove_none_from_list(l: list) -> list:
     return [x for x in l if x is not None]
 
 
-def remove_empty_or_false_values_from_list(l: list) -> list:
-    return [x for x in l if x]
+def dedup_denull(l: list) -> list:
+    return list(set(i for i in l if i))
 
 
 def flatten(l: list) -> list:

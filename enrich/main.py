@@ -40,7 +40,7 @@ def create_brand_subcats_pairs() -> tuple:
         clean_brands = set(b for b in clean_to_original.keys() if len(b) > 1)
 
         clean_subcats = services.clean_list_of_strings(subcats)
-        clean_subcats = services.remove_empty_or_false_values_from_list(clean_subcats)
+        clean_subcats = [sub for sub in clean_subcats if sub]
 
         for sub in clean_subcats:
             sub_cat_market_pairs[sub].add(market)
@@ -62,7 +62,6 @@ def create_brand_subcats_pairs() -> tuple:
             subcats = filters.get("cats")
 
             update_brand_subcats_pairs(brands, subcats, keys.WATSONS)
-
 
     def add_from_raw_docs():
         raw_docs_path = output_dir / "raw_docs.json"
@@ -186,9 +185,10 @@ def get_skus_with_relevant_fields(full_skus):
 def get_brand_pool(brand_subcats_pairs, skus):
     first_token_freq = get_first_token_freq(skus)
     services.save_json(output_dir / "first_token_freq.json", first_token_freq)
+    brands_from_first_tokens = set(first_token_freq.keys())
 
     brand_pool = set(brand_subcats_pairs.keys())
-    brand_pool.update(set(first_token_freq.keys()))
+    brand_pool.update(brands_from_first_tokens)
 
     return brand_pool
 
@@ -281,6 +281,8 @@ def get_sku_summary(skus_with_brand_and_sub_cat: List[dict]):
     ]
     for doc in summary:
         doc["names"] = list(set(doc.pop(keys.CLEAN_NAMES)))[:3]
+
+    summary = services.remove_null_dict_values(summary)
     return summary
 
 
@@ -338,7 +340,7 @@ def add_sub_cat_to_skus(
 
 
 def create_subcat_index():
-    brand_subcats_pairs = services.read_json(output_dir / "brand_subcats_pairs.json")
+    brand_subcats_pairs = services.read_json(brand_subcats_pairs_path)
 
     subcat_index = defaultdict(dict)
     stopwords = {"ml", "gr", "adet", "ve", "and", "ile"}
@@ -352,6 +354,7 @@ def create_subcat_index():
 def enrich_sku_data():
     full_skus = services.read_json(input_dir / "full_skus.json")
     clean_skus = get_clean_skus(full_skus)
+
     # create and save brand subcat pairs
     (
         brand_subcats_pairs,
@@ -365,7 +368,7 @@ def enrich_sku_data():
     services.save_json(output_dir / "sub_cat_market_pairs.json", sub_cat_market_pairs)
 
     brand_subcats_pairs = services.convert_dict_set_values_to_list(brand_subcats_pairs)
-    services.save_json(output_dir / "brand_subcats_pairs.json", brand_subcats_pairs)
+    services.save_json(brand_subcats_pairs_path, brand_subcats_pairs)
     services.save_json(
         output_dir / "clean_brand_original_brand_pairs.json",
         clean_brand_original_brand_pairs,
@@ -385,6 +388,40 @@ def enrich_sku_data():
     services.save_json(output_dir / "name_brand_subcat.json", name_brand_subcat)
 
 
+def count_fields(docs, target_key):
+    return sum(1 if target_key in doc else 0 for doc in docs)
+
+
+def inspect_results():
+    docs = services.read_json(output_dir / "name_brand_subcat.json")
+    brands_in_results = [doc.get(keys.BRAND) for doc in docs]
+    subcats_in_results = [doc.get(keys.SUBCAT) for doc in docs]
+
+    services.save_json(output_dir / "brands_in_results.json", sorted(services.dedup_denull(brands_in_results)))
+    services.save_json(output_dir / "subcats_in_results.json", sorted(services.dedup_denull(subcats_in_results)))
+
+    with_brand = count_fields(docs, keys.BRAND)
+    with_sub = count_fields(docs, keys.SUBCAT)
+
+    print(
+        "total",
+        len(docs),
+        "\n",
+        "with_brand",
+        with_brand,
+        "\n",
+        "with_sub",
+        with_sub,
+        "\n",
+    )
+
+
+def refresh():
+    enrich_sku_data()
+
+
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
-    enrich_sku_data()
+    brand_subcats_pairs_path = output_dir / "brand_subcats_pairs.json"
+    refresh()
+    inspect_results()
