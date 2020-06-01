@@ -157,26 +157,6 @@ def filter_brands(brands: list) -> list:
     ]
 
 
-def get_brand_candidates(sku: dict, brand_pool: set) -> list:
-    """
-    find brand first,
-    there only a few possible cats for this brand
-    indexes should reflect that too
-
-    johnson s baby -> johnsons baby
-    """
-    brand_candidates = sku.get(keys.CLEAN_BRANDS, [])
-    clean_names = sku.get(keys.CLEAN_NAMES, [])
-
-    for name in clean_names:
-        for brand in brand_pool:
-            if brand in name:
-                brand_candidates.append(brand)
-
-    brand_candidates = filter_brands(brand_candidates)
-    return brand_candidates
-
-
 def select_brand(brand_candidates: list) -> str:
     """
     HB-->TY-->Gratis-->Watsons--> Migros--> Random
@@ -187,18 +167,7 @@ def select_brand(brand_candidates: list) -> str:
         return brand
 
 
-def summarize(skus):
-    summary_keys = {"brand", "clean_names"}
-    skus = [services.filter_keys(doc, summary_keys) for doc in skus]
-    for doc in skus:
-        doc["name"] = doc.pop("clean_names")[0]
-    skus_with_brand = [sku for sku in skus if "brand" in sku]
-    skus_without_brand = [sku for sku in skus if "brand" not in sku]
-    services.save_json(output_dir / "skus_with_brand.json", skus_with_brand)
-    services.save_json(output_dir / "skus_without_brand.json", skus_without_brand)
-
-
-def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs):
+def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict):
     """
     0. cat and subcat are different things, beware
     1. clean well
@@ -213,19 +182,40 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs):
 
     """
 
-    brand_pool = get_brand_pool(brand_subcats_pairs, clean_skus)
-    for sku in tqdm(clean_skus):
-        brand_candidates = get_brand_candidates(sku, brand_pool)
+    def get_brand_candidates(sku: dict) -> list:
+        """
+        find brand first,
+        there only a few possible cats for this brand
+        indexes should reflect that too
+
+        johnson s baby -> johnsons baby
+        """
+        brand_candidates = sku.get(keys.CLEAN_BRANDS, [])
+        clean_names = sku.get(keys.CLEAN_NAMES, [])
+
+        for name in clean_names:
+            for brand in brand_pool:
+                if brand in name:
+                    brand_candidates.append(brand)
+
+        brand_candidates = filter_brands(brand_candidates)
+        return brand_candidates
+
+    def get_brand(sku):
+        brand_candidates = get_brand_candidates(sku)
         sku[keys.BRAND_CANDIDATES] = brand_candidates
         sku[keys.BRAND] = select_brand(brand_candidates)
+        return sku
 
-    summarize(clean_skus)
+    brand_pool = get_brand_pool(brand_subcats_pairs, clean_skus)
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        skus_with_brands = pool.map(get_brand, tqdm(clean_skus))
 
-    return clean_skus
+    return skus_with_brands
 
 
-def add_sub_cat_to_skus(skus_with_brand: List[dict]) -> List[dict]:
-    return skus_with_brand
+def add_sub_cat_to_skus(skus_with_brands: List[dict], brand_subcats_pairs: dict) -> List[dict]:
+    return skus_with_brands
 
 
 def enrich_sku_data():
@@ -245,9 +235,11 @@ def enrich_sku_data():
         clean_brand_original_brand_pairs,
     )
 
-    skus_with_brand = add_brand_to_skus(clean_skus, brand_subcats_pairs)
+    skus_with_brands = add_brand_to_skus(clean_skus, brand_subcats_pairs)
 
-    skus_with_brand_and_sub_cat = add_sub_cat_to_skus(skus_with_brand)
+    summarize(skus_with_brands)
+
+    skus_with_brand_and_sub_cat = add_sub_cat_to_skus(skus_with_brands, brand_subcats_pairs)
 
 
 def add_gender(sku):
@@ -260,6 +252,17 @@ def add_color(sku):
 
 def add_parent_cat(sku):
     ...
+
+
+def summarize(skus):
+    summary_keys = {"brand", "clean_names"}
+    skus = [services.filter_keys(doc, summary_keys) for doc in skus]
+    for doc in skus:
+        doc["name"] = doc.pop("clean_names")[0]
+    skus_with_brand = [sku for sku in skus if "brand" in sku]
+    skus_without_brand = [sku for sku in skus if "brand" not in sku]
+    services.save_json(output_dir / "skus_with_brand.json", skus_with_brand)
+    services.save_json(output_dir / "skus_without_brand.json", skus_without_brand)
 
 
 if __name__ == "__main__":
