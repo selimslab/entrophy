@@ -140,8 +140,9 @@ def add_clean_subcats(sku: dict) -> dict:
     return sku
 
 
-def get_clean_skus(full_skus):
-    skus = get_skus_with_relevant_fields(full_skus)
+def get_clean_skus(skus: List[dict]):
+    relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES}
+    skus = [services.filter_keys(doc, relevant_keys) for doc in skus]
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         skus = pool.map(add_clean_brand, tqdm(skus))
@@ -163,13 +164,6 @@ def get_first_token_freq(skus):
         token: freq for token, freq in first_token_freq.items() if freq > 100
     }
     return first_token_freq
-
-
-def get_skus_with_relevant_fields(full_skus):
-    relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES}
-    skus = [services.filter_keys(doc, relevant_keys) for doc in full_skus.values()]
-
-    return skus
 
 
 def get_brand_pool(brand_subcats_pairs: dict, skus) -> set:
@@ -346,7 +340,7 @@ def create_indexes():
     return brand_subcats_pairs, sub_cat_market_pairs
 
 
-def enrich_sku_data(clean_skus):
+def enrich_sku_data(clean_skus: List[dict]):
     """
     1. clean and index brands + cats
         brand_subcats_pairs,
@@ -425,8 +419,8 @@ def add_parent_cat(sku):
 
 
 def refresh():
-    full_skus = services.read_json(input_dir / "full_skus.json")
-    clean_skus = get_clean_skus(full_skus)
+    skus = services.read_json(input_dir / "full_skus.json").values()
+    clean_skus = get_clean_skus(skus)
     enrich_sku_data(clean_skus)
 
 
