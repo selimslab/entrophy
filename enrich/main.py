@@ -141,7 +141,7 @@ def add_clean_subcats(sku: dict) -> dict:
 
 
 def get_clean_skus(skus: List[dict]):
-    relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES}
+    relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES, keys.NAME}
     skus = [services.filter_keys(doc, relevant_keys) for doc in skus]
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
@@ -385,6 +385,13 @@ def count_fields(docs, target_key):
 
 def inspect_results():
     docs = services.read_json(output_dir / "name_brand_subcat.json")
+
+    without_brand_or_sub = [doc for doc in docs if keys.BRAND not in doc or keys.SUBCAT not in doc]
+    services.save_json(output_dir / "without_brand_or_sub.json", without_brand_or_sub)
+
+    with_brand_and_sub = [doc for doc in docs if keys.BRAND in doc and keys.SUBCAT in doc]
+    services.save_json(output_dir / "with_brand_and_sub.json", with_brand_and_sub)
+
     brands_in_results = [doc.get(keys.BRAND) for doc in docs]
     subcats_in_results = [doc.get(keys.SUBCAT) for doc in docs]
 
