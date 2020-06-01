@@ -5,18 +5,6 @@ import services
 from paths import *
 
 
-def create_inverted_index(words: set):
-    stopwords = {"ml", "gr", "adet", "ve", "and", "ile"}
-    index = defaultdict(set)
-    for word in words:
-        for token in word.split():
-            if token in stopwords or len(token) == 1:
-                continue
-            index[token].add(word)
-    index = {k: list(v) for k, v in index.items()}
-    return index
-
-
 def create_index(words: List[str], name: str) -> dict:
     words = services.clean_list_of_strings(words)
     words = [w for w in words if w]

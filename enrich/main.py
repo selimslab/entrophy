@@ -102,8 +102,10 @@ def clean_sub_cats(sku):
         else:
             subcats.append(cat)
 
-    subcats = [sub.split("/")[-1] for sub in subcats]
-    subcats = [sub.split(",")[-1] for sub in subcats]
+    # "bebek bezi/bebek, oyuncak" -> bebek bezi
+    subcats = [sub.split("/")[0] for sub in subcats]
+
+    # subcats = [sub.split(",")[-1] for sub in subcats]
 
     clean_subcats = services.clean_list_of_strings(services.flatten(subcats))
     sku[keys.CLEAN_SUBCATS] = clean_subcats
@@ -267,42 +269,84 @@ def summarize(skus):
     services.save_json(output_dir / "skus_without_brand_summary.json", skus_without_brand)
 
 
-def select_subcat(sub_cat_candidates):
+def select_subcat(sub_cat_candidates: list):
     if sub_cat_candidates:
-        sub_cat = sorted(list(set(sub_cat_candidates)), key=len)[-1]
+        sub_cat = sorted(sub_cat_candidates, key=len)[-1]
         return sub_cat
 
 
-def add_sub_cat_to_skus(skus: List[dict], brand_subcats_pairs: dict) -> List[dict]:
+def add_sub_cat_to_skus(skus: List[dict], subcat_index: dict) -> List[dict]:
     for sku in tqdm(skus):
         sub_cat_candidates = []
+
         sub_cat_candidates += sku.get(keys.CLEAN_SUBCATS)
+
+        clean_names = sku.get(keys.CLEAN_NAMES, [])
+        all_name_tokens_for_this_sku = services.get_tokens_of_a_nested_list(clean_names)
+
         brand = sku.get(keys.BRAND)
-        sub_cat_candidates.append(brand_subcats_pairs.get(brand, []))
+        subcat_index_for_this_brand = subcat_index.get(brand, {})
+
+        possible_subcats_for_this_brand = []
+        for token in all_name_tokens_for_this_sku:
+            possible_subcats_for_this_token = subcat_index_for_this_brand.get(token)
+
+        sub_cat_candidates += list(set(services.flatten(possible_subcats_for_this_brand)))
         sub_cat_candidates = services.flatten(sub_cat_candidates)
+        # dedup, remove very long sub_cats, they are mostly wrong
+        sub_cat_candidates = list(set([s for s in sub_cat_candidates if s and len(s) < 15]))
+
+        for sub in sub_cat_candidates:
+
         sku[keys.SUBCAT_CANDIDATES] = sub_cat_candidates
-        sku[keys.SUBCAT] = select_subcat(sub_cat_candidates)
+        if sub_cat_candidates:
+            sku[keys.SUBCAT] = select_subcat(sub_cat_candidates)
 
     return skus
 
 
-def inspect_cats():
-    full_skus = services.read_json(input_dir / "full_skus.json")
-    filtered_cats = [services.filter_keys(doc, {keys.MARKET, keys.CATEGORIES})
-                     for doc in full_skus.values()]
-    services.save_json(output_dir / "filtered_cats.json", filtered_cats)
-
-
-def add_subcat():
+def add_sub_cat():
     skus_with_brands = services.read_json(output_dir / "skus_with_brands.json")
+    # brand_subcats_pairs = services.read_json(output_dir / "brand_subcats_pairs.json")
+
+    subcat_index = services.read_json(output_dir / "subcat_index.json")
+
+    skus_with_brand_and_sub_cat = add_sub_cat_to_skus(skus_with_brands, subcat_index)
+    services.save_json(output_dir / "skus_with_brand_and_sub_cat.json", skus_with_brand_and_sub_cat)
+
+    subcat_summary = [services.filter_keys(doc, {keys.CLEAN_NAMES, keys.SUBCAT_CANDIDATES, keys.SUBCAT})
+                      for doc in skus_with_brand_and_sub_cat]
+    services.save_json(output_dir / "subcat_summary.json", subcat_summary)
+
+
+def create_inverted_index(strings: set):
+    stopwords = {"ml", "gr", "adet", "ve", "and", "ile"}
+    index = defaultdict(set)
+    for str in strings:
+        for token in str.split():
+            if token in stopwords or len(token) == 1:
+                continue
+            index[token].add(str)
+    index = {k: list(v) for k, v in index.items()}
+    return index
+
+
+def create_subcat_index():
     brand_subcats_pairs = services.read_json(output_dir / "brand_subcats_pairs.json")
 
-    skus_with_brand_and_sub_cat = add_sub_cat_to_skus(skus_with_brands, brand_subcats_pairs)
-    services.save_json(output_dir / "skus_with_brand_and_sub_cat.json", skus_with_brand_and_sub_cat)
+    subcat_index = defaultdict(dict)
+    for brand, subcats in brand_subcats_pairs.items():
+        subcat_index[brand] = create_inverted_index(set(subcats))
+
+    services.save_json(output_dir / "subcat_index.json", subcat_index)
+
+
+def go():
+    full_skus = services.read_json(input_dir / "full_skus.json")
+    enrich_sku_data(full_skus)
+    create_subcat_index()
 
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
-    #  full_skus = services.read_json(input_dir / "full_skus.json")
-    # enrich_sku_data()
-    inspect_cats()
+    add_sub_cat()
