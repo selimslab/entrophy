@@ -1,5 +1,6 @@
 import services
-from collections import Counter, OrderedDict, defaultdict
+from collections import defaultdict
+from typing import List
 
 
 def tokenize(s: str):
@@ -7,22 +8,13 @@ def tokenize(s: str):
         return [t.strip() for t in s.split()]
 
 
-def get_tokens_of_a_nested_list(l: list):
-    l = services.flatten(l)
-    strings = [s for s in l if isinstance(s, str)]
+def tokenize_a_nested_list(nested_list: List[list]) -> list:
+    flat_list = services.flatten(nested_list)
+    strings = [s for s in flat_list if isinstance(s, str)]
     tokens_list = [tokenize(s) for s in strings]
     tokens = services.flatten(tokens_list)
+    tokens = [t for t in tokens if t]
     return tokens
-
-
-def get_cleaned_tokens_of_a_nested_list(l: list):
-    tokens = get_tokens_of_a_nested_list(l)
-    return services.clean_list_of_strings(tokens)
-
-
-def get_ordered_token_freq_of_a_nested_list(l: list):
-    tokens = get_cleaned_tokens_of_a_nested_list(l)
-    return OrderedDict(Counter(tokens).most_common())
 
 
 def create_inverted_index(strings: set, stopwords: set) -> dict:
@@ -37,9 +29,9 @@ def create_inverted_index(strings: set, stopwords: set) -> dict:
 
 
 def test_get_tokens_of_a_group():
-    x = get_tokens_of_a_nested_list(["quick fox", "lazy dog"])
+    x = tokenize_a_nested_list(["quick fox", "lazy dog"])
     assert set(x) == {"quick", "fox", "lazy", "dog"}
-    y = get_tokens_of_a_nested_list([{"quick fox"}, "lazy dog"])
+    y = tokenize_a_nested_list([{"quick fox"}, "lazy dog"])
     assert set(y) == {"lazy", "dog"}
 
 

@@ -157,7 +157,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
 
     clean_names = list(doc.get("clean_name") for doc in docs)
 
-    tokens = services.get_tokens_of_a_nested_list(clean_names)
+    tokens = services.tokenize_a_nested_list(clean_names)
     most_common_tokens = sorted(services.get_n_most_common_list_elements(tokens, 3))
     tags = " ".join(sorted(list(set(tokens))))
 

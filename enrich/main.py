@@ -1,6 +1,6 @@
 import multiprocessing
 import os
-from collections import defaultdict
+from collections import defaultdict, Counter, OrderedDict
 from tqdm import tqdm
 import logging
 from typing import List, Iterable, Dict
@@ -153,18 +153,12 @@ def get_name_tokens(names: list) -> List[list]:
     return name_tokens
 
 
-def get_first_token_freq(name_tokens):
-    first_tokens = [tokens[0] for tokens in name_tokens]
-    first_tokens = [n for n in first_tokens if len(n) > 2]
-    first_token_freq = services.get_ordered_token_freq_of_a_nested_list(first_tokens)
-    return first_token_freq
-
-
-def get_brands_from_first_tokens(names):
+def get_brands_from_first_tokens(names: List[list]):
     name_tokens = get_name_tokens(names)
-    first_token_freq = get_first_token_freq(name_tokens)
+    first_tokens = [tokens[0] for tokens in name_tokens]
+    filterd_first_tokens = [token for token in first_tokens if len(token) > 2]
+    first_token_freq = OrderedDict(Counter(filterd_first_tokens).most_common())
     services.save_json(output_dir / "first_token_freq.json", first_token_freq)
-
     filtered_first_tokens = {
         token: freq for token, freq in first_token_freq.items() if freq > 100
     }
@@ -480,11 +474,18 @@ def refresh():
 
 
 def test_brands():
-    ...
+    skus = services.read_json(input_dir / "full_skus.json").values()
+    names = [sku.get(keys.CLEAN_NAMES, []) for sku in skus]
+    name_tokens = get_name_tokens(names)
+    first_3_tokens = [" ".join(tokens[0:3]) for tokens in name_tokens]
+    filtered_tokens = [token for token in first_3_tokens if len(token) > 2]
+    freq = OrderedDict(Counter(filtered_tokens).most_common())
+    services.save_json(output_dir / "name_freq_first_3.json", freq)
 
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     brand_subcats_pairs_path = output_dir / "brand_subcats_pairs.json"
-    refresh()
+    # refresh()
     # inspect_brands()
+    test_brands()
