@@ -223,7 +223,7 @@ def get_brand_candidates(
     return candidates
 
 
-def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict):
+def add_brand_to_skus(clean_skus: List[dict], brand_pool: set):
     """
     0. cat and subcat are different things, beware
     1. clean well
@@ -234,14 +234,7 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict):
 
     so given a brand, the possible cats will be known
     """
-
-    brand_pool = get_brand_pool(brand_subcats_pairs, clean_skus)
     brands_with_multiple_tokens = {b for b in brand_pool if len(b.split()) > 1}
-    services.save_json(output_dir / "brand_pool.json", list(brand_pool))
-    services.save_json(
-        output_dir / "brands_with_multiple_tokens.json",
-        list(brands_with_multiple_tokens),
-    )
 
     for sku in tqdm(clean_skus):
         brand_candidates = get_brand_candidates(
@@ -289,6 +282,12 @@ def add_sub_cat_to_skus(
         brand_subcats_pairs: Dict[str, list],
         sub_cat_market_pairs: Dict[str, list],
 ) -> List[dict]:
+    """
+    There are a set of possible subcats for a given brand
+    we check them if any of them is in any of the names of the given sku
+    this leaves us with a few candidates
+    then we choose prioritizing by market
+    """
     for sku in tqdm(skus):
         sub_cat_candidates = []
 
@@ -363,22 +362,20 @@ def enrich_sku_data(clean_skus: List[dict]):
     """
     brand_subcats_pairs, sub_cat_market_pairs = create_indexes()
 
+    brand_pool: set = get_brand_pool(brand_subcats_pairs, clean_skus)
+
+    services.save_json(output_dir / "brand_pool.json", list(brand_pool))
+
     # add brand
-    skus_with_brands = add_brand_to_skus(clean_skus, brand_subcats_pairs)
+    skus_with_brands = add_brand_to_skus(clean_skus, brand_pool)
     services.save_json(output_dir / "skus_with_brands.json", skus_with_brands)
 
     # add subcat
     skus_with_brand_and_sub_cat = add_sub_cat_to_skus(
         skus_with_brands, brand_subcats_pairs, sub_cat_market_pairs
     )
-    services.save_json(
-        output_dir / "skus_with_brand_and_sub_cat.json", skus_with_brand_and_sub_cat
-    )
 
-    name_brand_subcat = get_sku_summary(skus_with_brand_and_sub_cat)
-    services.save_json(output_dir / "name_brand_subcat.json", name_brand_subcat)
-
-    print("done!")
+    return skus_with_brand_and_sub_cat
 
 
 def count_fields(docs, target_key):
@@ -440,15 +437,26 @@ def add_color(sku):
     ...
 
 
-def add_parent_cat(sku):
+def add_sub_brand(sku):
     ...
 
 
 def refresh():
+    """
+    run the data enrichment from scratch
+    """
     skus = services.read_json(input_dir / "full_skus.json").values()
     clean_skus = get_clean_skus(skus)
-    enrich_sku_data(clean_skus)
+    skus_with_brand_and_sub_cat = enrich_sku_data(clean_skus)
+    services.save_json(
+        output_dir / "skus_with_brand_and_sub_cat.json", skus_with_brand_and_sub_cat
+    )
+
+    name_brand_subcat = get_sku_summary(skus_with_brand_and_sub_cat)
+    services.save_json(output_dir / "name_brand_subcat.json", name_brand_subcat)
+
     inspect_results()
+    print("done!")
 
 
 if __name__ == "__main__":
