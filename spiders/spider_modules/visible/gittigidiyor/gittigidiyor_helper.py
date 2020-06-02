@@ -1,5 +1,3 @@
-from bs4 import BeautifulSoup
-
 import constants as keys
 from services.convertor import convert_price
 
