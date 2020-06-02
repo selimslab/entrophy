@@ -4,12 +4,13 @@ from collections import defaultdict
 from tqdm import tqdm
 import logging
 from typing import List, Iterable, Dict
+import itertools
 
 import services
 import constants as keys
 from paths import input_dir, output_dir
 
-from data_services.mongo.collections import items_collection
+from mongo_service import get_raw_docs_with_markets_and_cats_only
 
 
 def index_brands_and_subcats() -> tuple:
@@ -58,16 +59,9 @@ def index_brands_and_subcats() -> tuple:
             update_brand_subcats_pairs(brands, subcats, keys.WATSONS)
 
     def add_from_raw_docs():
-        raw_docs_path = output_dir / "raw_docs.json"
+        raw_docs_path = input_dir / "raw_docs.json"
         if not os.path.exists(raw_docs_path):
-            cursor = items_collection.find(
-                {
-                    keys.MARKET: {"$exists": True},
-                    keys.CATEGORIES: {"$exists": True},
-                    keys.MARKETS: {"$nin": [keys.TRENDYOL, keys.WATSONS]},
-                },
-                {keys.MARKET: 1, keys.CATEGORIES: 1, keys.BRAND: 1, "_id": 0},
-            )
+            cursor = get_raw_docs_with_markets_and_cats_only()
             raw_docs = list(cursor)
             services.save_json(raw_docs_path, raw_docs)
         else:
@@ -208,13 +202,21 @@ def get_brand_candidates(
     candidates += sku.get(keys.CLEAN_BRANDS, [])
 
     clean_names = sku.get(keys.CLEAN_NAMES, [])
+
+    # this search is 2 parts to make it faster,
+    # we don't have to search every possible brand in name
     for name in clean_names:
         # search single-word brands
+        # brand is in first two tokens mostly
         name_tokens = services.tokenize(name)
-        candidates += [t for t in name_tokens if t in brand_pool]
+        first_token = name_tokens[0]
+        if first_token in brand_pool:
+            candidates.append(first_token)
+
+        first_three_tokens_of_name = " ".join(name_tokens[:3])
         # search multiple-word brands
         for brand in brands_with_multiple_tokens:
-            if brand in name:
+            if brand in first_three_tokens_of_name:
                 candidates.append(brand)
 
     candidates = filter_brands(candidates)
@@ -290,16 +292,13 @@ def add_sub_cat_to_skus(
     for sku in tqdm(skus):
         sub_cat_candidates = []
 
-        # TODO check in name
-        sub_cat_candidates += sku.get(keys.CLEAN_SUBCATS)
-
         clean_names = sku.get(keys.CLEAN_NAMES, [])
 
         brand = sku.get(keys.BRAND)
 
         possible_subcats_for_this_brand = brand_subcats_pairs.get(brand, [])
 
-        for sub in possible_subcats_for_this_brand:
+        for sub in itertools.chain(sku.get(keys.CLEAN_SUBCATS, []), possible_subcats_for_this_brand):
             if any(sub in name for name in clean_names):
                 sub_cat_candidates.append(sub)
 
@@ -443,14 +442,11 @@ def refresh():
     skus = services.read_json(input_dir / "full_skus.json").values()
     clean_skus = get_clean_skus(skus)
     enrich_sku_data(clean_skus)
+    inspect_results()
 
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     brand_subcats_pairs_path = output_dir / "brand_subcats_pairs.json"
     refresh()
-    inspect_results()
-    """
-    elixir 
-    limon 
-    """
+    # inspect_brands()
