@@ -1,9 +1,13 @@
 # Entrophy
 Reduce complexity, create simplicity 
 
+## what it does? 
 
++ creates product groups with rich metadata from a raw mess of online products 
 
- ## directory walkthrough 
+it's a medium size project with around 8k lines of python3 by June 2020, and it can be made even smaller
+
+# directory walkthrough 
  
 ## api/
 
@@ -149,6 +153,8 @@ system summary
     9. reduce a doc group to a single SKU 
     10. group SKUs using links and names  
     11. reduce SKUs into products 
+    
+    a key library here is networkx, it's used create and update the graph 
 
 3. assign a category, brand, type, size, color, and other identifiers to SKUs by using names and info in raw docs
 4. saves skus to elastic and firestore
