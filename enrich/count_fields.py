@@ -40,19 +40,14 @@ def markets_with_cat():
     pprint(markets_with_brand)  # myo, wat, gratis, c4, ross, ty
 
 
-def inspect_brand():
-    skus_with_brand = services.read_json(output_dir / "skus_with_brand.json")
-    brands = [sku.get("brand") for sku in skus_with_brand]
-    brands = sorted(set(brands), key=len, reverse=True)
-
-    brand_tree = services.read_json(output_dir / "brand_tree.json")
-    in_brand_tree = set(brand_tree.keys())
-
-    print("in_brand_tree", len(in_brand_tree))
-    print("sku brands", len(brands))
-    print("common", len(in_brand_tree.intersection(brands)))
-    print("diff", len(set(brands).difference(in_brand_tree)))
-
+def inspect_brands():
+    skus = services.read_json(input_dir / "full_skus.json").values()
+    relevant_keys = {keys.BRANDS_MULTIPLE}
+    skus = [services.filter_keys(doc, relevant_keys) for doc in skus]
+    services.save_json(
+        output_dir / "inspect_brands.json",
+        skus,
+    )
 
 if __name__ == "__main__":
     pass
