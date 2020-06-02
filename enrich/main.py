@@ -298,7 +298,9 @@ def add_sub_cat_to_skus(
 
         possible_subcats_for_this_brand = brand_subcats_pairs.get(brand, [])
 
-        for sub in itertools.chain(sku.get(keys.CLEAN_SUBCATS, []), possible_subcats_for_this_brand):
+        for sub in itertools.chain(
+                sku.get(keys.CLEAN_SUBCATS, []), possible_subcats_for_this_brand
+        ):
             if any(sub in name for name in clean_names):
                 sub_cat_candidates.append(sub)
 
@@ -386,10 +388,14 @@ def count_fields(docs, target_key):
 def inspect_results():
     docs = services.read_json(output_dir / "name_brand_subcat.json")
 
-    without_brand_or_sub = [doc for doc in docs if keys.BRAND not in doc or keys.SUBCAT not in doc]
+    without_brand_or_sub = [
+        doc for doc in docs if keys.BRAND not in doc or keys.SUBCAT not in doc
+    ]
     services.save_json(output_dir / "without_brand_or_sub.json", without_brand_or_sub)
 
-    with_brand_and_sub = [doc for doc in docs if keys.BRAND in doc and keys.SUBCAT in doc]
+    with_brand_and_sub = [
+        doc for doc in docs if keys.BRAND in doc and keys.SUBCAT in doc
+    ]
     services.save_json(output_dir / "with_brand_and_sub.json", with_brand_and_sub)
 
     brands_in_results = [doc.get(keys.BRAND) for doc in docs]

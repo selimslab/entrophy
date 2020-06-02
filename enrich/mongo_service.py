@@ -3,6 +3,7 @@ import constants as keys
 
 def get_raw_docs_with_markets_and_cats_only():
     from data_services.mongo.collections import items_collection
+
     cursor = items_collection.find(
         {
             keys.MARKET: {"$exists": True},
@@ -17,11 +18,8 @@ def get_raw_docs_with_markets_and_cats_only():
 def ask_a_question():
     from data_services.mongo.collections import items_collection
     from pprint import pprint
-    cursor = items_collection.find(
-        {
-            keys.BRAND: {"$in": ["Elixir", "Limon"]},
-        },
-    )
+
+    cursor = items_collection.find({keys.BRAND: {"$in": ["Elixir", "Limon"]}, }, )
     for doc in cursor:
         pprint(doc)
 

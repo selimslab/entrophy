@@ -45,9 +45,9 @@ def inspect_brands():
     relevant_keys = {keys.BRANDS_MULTIPLE}
     skus = [services.filter_keys(doc, relevant_keys) for doc in skus]
     services.save_json(
-        output_dir / "inspect_brands.json",
-        skus,
+        output_dir / "inspect_brands.json", skus,
     )
+
 
 if __name__ == "__main__":
     pass
