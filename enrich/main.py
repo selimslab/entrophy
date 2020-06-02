@@ -146,13 +146,16 @@ def get_clean_skus(skus: List[dict]):
     return skus
 
 
-def get_first_token_freq(skus):
-    names = [sku.get(keys.CLEAN_NAMES, []) for sku in skus]
+def get_name_tokens(names: list) -> List[list]:
     names = services.flatten(names)
     names = [n for n in names if n]
-    first_tokens = [name.split()[0] for name in names]
-    first_tokens = [n for n in first_tokens if len(n) > 2]
+    name_tokens = [name.split() for name in names]
+    return name_tokens
 
+
+def get_first_token_freq(name_tokens):
+    first_tokens = [tokens[0] for tokens in name_tokens]
+    first_tokens = [n for n in first_tokens if len(n) > 2]
     first_token_freq = services.get_ordered_token_freq_of_a_nested_list(first_tokens)
     first_token_freq = {
         token: freq for token, freq in first_token_freq.items() if freq > 100
@@ -161,7 +164,9 @@ def get_first_token_freq(skus):
 
 
 def get_brand_pool(brand_subcats_pairs: dict, skus) -> set:
-    first_token_freq = get_first_token_freq(skus)
+    names = [sku.get(keys.CLEAN_NAMES, []) for sku in skus]
+    name_tokens = get_name_tokens(names)
+    first_token_freq = get_first_token_freq(name_tokens)
     services.save_json(output_dir / "first_token_freq.json", first_token_freq)
     brands_from_first_tokens = set(first_token_freq.keys())
 
