@@ -205,17 +205,6 @@ def get_brand_candidates(
             if s in brand_pool:
                 candidates.append(s)
 
-        """
-        name_tokens = services.tokenize(name)
-        first_token = name_tokens[0]
-        if first_token in brand_pool:
-            candidates.append(first_token)
-        first_n_tokens_of_name = " ".join(name_tokens[:max_brand_size])
-        for brand in brands_with_multiple_tokens:
-            if brand in first_n_tokens_of_name:
-                candidates.append(brand)
-        """
-
     candidates = [
         b
         for b in candidates
