@@ -174,9 +174,7 @@ def select_brand(brand_candidates: list) -> str:
         return brand
 
 
-def get_brand_candidates(
-        sku: dict, brand_pool: set, max_brand_size: int
-) -> list:
+def get_brand_candidates(sku: dict, brand_pool: set, max_brand_size: int) -> list:
     """
     find brand first,
     there only a few possible cats for this brand
@@ -197,8 +195,7 @@ def get_brand_candidates(
 
         name_tokens = name.split()
         start_strings = [
-            " ".join(name_tokens[0:i])
-            for i in range(1, max_brand_size + 1)
+            " ".join(name_tokens[0:i]) for i in range(1, max_brand_size + 1)
         ]
         # search multiple-word brands
         for s in start_strings:
@@ -236,7 +233,8 @@ def get_brand_pool(brand_subcats_pairs: dict, skus: List[dict]) -> set:
     freq = get_frequencies_for_all_start_combinations(names)
     most_frequent_start_strings = set(s for s, freq in freq.items() if freq > 10)
     services.save_json(
-        output_dir / "most_frequent_start_strings.json", sorted(list(most_frequent_start_strings))
+        output_dir / "most_frequent_start_strings.json",
+        sorted(list(most_frequent_start_strings)),
     )
 
     # brands_from_first_tokens = get_brands_from_first_tokens(names)
@@ -261,15 +259,11 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict) -> List
 
     brand_pool: set = get_brand_pool(brand_subcats_pairs, clean_skus)
     max_brand_size = 3
-    brand_pool = {
-        b for b in brand_pool if len(b.split()) <= max_brand_size
-    }
+    brand_pool = {b for b in brand_pool if len(b.split()) <= max_brand_size}
     services.save_json(output_dir / "brand_pool.json", sorted(list(brand_pool)))
 
     for sku in tqdm(clean_skus):
-        brand_candidates = get_brand_candidates(
-            sku, brand_pool, max_brand_size
-        )
+        brand_candidates = get_brand_candidates(sku, brand_pool, max_brand_size)
         sku[keys.BRAND_CANDIDATES] = brand_candidates
         sku[keys.BRAND] = select_brand(brand_candidates)
 
