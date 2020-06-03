@@ -166,6 +166,68 @@ def get_brands_from_first_tokens(names: List[list]):
     return brands_from_first_tokens
 
 
+def filter_brands(brands: list) -> list:
+    return [
+        b
+        for b in brands
+        if len(b) > 2
+           and not any(bad in b for bad in {"brn ", "markasiz", "erkek", "kadin"})
+    ]
+
+
+def select_brand(brand_candidates: list) -> str:
+    # TODO beware position
+    if brand_candidates:
+        brand_candidates = list(set(brand_candidates))
+        brand = sorted(brand_candidates, key=len)[-1]
+        return brand
+
+
+def get_brand_candidates(
+        sku: dict, brand_pool: set, max_brand_size: int
+) -> list:
+    """
+    find brand first,
+    there only a few possible cats for this brand
+    indexes should reflect that too
+
+    johnson s baby -> johnsons baby
+    """
+    candidates = []
+    candidates += sku.get(keys.CLEAN_BRANDS, [])
+
+    clean_names = sku.get(keys.CLEAN_NAMES, [])
+
+    # this search is 2 parts to make it faster,
+    # we don't have to search every possible brand in name
+    for name in clean_names:
+        # search single-word brands
+        # brand is in first two tokens mostly
+        start_strings = []
+        for token_list in name.split():
+            for i in range(1, max_brand_size + 1):
+                start_strings.append(" ".join(token_list[0:i]))
+
+        # search multiple-word brands
+        for s in start_strings:
+            if s in brand_pool:
+                candidates.append(s)
+
+        """
+                name_tokens = services.tokenize(name)
+        first_token = name_tokens[0]
+        if first_token in brand_pool:
+            candidates.append(first_token)
+        first_n_tokens_of_name = " ".join(name_tokens[:max_brand_size])
+        for brand in brands_with_multiple_tokens:
+            if brand in first_n_tokens_of_name:
+                candidates.append(brand)
+        """
+
+    candidates = filter_brands(candidates)
+    return candidates
+
+
 def get_frequencies_for_all_start_combinations(names: List[list]) -> dict:
     token_lists = get_token_lists(names)
     groups = []
@@ -198,69 +260,7 @@ def get_brand_pool(brand_subcats_pairs: dict, skus: List[dict]) -> set:
     return brand_pool
 
 
-def filter_brands(brands: list) -> list:
-    return [
-        b
-        for b in brands
-        if len(b) > 2
-           and not any(bad in b for bad in {"brn ", "markasiz", "erkek", "kadin"})
-    ]
-
-
-def select_brand(brand_candidates: list) -> str:
-    # TODO beware position
-    if brand_candidates:
-        brand_candidates = list(set(brand_candidates))
-        brand = sorted(brand_candidates, key=len)[-1]
-        return brand
-
-
-def get_brand_candidates(
-        sku: dict, brands_with_multiple_tokens: set, brand_pool: set, max_brand_size: int
-) -> list:
-    """
-    find brand first,
-    there only a few possible cats for this brand
-    indexes should reflect that too
-
-    johnson s baby -> johnsons baby
-    """
-    candidates = []
-    candidates += sku.get(keys.CLEAN_BRANDS, [])
-
-    clean_names = sku.get(keys.CLEAN_NAMES, [])
-
-    # this search is 2 parts to make it faster,
-    # we don't have to search every possible brand in name
-    for name in clean_names:
-        # search single-word brands
-        # brand is in first two tokens mostly
-        name_tokens = services.tokenize(name)
-        first_token = name_tokens[0]
-        if first_token in brand_pool:
-            candidates.append(first_token)
-
-        start_strings = []
-        for token_list in name.split():
-            for i in range(1, max_brand_size + 1):
-                start_strings.append(" ".join(token_list[0:i]))
-
-        # search multiple-word brands
-        for s in start_strings:
-            if s in brands_with_multiple_tokens:
-                candidates.append(s)
-        """
-        first_n_tokens_of_name = " ".join(name_tokens[:max_brand_size])
-        for brand in brands_with_multiple_tokens:
-            if brand in first_n_tokens_of_name:
-                candidates.append(brand)
-        """
-
-    candidates = filter_brands(candidates)
-    return candidates
-
-
-def add_brand_to_skus(clean_skus: List[dict], brand_pool: set):
+def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict) -> List[dict]:
     """
     0. cat and subcat are different things, beware
     1. clean well
@@ -271,14 +271,17 @@ def add_brand_to_skus(clean_skus: List[dict], brand_pool: set):
 
     so given a brand, the possible cats will be known
     """
+
+    brand_pool: set = get_brand_pool(brand_subcats_pairs, clean_skus)
     max_brand_size = 4
-    brands_with_multiple_tokens = {
-        b for b in brand_pool if 1 < len(b.split()) <= max_brand_size
+    brand_pool = {
+        b for b in brand_pool if len(b.split()) <= max_brand_size
     }
+    services.save_json(output_dir / "brand_pool.json", list(brand_pool))
 
     for sku in tqdm(clean_skus):
         brand_candidates = get_brand_candidates(
-            sku, brands_with_multiple_tokens, brand_pool, max_brand_size
+            sku, brand_pool, max_brand_size
         )
         sku[keys.BRAND_CANDIDATES] = brand_candidates
         sku[keys.BRAND] = select_brand(brand_candidates)
@@ -404,11 +407,8 @@ def add_brand_and_subcat(clean_skus: List[dict]):
     """
     brand_subcats_pairs, sub_cat_market_pairs = create_indexes()
 
-    brand_pool: set = get_brand_pool(brand_subcats_pairs, clean_skus)
-    services.save_json(output_dir / "brand_pool.json", list(brand_pool))
-
     # add brand
-    skus_with_brands = add_brand_to_skus(clean_skus, brand_pool)
+    skus_with_brands = add_brand_to_skus(clean_skus, brand_subcats_pairs)
     services.save_json(output_dir / "skus_with_brands.json", skus_with_brands)
 
     # add subcat
