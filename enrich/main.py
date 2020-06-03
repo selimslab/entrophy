@@ -146,7 +146,7 @@ def get_clean_skus(skus: List[dict]):
     return skus
 
 
-def get_name_tokens(names: list) -> List[list]:
+def get_token_lists(names: list) -> List[list]:
     names = services.flatten(names)
     names = [n for n in names if n]
     name_tokens = [name.split() for name in names]
@@ -154,8 +154,8 @@ def get_name_tokens(names: list) -> List[list]:
 
 
 def get_brands_from_first_tokens(names: List[list]):
-    name_tokens = get_name_tokens(names)
-    first_tokens = [tokens[0] for tokens in name_tokens]
+    token_lists = get_token_lists(names)
+    first_tokens = [tokens[0] for tokens in token_lists]
     filterd_first_tokens = [token for token in first_tokens if len(token) > 2]
     first_token_freq = OrderedDict(Counter(filterd_first_tokens).most_common())
     services.save_json(output_dir / "first_token_freq.json", first_token_freq)
@@ -166,16 +166,34 @@ def get_brands_from_first_tokens(names: List[list]):
     return brands_from_first_tokens
 
 
-def get_brand_pool(brand_subcats_pairs: dict, skus) -> set:
+def get_frequencies_for_all_start_combinations(names: List[list]) -> dict:
+    token_lists = get_token_lists(names)
+    groups = []
+    for token_list in tqdm(token_lists):
+        for i in range(1, len(token_list) + 1):
+            groups.append(" ".join(token_list[0:i]))
+    groups = [s for s in groups if len(s) > 2]
+    freq = OrderedDict(Counter(groups).most_common())
+    return freq
+
+
+def get_brand_pool(brand_subcats_pairs: dict, skus: List[dict]) -> set:
     # brands given by vendors
     brands = brand_subcats_pairs.keys()
     brand_pool = set(brands)
 
-    # frequent first tokens as brands
+    # frequent start strings as brands
     names = [sku.get(keys.CLEAN_NAMES, []) for sku in skus]
-    brands_from_first_tokens = get_brands_from_first_tokens(names)
+    freq = get_frequencies_for_all_start_combinations(names)
+    most_frequent_start_strings = set(s for s, freq in freq.items() if freq > 10)
+    services.save_json(
+        output_dir / "most_frequent_start_strings.json", most_frequent_start_strings
+    )
 
-    brand_pool.update(brands_from_first_tokens)
+    # brands_from_first_tokens = get_brands_from_first_tokens(names)
+    # brand_pool.update(brands_from_first_tokens)
+
+    brand_pool.update(most_frequent_start_strings)
 
     return brand_pool
 
@@ -198,7 +216,7 @@ def select_brand(brand_candidates: list) -> str:
 
 
 def get_brand_candidates(
-        sku: dict, brands_with_multiple_tokens: set, brand_pool: set
+        sku: dict, brands_with_multiple_tokens: set, brand_pool: set, max_brand_size: int
 ) -> list:
     """
     find brand first,
@@ -222,11 +240,21 @@ def get_brand_candidates(
         if first_token in brand_pool:
             candidates.append(first_token)
 
-        first_three_tokens_of_name = " ".join(name_tokens[:3])
+        start_strings = []
+        for token_list in name.split():
+            for i in range(1, max_brand_size + 1):
+                start_strings.append(" ".join(token_list[0:i]))
+
         # search multiple-word brands
+        for s in start_strings:
+            if s in brands_with_multiple_tokens:
+                candidates.append(s)
+        """
+        first_n_tokens_of_name = " ".join(name_tokens[:max_brand_size])
         for brand in brands_with_multiple_tokens:
-            if brand in first_three_tokens_of_name:
+            if brand in first_n_tokens_of_name:
                 candidates.append(brand)
+        """
 
     candidates = filter_brands(candidates)
     return candidates
@@ -243,11 +271,14 @@ def add_brand_to_skus(clean_skus: List[dict], brand_pool: set):
 
     so given a brand, the possible cats will be known
     """
-    brands_with_multiple_tokens = {b for b in brand_pool if len(b.split()) > 1}
+    max_brand_size = 4
+    brands_with_multiple_tokens = {
+        b for b in brand_pool if 1 < len(b.split()) <= max_brand_size
+    }
 
     for sku in tqdm(clean_skus):
         brand_candidates = get_brand_candidates(
-            sku, brands_with_multiple_tokens, brand_pool
+            sku, brands_with_multiple_tokens, brand_pool, max_brand_size
         )
         sku[keys.BRAND_CANDIDATES] = brand_candidates
         sku[keys.BRAND] = select_brand(brand_candidates)
@@ -374,7 +405,6 @@ def add_brand_and_subcat(clean_skus: List[dict]):
     brand_subcats_pairs, sub_cat_market_pairs = create_indexes()
 
     brand_pool: set = get_brand_pool(brand_subcats_pairs, clean_skus)
-
     services.save_json(output_dir / "brand_pool.json", list(brand_pool))
 
     # add brand
@@ -474,19 +504,20 @@ def refresh():
 
 
 def test_brands():
+    # brand_pool = services.read_json(output_dir / "brand_pool.json")
+
     skus = services.read_json(input_dir / "full_skus.json").values()
     names = [sku.get(keys.CLEAN_NAMES, []) for sku in skus]
-    name_tokens = get_name_tokens(names)
-    first_n_tokens = [" ".join(tokens[0:2]) for tokens in name_tokens]
+    token_lists = get_token_lists(names)
+    first_n_tokens = [" ".join(tokens[0:5]) for tokens in token_lists]
     filtered_tokens = [token for token in first_n_tokens if len(token) > 2]
     freq = OrderedDict(Counter(filtered_tokens).most_common())
-    services.save_json(output_dir / "name_freq_first_2.json", freq)
+    services.save_json(output_dir / "name_freq_first_5.json", freq)
 
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     brand_subcats_pairs_path = output_dir / "brand_subcats_pairs.json"
-    # refresh()
+    refresh()
     # inspect_brands()
     # test_brands()
-    # TODO take a look at brand_subcat pairs there are irrelevant subcats
