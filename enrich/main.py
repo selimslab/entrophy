@@ -174,7 +174,7 @@ def select_brand(brand_candidates: list) -> str:
         return brand
 
 
-def get_brand_candidates(sku: dict, brand_pool: set, max_brand_size: int) -> list:
+def get_brand_candidates(sku: dict, brand_pool: set, max_brand_size: int = 5) -> list:
     """
     find brand first,
     there only a few possible cats for this brand
@@ -223,13 +223,7 @@ def get_frequencies_for_all_start_combinations(names: List[list]) -> dict:
     return freq
 
 
-def get_brand_pool(brand_subcats_pairs: dict, skus: List[dict]) -> set:
-    # brands given by vendors
-    brands = brand_subcats_pairs.keys()
-    brand_pool = set(brands)
-
-    # frequent start strings as brands
-    names = [sku.get(keys.CLEAN_NAMES, []) for sku in skus]
+def get_frequent_start_strings_as_brands(names: List[list]) -> set:
     freq = get_frequencies_for_all_start_combinations(names)
     most_frequent_start_strings = set(s for s, freq in freq.items() if freq > 10)
     services.save_json(
@@ -237,12 +231,10 @@ def get_brand_pool(brand_subcats_pairs: dict, skus: List[dict]) -> set:
         sorted(list(most_frequent_start_strings)),
     )
 
-    # brands_from_first_tokens = get_brands_from_first_tokens(names)
-    # brand_pool.update(brands_from_first_tokens)
+    max_brand_size = 3
+    most_frequent_start_strings = {b for b in most_frequent_start_strings if len(b.split()) <= max_brand_size}
 
-    brand_pool.update(most_frequent_start_strings)
-
-    return brand_pool
+    return most_frequent_start_strings
 
 
 def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict) -> List[dict]:
@@ -257,13 +249,18 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict) -> List
     so given a brand, the possible cats will be known
     """
 
-    brand_pool: set = get_brand_pool(brand_subcats_pairs, clean_skus)
-    max_brand_size = 3
-    brand_pool = {b for b in brand_pool if len(b.split()) <= max_brand_size}
+    # brands given by vendors
+    brands = brand_subcats_pairs.keys()
+    brand_pool = set(brands)
+
+    names = [sku.get(keys.CLEAN_NAMES, []) for sku in clean_skus]
+    most_frequent_start_strings = get_frequent_start_strings_as_brands(names)
+    brand_pool.update(most_frequent_start_strings)
+
     services.save_json(output_dir / "brand_pool.json", sorted(list(brand_pool)))
 
     for sku in tqdm(clean_skus):
-        brand_candidates = get_brand_candidates(sku, brand_pool, max_brand_size)
+        brand_candidates = get_brand_candidates(sku, brand_pool)
         sku[keys.BRAND_CANDIDATES] = brand_candidates
         sku[keys.BRAND] = select_brand(brand_candidates)
 
@@ -319,7 +316,15 @@ def add_sub_cat_to_skus(
 
         brand = sku.get(keys.BRAND)
 
-        possible_subcats_for_this_brand = brand_subcats_pairs.get(brand, [])
+        # for example,
+        # for brand loreal excellence intense
+        # possible_subcats will be a union of possible_subcats for ["loreal", "loreal excellence", "loreal excellence intense"]
+        possible_subcats_for_this_brand = []
+        if brand:
+            brand_tokens = brand.split()
+            for i in range(1, len(brand_tokens) + 1):
+                possible_parent_brand = " ".join(brand_tokens[0:i])
+                possible_subcats_for_this_brand += brand_subcats_pairs.get(possible_parent_brand, [])
 
         for sub in itertools.chain(
                 sku.get(keys.CLEAN_SUBCATS, []), possible_subcats_for_this_brand
