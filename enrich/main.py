@@ -156,8 +156,8 @@ def get_token_lists(names: list) -> List[list]:
 def get_brands_from_first_tokens(names: List[list]):
     token_lists = get_token_lists(names)
     first_tokens = [tokens[0] for tokens in token_lists]
-    filterd_first_tokens = [token for token in first_tokens if len(token) > 2]
-    first_token_freq = OrderedDict(Counter(filterd_first_tokens).most_common())
+    filtered_first_tokens = [token for token in first_tokens if len(token) > 2]
+    first_token_freq = OrderedDict(Counter(filtered_first_tokens).most_common())
     services.save_json(output_dir / "first_token_freq.json", first_token_freq)
     filtered_first_tokens = {
         token: freq for token, freq in first_token_freq.items() if freq > 100
@@ -174,7 +174,7 @@ def select_brand(brand_candidates: list) -> str:
         return brand
 
 
-def get_brand_candidates(sku: dict, brand_pool: set, max_brand_size: int = 5) -> list:
+def get_brand_candidates(sku: dict, brand_pool: set) -> list:
     """
     find brand first,
     there only a few possible cats for this brand
@@ -195,19 +195,13 @@ def get_brand_candidates(sku: dict, brand_pool: set, max_brand_size: int = 5) ->
 
         name_tokens = name.split()
         start_strings = [
-            " ".join(name_tokens[0:i]) for i in range(1, max_brand_size + 1)
+            " ".join(name_tokens[:i]) for i in range(1, 5)
         ]
         # search multiple-word brands
-        for s in start_strings:
-            if s in brand_pool:
-                candidates.append(s)
-
-    candidates = [
-        b
-        for b in candidates
-        if len(b) > 2
-           and not any(bad in b for bad in {"brn ", "markasiz", "erkek", "kadin"})
-    ]
+        brands_from_frequent_words = [
+            s for s in start_strings if s in brand_pool
+        ]
+        candidates += brands_from_frequent_words
 
     return candidates
 
@@ -225,13 +219,14 @@ def get_frequencies_for_all_start_combinations(names: List[list]) -> dict:
 
 def get_frequent_start_strings_as_brands(names: List[list]) -> set:
     freq = get_frequencies_for_all_start_combinations(names)
-    most_frequent_start_strings = set(s for s, freq in freq.items() if freq > 10)
+    filtered_freq = {s: freq for s, freq in freq.items() if freq > 60}
     services.save_json(
         output_dir / "most_frequent_start_strings.json",
-        sorted(list(most_frequent_start_strings)),
+        OrderedDict(sorted(filtered_freq.items())),
     )
 
-    max_brand_size = 3
+    max_brand_size = 2
+    most_frequent_start_strings = set(filtered_freq.keys())
     most_frequent_start_strings = {b for b in most_frequent_start_strings if len(b.split()) <= max_brand_size}
 
     return most_frequent_start_strings
@@ -259,8 +254,17 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict) -> List
 
     services.save_json(output_dir / "brand_pool.json", sorted(list(brand_pool)))
 
+    bad_words = {"brn ", "markasiz", "erkek", "kadin"}
+
     for sku in tqdm(clean_skus):
         brand_candidates = get_brand_candidates(sku, brand_pool)
+        brand_candidates = [
+            b
+            for b in brand_candidates
+            if len(b) > 2
+               and not any(bad in b for bad in bad_words)
+        ]
+
         sku[keys.BRAND_CANDIDATES] = brand_candidates
         sku[keys.BRAND] = select_brand(brand_candidates)
 
@@ -318,7 +322,8 @@ def add_sub_cat_to_skus(
 
         # for example,
         # for brand loreal excellence intense
-        # possible_subcats will be a union of possible_subcats for ["loreal", "loreal excellence", "loreal excellence intense"]
+        # possible_subcats will be a union of possible_subcats for all start combinations
+        # ["loreal", "loreal excellence", "loreal excellence intense"]
         possible_subcats_for_this_brand = []
         if brand:
             brand_tokens = brand.split()
@@ -411,10 +416,15 @@ def count_fields(docs, target_key):
 def inspect_results():
     docs = services.read_json(output_dir / "name_brand_subcat.json")
 
-    without_brand_or_sub = [
-        doc for doc in docs if keys.BRAND not in doc or keys.SUBCAT not in doc
+    with_brand_only = [
+        doc for doc in docs if keys.BRAND in doc and keys.SUBCAT not in doc
     ]
-    services.save_json(output_dir / "without_brand_or_sub.json", without_brand_or_sub)
+    services.save_json(output_dir / "with_brand_only.json", with_brand_only)
+
+    with_subcat_only = [
+        doc for doc in docs if keys.BRAND not in doc and keys.SUBCAT in doc
+    ]
+    services.save_json(output_dir / "with_subcat_only.json", with_subcat_only)
 
     with_brand_and_sub = [
         doc for doc in docs if keys.BRAND in doc and keys.SUBCAT in doc
@@ -446,10 +456,13 @@ def inspect_results():
         "with_sub",
         with_sub,
         "\n",
-        "without_brand_or_sub",
-        len(without_brand_or_sub),
+        "with_subcat_only",
+        len(with_subcat_only),
         "\n",
-        "with_brand_and_sub",
+        "with_brand_only",
+        len(with_brand_only),
+        "\n",
+        "with_both_brand_and_subcat",
         len(with_brand_and_sub),
         "\n",
     )
@@ -500,9 +513,56 @@ def test_brands():
     services.save_json(output_dir / "name_freq_first_5.json", freq)
 
 
+def test_sub_brand():
+    """ test to find sub brands """
+
+    brand_pool = services.read_json(output_dir / "brand_pool.json")
+    name_brand_subcat = services.read_json(output_dir / "name_brand_subcat.json")
+
+    path = output_dir / "most_frequent_start_strings.json"
+    freq = services.read_json(path)
+
+    for doc in name_brand_subcat:
+        brand = doc.get(keys.BRAND, "")
+        if not brand:
+            continue
+
+        brand_tokens = brand.split()
+        if len(brand_tokens) == 1:
+            continue
+        brand_freq = {}
+        for i in range(1, len(brand_tokens)):
+            root = " ".join(brand_tokens[:i])
+            if root in brand_pool:
+                count = freq.get(root, 0)
+                brand_freq[root] = count
+
+        root_brand = services.get_most_frequent_key(brand_freq)
+        if root_brand:
+            print((brand, root_brand))
+            doc[keys.BRAND] = root_brand
+            doc[keys.SUB_BRAND] = brand
+
+    print("with_subbrand", count_fields(name_brand_subcat, keys.SUB_BRAND))
+    services.save_json(output_dir / "with_subbrand.json", name_brand_subcat)
+
+
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     brand_subcats_pairs_path = output_dir / "brand_subcats_pairs.json"
     refresh()
     # inspect_brands()
     # test_brands()
+    # test_sub_brand()
+    """ 
+    TODO next 
+    
+    get freq straight 
+    
+    if a root brand exists, it is the brand, and later one is subbrand
+    
+    remove size, brand, cat, color, gender
+    
+    cat: { sub_cat : { type: {brand: {sub_brand : [products] } }
+
+    """
