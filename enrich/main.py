@@ -153,17 +153,6 @@ def get_token_lists(names: list) -> List[list]:
     return name_tokens
 
 
-def get_brands_from_first_tokens(names: List[list]):
-    token_lists = get_token_lists(names)
-    first_tokens = [tokens[0] for tokens in token_lists]
-    filtered_first_tokens = [token for token in first_tokens if len(token) > 2]
-    first_token_freq = OrderedDict(Counter(filtered_first_tokens).most_common())
-    services.save_json(output_dir / "first_token_freq.json", first_token_freq)
-    filtered_first_tokens = {
-        token: freq for token, freq in first_token_freq.items() if freq > 100
-    }
-    brands_from_first_tokens = set(filtered_first_tokens.keys())
-    return brands_from_first_tokens
 
 
 def select_brand(brand_candidates: list) -> str:
