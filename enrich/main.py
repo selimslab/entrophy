@@ -76,9 +76,11 @@ def index_brands_and_subcats() -> tuple:
             subcats = clean_sub_cats(cats)
             update_brand_subcats_pairs(brands, subcats, market)
 
+    logging.info("creating brand_subcats_pairs..")
     add_ty()
     add_watsons()
     add_from_raw_docs()
+
     return brand_subcats_pairs, clean_brand_original_brand_pairs, sub_cat_market_pairs
 
 
@@ -200,6 +202,11 @@ def get_frequencies_for_all_start_combinations(names: List[list]) -> dict:
     return freq
 
 
+def find_out_freq_cut_points(freq):
+    for name, count in freq.items():
+        ...
+
+
 def get_frequent_start_strings_as_brands(names: List[list]) -> set:
     freq = get_frequencies_for_all_start_combinations(names)
     filtered_freq = {s: freq for s, freq in freq.items() if freq > 60}
@@ -208,7 +215,7 @@ def get_frequent_start_strings_as_brands(names: List[list]) -> set:
         OrderedDict(sorted(filtered_freq.items())),
     )
 
-    max_brand_size = 1
+    max_brand_size = 2
     most_frequent_start_strings = set(filtered_freq.keys())
     most_frequent_start_strings = {
         b for b in most_frequent_start_strings if len(b.split()) <= max_brand_size
@@ -323,9 +330,10 @@ def add_sub_cat_to_skus(
             if any(sub in name for name in clean_names):
                 sub_cat_candidates.append(sub)
 
-        # dedup, remove very long sub_cats, they are mostly wrong
+        # dedup, remove very long sub_cats, they are mostly wrong, remove if it's also a brand
         sub_cat_candidates = list(
-            set([s for s in sub_cat_candidates if s and len(s) < 15])
+            set(s for s in sub_cat_candidates
+                if s and len(s) < 30 and "indirim" not in s and s not in brand_subcats_pairs)
         )
 
         sku[keys.SUBCAT_CANDIDATES] = sub_cat_candidates
@@ -549,6 +557,5 @@ if __name__ == "__main__":
     
     remove size, brand, cat, color, gender
     
-    cat: { sub_cat : { type: {brand: {sub_brand : [products] } }
 
     """

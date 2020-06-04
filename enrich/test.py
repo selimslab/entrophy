@@ -15,40 +15,6 @@ def get_brands_from_markets():
     return sorted(list(brand_subcats_pairs.keys()), key=len, reverse=True)
 
 
-def experiment_with_subbrands():
-    path = output_dir / "most_frequent_start_strings.json"
-    freq = services.read_json(path)
-
-    brands_from_markets = services.read_json(output_dir / "brands_from_markets.json")
-
-    sub_brands = {}
-
-    for s, count in freq.items():
-
-        tokens = s.split()
-        if len(tokens) > 4:
-            continue
-        if len(tokens) == 1:
-            sub_brands[s] = count
-            continue
-
-        prev = " ".join(tokens[:-1])
-        prev_freq = freq.get(prev, float("infinity"))
-        root_freq = freq.get(tokens[0], float("infinity"))
-        if count > root_freq * 0.1 and prev_freq * 0.2 < count < prev_freq * 0.8:
-            print(" ".join(tokens), count, prev, prev_freq)
-
-            sub_brands[prev] = prev_freq
-
-    # filter if already in brands_from_markets
-    sub_brands = {
-        k: v for k, v in sub_brands.items() if k not in set(brands_from_markets)
-    }
-    services.save_json(
-        output_dir / "sub_brands.json", OrderedDict(sorted(sub_brands.items()))
-    )
-
-
 def experiment_sliding_window_freq():
     from main import get_token_lists
 
@@ -110,5 +76,22 @@ def remove_known_from_slidings():
     services.save_json(output_dir / "brand_cat_removed.json", brand_cat_removed)
 
 
+def sub_exp2():
+    """
+    if we give the correct brands, the data to look for type will be cleaner
+    """
+    path = output_dir / "most_frequent_start_strings.json"
+    freq = services.read_json(path)
+
+    # filter if already in brands_from_markets
+    brands_in_results = services.read_json(output_dir / "brands_in_results.json")
+    freq = {
+        k: v for k, v in freq.items()
+        if k not in set(brands_in_results)
+           and 1 < len(k.split()) < 5
+    }
+    services.save_json(
+        output_dir / "exp_sub_brand.json", OrderedDict(sorted(freq.items()))
+    )
 if __name__ == "__main__":
-    remove_known_from_slidings()
+    sub_exp2()
