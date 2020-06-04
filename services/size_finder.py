@@ -141,13 +141,13 @@ class SizeFinder:
 
     def get_digits_unit_size(self, name):
         name += " "
-        match = self.pattern_match(name)
-        if match:
-            matched_string, unit = match
-            digits = self.get_digits(matched_string)
+        match_and_unit = self.pattern_match(name)
+        if match_and_unit:
+            match, unit = match_and_unit
+            digits = self.get_digits(match)
             if digits and digits < self.max_digits.get(unit, 1000):
                 digits, unit = self.convert(digits, unit)
-                return digits, unit, matched_string
+                return digits, unit, match
 
 
 size_finder = SizeFinder()
