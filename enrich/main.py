@@ -153,8 +153,6 @@ def get_token_lists(names: list) -> List[list]:
     return name_tokens
 
 
-
-
 def select_brand(brand_candidates: list) -> str:
     # TODO beware position
     if brand_candidates:
@@ -183,13 +181,9 @@ def get_brand_candidates(sku: dict, brand_pool: set) -> list:
         # brand is in first two tokens mostly
 
         name_tokens = name.split()
-        start_strings = [
-            " ".join(name_tokens[:i]) for i in range(1, 5)
-        ]
+        start_strings = [" ".join(name_tokens[:i]) for i in range(1, 5)]
         # search multiple-word brands
-        brands_from_frequent_words = [
-            s for s in start_strings if s in brand_pool
-        ]
+        brands_from_frequent_words = [s for s in start_strings if s in brand_pool]
         candidates += brands_from_frequent_words
 
     return candidates
@@ -214,9 +208,11 @@ def get_frequent_start_strings_as_brands(names: List[list]) -> set:
         OrderedDict(sorted(filtered_freq.items())),
     )
 
-    max_brand_size = 2
+    max_brand_size = 1
     most_frequent_start_strings = set(filtered_freq.keys())
-    most_frequent_start_strings = {b for b in most_frequent_start_strings if len(b.split()) <= max_brand_size}
+    most_frequent_start_strings = {
+        b for b in most_frequent_start_strings if len(b.split()) <= max_brand_size
+    }
 
     return most_frequent_start_strings
 
@@ -250,8 +246,7 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict) -> List
         brand_candidates = [
             b
             for b in brand_candidates
-            if len(b) > 2
-               and not any(bad in b for bad in bad_words)
+            if len(b) > 2 and not any(bad in b for bad in bad_words)
         ]
 
         sku[keys.BRAND_CANDIDATES] = brand_candidates
@@ -318,7 +313,9 @@ def add_sub_cat_to_skus(
             brand_tokens = brand.split()
             for i in range(1, len(brand_tokens) + 1):
                 possible_parent_brand = " ".join(brand_tokens[0:i])
-                possible_subcats_for_this_brand += brand_subcats_pairs.get(possible_parent_brand, [])
+                possible_subcats_for_this_brand += brand_subcats_pairs.get(
+                    possible_parent_brand, []
+                )
 
         for sub in itertools.chain(
                 sku.get(keys.CLEAN_SUBCATS, []), possible_subcats_for_this_brand

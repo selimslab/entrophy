@@ -41,12 +41,17 @@ def experiment_with_subbrands():
             sub_brands[prev] = prev_freq
 
     # filter if already in brands_from_markets
-    sub_brands = {k: v for k, v in sub_brands.items() if k not in set(brands_from_markets)}
-    services.save_json(output_dir / "sub_brands.json", OrderedDict(sorted(sub_brands.items())))
+    sub_brands = {
+        k: v for k, v in sub_brands.items() if k not in set(brands_from_markets)
+    }
+    services.save_json(
+        output_dir / "sub_brands.json", OrderedDict(sorted(sub_brands.items()))
+    )
 
 
 def experiment_sliding_window_freq():
     from main import get_token_lists
+
     known = get_known_strings()
     known_pattern = re.compile("|".join(known))
 
@@ -68,10 +73,12 @@ def experiment_sliding_window_freq():
         s: freq for s, freq in sliding_window_freq.items() if freq > 1
     }
 
-    sorted_sliding = sorted(sliding_window_freq.items(), key=itemgetter(1), reverse=True)
-    services.save_json(output_dir / "brand_cat_removed.json",
-                       OrderedDict(sorted_sliding)
-                       )
+    sorted_sliding = sorted(
+        sliding_window_freq.items(), key=itemgetter(1), reverse=True
+    )
+    services.save_json(
+        output_dir / "brand_cat_removed.json", OrderedDict(sorted_sliding)
+    )
 
 
 def get_known_strings():
