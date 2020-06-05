@@ -26,6 +26,7 @@ xlrd = "*"
 pytest = "*"
 pylint = "*"
 scikit-learn = "*"
+gensim = "*"
 
 [requires]
 python_version = "3.7"
