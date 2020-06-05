@@ -152,6 +152,20 @@ n_features = 1000
 n_components = 7
 n_top_words = 1
 
-nlp()
+
+def go():
+    nlp()
+
 
 # TODO remove brands from top_words
+
+def remove_brands():
+    lda_topics = services.read_json("top_10_words_by_subcat.json")
+    brands_in_results = services.read_json(output_dir / "brands_in_results.json")
+    brands_in_results = set(brands_in_results)
+    brands_in_results = brands_in_results.difference({"domates", "biber"})
+    for sub, topics in lda_topics.items():
+        topics = [t for t in topics if t not in brands_in_results and len(t) > 2]
+        lda_topics[sub] = topics
+
+    services.save_json(output_dir / "lda_topics.json", lda_topics)
