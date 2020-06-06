@@ -15,55 +15,6 @@ from services.size_finder import size_finder
 import constants as keys
 
 
-def create_sub_tree():
-    """cat: { sub_cat : { type: {brand: {sub_brand : [products] } }"""
-
-    skus_with_brand_and_sub_cat = services.read_json(
-        output_dir / "skus_with_brand_and_sub_cat.json"
-    )
-
-    tree = {}
-
-    for sku in tqdm(skus_with_brand_and_sub_cat):
-        brand, subcat = sku.get(keys.BRAND), sku.get(keys.SUBCAT)
-        if brand and subcat:
-            if subcat not in tree:
-                tree[subcat] = {}
-            if brand not in tree[subcat]:
-                tree[subcat][brand] = []
-            tree[subcat][brand].append(sku.get(keys.CLEAN_NAMES, []))
-
-    services.save_json(output_dir / "sub_tree.json", tree)
-
-
-def remove_known():
-    """ remove subcat, brand, size """
-
-    tree = services.read_json(output_dir / "sub_tree.json")
-    for subcat, brands in tqdm(tree.items()):
-
-        for brand, clean_names in brands.items():
-            stripped_groups = []
-
-            for name_group in clean_names:
-                stripped_names = []
-                for name in name_group:
-
-                    match_and_unit = size_finder.pattern_match(name + " ")
-                    if match_and_unit:
-                        match, _ = match_and_unit
-                        name = name.replace(match, "")
-
-                    stripped_name = " ".join(name.split()).replace(brand, "").replace(subcat, "").strip()
-
-                    stripped_names.append(stripped_name)
-
-                stripped_groups.append(stripped_names)
-
-            tree[subcat][brand] = stripped_groups
-
-    services.save_json(output_dir / "sub_tree_stripped.json", tree)
-
 
 def go():
     tree = services.read_json(output_dir / "sub_tree.json")
