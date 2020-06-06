@@ -5,6 +5,12 @@ import services
 
 
 def clean_name(name: str) -> str:
+    """
+    replace turkish chars
+    allowed chars are a-z A-Z 0-9 and , . * are, remove all else
+    remove whitespace
+    only size can have a dot . char, other dots are removed
+    """
     if not name:
         return ""
     # replace accented chars with their base forms

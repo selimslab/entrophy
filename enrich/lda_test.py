@@ -75,10 +75,27 @@ def model_topics(data_samples):
     print_top_words(nmf, tfidf_feature_names, n_top_words)
 
 
+def svd():
+    # model_topics(sku_name_strings_in_subcat)
+    tfidf_vectorizer = TfidfVectorizer()
+    tfidf_matrix = tfidf_vectorizer.fit_transform(sku_name_strings_in_subcat)
+    svd = TruncatedSVD(n_components=3)
+    svdMatrix = svd.fit_transform(tfidf_matrix)
+    tokens = tfidf_vectorizer.get_feature_names()
+    print(tfidf_matrix.shape, svdMatrix.shape)
+    print(svdMatrix.components_)
+
+
 def new_top_words(model, feature_names, n_top_words):
     for topic_idx, topic in enumerate(model.components_):
+        # print(topic)
+        sorted_topics = topic.argsort()
+        # print(sorted_topics)
+        # print([i for i in sorted_topics if i >0.9])
         for i in topic.argsort()[:-n_top_words - 1:-1]:
-            print(i, feature_names[i])
+            # print(i, feature_names[i], sorted_topics[i])
+            ...
+
     top_words = (
         " ".join(
             [
@@ -92,13 +109,18 @@ def new_top_words(model, feature_names, n_top_words):
 
 
 def lda(sentences: list):
+    n_samples = 2000
+    n_features = 800
+    n_components = 7
+    n_top_words = 1
+
     try:
-        tf_vectorizer = CountVectorizer(max_features=n_features)
+        tf_vectorizer = CountVectorizer(max_features=n_features, ngram_range=(1, 1))
         tf_matrix = tf_vectorizer.fit_transform(sentences)
     except ValueError:
         return []
 
-    lda = LatentDirichletAllocation(n_components=n_components, max_iter=5,
+    lda = LatentDirichletAllocation(n_components=n_components, max_iter=20,
                                     learning_method='online',
                                     learning_offset=50.,
                                     random_state=0)
@@ -111,27 +133,17 @@ def lda(sentences: list):
     return new_top_words(lda, tf_feature_names, n_top_words)
 
 
-def svd():
-    # model_topics(sku_name_strings_in_subcat)
-    tfidf_vectorizer = TfidfVectorizer()
-    tfidf_matrix = tfidf_vectorizer.fit_transform(sku_name_strings_in_subcat)
-    svd = TruncatedSVD(n_components=3)
-    svdMatrix = svd.fit_transform(tfidf_matrix)
-    tokens = tfidf_vectorizer.get_feature_names()
-    print(tfidf_matrix.shape, svdMatrix.shape)
-    print(svdMatrix.components_)
-
 
 def nlp():
-    top_10_words_by_subcat = {}
+    lda_topics = {}
     tree = services.read_json(output_dir / "sub_tree_stripped.json")
     for subcat, brands in tqdm(tree.items()):
         sku_name_strings_in_subcat = []
         for brand, names in brands.items():
             sku_tokens = services.tokenize_a_nested_list(names)
-            sku_doc = " ".join(set(sku_tokens))
-            if sku_doc:
-                sku_name_strings_in_subcat.append(sku_doc)
+            all_names_for_this_sku = " ".join(sku_tokens)
+            if all_names_for_this_sku:
+                sku_name_strings_in_subcat.append(all_names_for_this_sku)
 
         if not sku_name_strings_in_subcat:
             continue
@@ -142,30 +154,29 @@ def nlp():
         top_words = lda(sku_name_strings_in_subcat)
         print(top_words)
         print()
-        top_10_words_by_subcat[subcat] = top_words
+        lda_topics[subcat] = top_words
 
-    services.save_json("top_10_words_by_subcat.json", top_10_words_by_subcat)
-
-
-n_samples = 2000
-n_features = 1000
-n_components = 7
-n_top_words = 1
-
-
-def go():
-    nlp()
+    remove_brands(lda_topics)
 
 
 # TODO remove brands from top_words
 
-def remove_brands():
-    lda_topics = services.read_json("top_10_words_by_subcat.json")
+def remove_brands(lda_topics):
     brands_in_results = services.read_json(output_dir / "brands_in_results.json")
     brands_in_results = set(brands_in_results)
     brands_in_results = brands_in_results.difference({"domates", "biber"})
     for sub, topics in lda_topics.items():
-        topics = [t for t in topics if t not in brands_in_results and len(t) > 2]
+        topics = [t for t in topics if t not in brands_in_results and len(t) > 2 and not t.isdigit()]
         lda_topics[sub] = topics
 
-    services.save_json(output_dir / "lda_topics.json", lda_topics)
+    services.save_json(output_dir / "lda_topics1.json", lda_topics)
+
+
+def clean_for_lda():
+    """
+    remove barcodes, all sizes, subcats, brands, gender, color, cat, ...
+    """
+    ...
+
+
+nlp()

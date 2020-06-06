@@ -10,7 +10,7 @@ import services
 import constants as keys
 from paths import input_dir, output_dir
 
-from mongo_service import get_raw_docs_with_markets_and_cats_only
+from one_of_scripts.mongo_service import get_raw_docs_with_markets_and_cats_only
 
 
 def index_brands_and_subcats() -> tuple:
@@ -41,6 +41,8 @@ def index_brands_and_subcats() -> tuple:
             sub_cat_market_pairs[sub].add(market)
 
         for b in clean_brands:
+            if "brn " in b:
+                continue
             brand_subcats_pairs[b].update(clean_subcats)
 
     def add_ty():
@@ -135,6 +137,9 @@ def add_clean_subcats(sku: dict) -> dict:
 
 
 def get_clean_skus(skus: List[dict]):
+    """
+
+    """
     relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES, keys.NAME}
     skus = [services.filter_keys(doc, relevant_keys) for doc in skus]
 
@@ -181,7 +186,7 @@ def get_brand_candidates(sku: dict, brand_pool: set) -> list:
         # brand is in first two tokens mostly
 
         name_tokens = name.split()
-        start_strings = [" ".join(name_tokens[:i]) for i in range(1, 5)]
+        start_strings = [" ".join(name_tokens[:i]) for i in range(1, 4)]
         # search multiple-word brands
         brands_from_frequent_words = [s for s in start_strings if s in brand_pool]
         candidates += brands_from_frequent_words
@@ -546,14 +551,3 @@ if __name__ == "__main__":
     # inspect_brands()
     # test_brands()
     # test_sub_brand()
-    """ 
-    TODO next 
-    
-    get freq straight 
-    
-    if a root brand exists, it is the brand, and later one is subbrand
-    
-    remove size, brand, cat, color, gender
-    
-
-    """
