@@ -1,8 +1,3 @@
-# Author: Olivier Grisel <olivier.grisel@ensta.org>
-#         Lars Buitinck
-#         Chyi-Kwei Yau <chyikwei.yau@gmail.com>
-# License: BSD 3 clause
-
 from time import time
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
