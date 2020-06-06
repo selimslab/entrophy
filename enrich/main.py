@@ -77,8 +77,6 @@ def index_brands_and_subcats() -> tuple:
             update_brand_subcats_pairs(brands, subcats, market)
 
     logging.info("creating brand_subcats_pairs..")
-    add_ty()
-    add_watsons()
     add_from_raw_docs()
 
     return brand_subcats_pairs, clean_brand_original_brand_pairs, sub_cat_market_pairs
