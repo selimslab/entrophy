@@ -1,6 +1,6 @@
 ## Steps 
 
-* read full sku 
+* read full skus 
 * convert cat to subcat -> "bebek bezi/bebek, oyuncak" -> bebek bezi
 * clean names, brands, subcats
     * replace turkish chars 
