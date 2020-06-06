@@ -12,12 +12,7 @@ import constants as keys
 
 def new_top_words(model, feature_names, n_top_words):
     top_words = (
-        " ".join(
-            [
-                feature_names[i]
-                for i in topic.argsort()[:-n_top_words - 1:-1]
-            ]
-        )
+        " ".join([feature_names[i] for i in topic.argsort()[: -n_top_words - 1: -1]])
         for topic_idx, topic in enumerate(model.components_)
     )
     return list(set(top_words))
@@ -35,10 +30,13 @@ def lda(sentences: list):
     except ValueError:
         return []
 
-    lda = LatentDirichletAllocation(n_components=n_components, max_iter=20,
-                                    learning_method='online',
-                                    learning_offset=50.,
-                                    random_state=0)
+    lda = LatentDirichletAllocation(
+        n_components=n_components,
+        max_iter=20,
+        learning_method="online",
+        learning_offset=50.0,
+        random_state=0,
+    )
     lda.fit(tf_matrix)
 
     tf_feature_names = tf_vectorizer.get_feature_names()
@@ -75,12 +73,17 @@ def nlp():
 
 # TODO remove brands from top_words
 
+
 def remove_brands(lda_topics):
     brands_in_results = services.read_json(output_dir / "brands_in_results.json")
     brands_in_results = set(brands_in_results)
     brands_in_results = brands_in_results.difference({"domates", "biber"})
     for sub, topics in lda_topics.items():
-        topics = [t for t in topics if t not in brands_in_results and len(t) > 2 and not t.isdigit()]
+        topics = [
+            t
+            for t in topics
+            if t not in brands_in_results and len(t) > 2 and not t.isdigit()
+        ]
         lda_topics[sub] = topics
 
     services.save_json(output_dir / "lda_topics1.json", lda_topics)
@@ -132,7 +135,12 @@ def remove_known():
                         match, _ = match_and_unit
                         name = name.replace(match, "")
 
-                    stripped_name = " ".join(name.split()).replace(brand, "").replace(subcat, "").strip()
+                    stripped_name = (
+                        " ".join(name.split())
+                            .replace(brand, "")
+                            .replace(subcat, "")
+                            .strip()
+                    )
 
                     stripped_names.append(stripped_name)
 

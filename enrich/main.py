@@ -335,8 +335,14 @@ def add_sub_cat_to_skus(
 
         # dedup, remove very long sub_cats, they are mostly wrong, remove if it's also a brand
         sub_cat_candidates = list(
-            set(s for s in sub_cat_candidates
-                if s and len(s) < 30 and "indirim" not in s and s not in brand_subcats_pairs)
+            set(
+                s
+                for s in sub_cat_candidates
+                if s
+                and len(s) < 30
+                and "indirim" not in s
+                and s not in brand_subcats_pairs
+            )
         )
 
         sku[keys.SUBCAT_CANDIDATES] = sub_cat_candidates

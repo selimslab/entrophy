@@ -1,12 +1,12 @@
 from time import time
 
 
-
 def print_top_words(model, feature_names, n_top_words):
     for topic_idx, topic in enumerate(model.components_):
         message = "Topic #%d: " % topic_idx
-        message += " ".join([feature_names[i]
-                             for i in topic.argsort()[:-n_top_words - 1:-1]])
+        message += " ".join(
+            [feature_names[i] for i in topic.argsort()[: -n_top_words - 1: -1]]
+        )
         print(message)
     print()
 
@@ -35,25 +35,34 @@ def model_topics(data_samples):
     print()
 
     # Fit the NMF model
-    print("Fitting the NMF model (Frobenius norm) with tf-idf features, "
-          "n_samples=%d and n_features=%d..."
-          % (n_samples, n_features))
+    print(
+        "Fitting the NMF model (Frobenius norm) with tf-idf features, "
+        "n_samples=%d and n_features=%d..." % (n_samples, n_features)
+    )
     t0 = time()
-    nmf = NMF(n_components=n_components, random_state=1,
-              alpha=.1, l1_ratio=.5).fit(tfidf)
+    nmf = NMF(n_components=n_components, random_state=1, alpha=0.1, l1_ratio=0.5).fit(
+        tfidf
+    )
 
     print("\nTopics in NMF model (Frobenius norm):")
     tfidf_feature_names = tfidf_vectorizer.get_feature_names()
     print_top_words(nmf, tfidf_feature_names, n_top_words)
 
     # Fit the NMF model
-    print("Fitting the NMF model (generalized Kullback-Leibler divergence) with "
-          "tf-idf features, n_samples=%d and n_features=%d..."
-          % (n_samples, n_features))
+    print(
+        "Fitting the NMF model (generalized Kullback-Leibler divergence) with "
+        "tf-idf features, n_samples=%d and n_features=%d..." % (n_samples, n_features)
+    )
     t0 = time()
-    nmf = NMF(n_components=n_components, random_state=1,
-              beta_loss='kullback-leibler', solver='mu', max_iter=1000, alpha=.1,
-              l1_ratio=.5).fit(tfidf)
+    nmf = NMF(
+        n_components=n_components,
+        random_state=1,
+        beta_loss="kullback-leibler",
+        solver="mu",
+        max_iter=1000,
+        alpha=0.1,
+        l1_ratio=0.5,
+    ).fit(tfidf)
 
     print("\nTopics in NMF model (generalized Kullback-Leibler divergence):")
     tfidf_feature_names = tfidf_vectorizer.get_feature_names()
@@ -69,5 +78,3 @@ def svd():
     tokens = tfidf_vectorizer.get_feature_names()
     print(tfidf_matrix.shape, svdMatrix.shape)
     print(svdMatrix.components_)
-
-

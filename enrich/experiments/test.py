@@ -86,12 +86,14 @@ def sub_exp2():
     # filter if already in brands_from_markets
     brands_in_results = services.read_json(output_dir / "brands_in_results.json")
     freq = {
-        k: v for k, v in freq.items()
-        if k not in set(brands_in_results)
-           and 1 < len(k.split()) < 5
+        k: v
+        for k, v in freq.items()
+        if k not in set(brands_in_results) and 1 < len(k.split()) < 5
     }
     services.save_json(
         output_dir / "exp_sub_brand.json", OrderedDict(sorted(freq.items()))
     )
+
+
 if __name__ == "__main__":
     sub_exp2()

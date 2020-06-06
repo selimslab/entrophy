@@ -15,7 +15,6 @@ from services.size_finder import size_finder
 import constants as keys
 
 
-
 def go():
     tree = services.read_json(output_dir / "sub_tree.json")
 
@@ -41,7 +40,9 @@ def sub_freq():
         for brand, stripped_groups in brands.items():
             tokens_for_this_brand = []
             for name_group in stripped_groups:
-                tokens_for_this_sku = itertools.chain.from_iterable(name.split() for name in name_group)
+                tokens_for_this_sku = itertools.chain.from_iterable(
+                    name.split() for name in name_group
+                )
                 # dedup tokens for sku
                 tokens = [t for t in set(tokens_for_this_sku) if len(t) > 2]
                 tokens = list(set(tokens))
@@ -53,13 +54,19 @@ def sub_freq():
             for token in tokens_for_this_brand:
                 brands_of_a_token[token].add(brand)
 
-            token_freq_for_this_brand = OrderedDict(Counter(tokens_for_this_brand).most_common())
-            token_freq_for_this_brand = {k: v for k, v in token_freq_for_this_brand.items() if v > 1}
+            token_freq_for_this_brand = OrderedDict(
+                Counter(tokens_for_this_brand).most_common()
+            )
+            token_freq_for_this_brand = {
+                k: v for k, v in token_freq_for_this_brand.items() if v > 1
+            }
             brand_freqs[subcat][brand] = token_freq_for_this_brand
 
         # include a token only if it is in multiple brands of a subcat
         #
-        tokens_for_this_subcat = [t for t in tokens_for_this_subcat if len(brands_of_a_token.get(t, [])) > 1]
+        tokens_for_this_subcat = [
+            t for t in tokens_for_this_subcat if len(brands_of_a_token.get(t, [])) > 1
+        ]
         subcat_freq = OrderedDict(Counter(tokens_for_this_subcat).most_common(10))
         subcat_freq = {k: v for k, v in subcat_freq.items() if v > 3}
         subcat_freqs[subcat] = subcat_freq
@@ -107,7 +114,11 @@ def test_vectorizer():
     Simple example with Cats and Mouse
     Another simple example with dogs and cats
     Another simple example with mouse and cheese
-    """.split("\n")[1:-1]
+    """.split(
+        "\n"
+    )[
+             1:-1
+             ]
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform(corpus)
     tokens = tfidf_vectorizer.get_feature_names()

@@ -2,7 +2,9 @@ from collections import defaultdict
 from gensim import corpora, models
 import logging
 
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO
+)
 
 documents = [
     "Human machine interface for lab abc computer applications",
@@ -17,7 +19,7 @@ documents = [
 ]
 
 # remove common words and tokenize
-stoplist = set('for a of the and to in'.split())
+stoplist = set("for a of the and to in".split())
 texts = [
     [word for word in document.lower().split() if word not in stoplist]
     for document in documents
@@ -29,10 +31,7 @@ for text in texts:
     for token in text:
         frequency[token] += 1
 
-texts = [
-    [token for token in text if frequency[token] > 1]
-    for text in texts
-]
+texts = [[token for token in text if frequency[token] > 1] for text in texts]
 
 dictionary = corpora.Dictionary(texts)
 corpus = [dictionary.doc2bow(text) for text in texts]
@@ -40,7 +39,9 @@ corpus = [dictionary.doc2bow(text) for text in texts]
 tfidf = models.TfidfModel(corpus)  # step 1 -- initialize a model
 corpus_tfidf = tfidf[corpus]
 
-lsi_model = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=2)  # initialize an LSI transformation
+lsi_model = models.LsiModel(
+    corpus_tfidf, id2word=dictionary, num_topics=2
+)  # initialize an LSI transformation
 corpus_lsi = lsi_model[corpus_tfidf]
 
 lsi_model.print_topics(2)
