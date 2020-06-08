@@ -1,7 +1,14 @@
 ## Steps 
 
 * read full skus 
-* convert cat to subcat -> "bebek bezi/bebek, oyuncak" -> bebek bezi
+* convert cat to subcat
+
+    ++ split by / , & 
+    
+    "Şeker, Tuz, Baharat" ->  [Şeker, Tuz, Baharat]
+    
+    "bebek bezi/bebek, oyuncak" -> [ bebek bezi, bebek, oyuncak]
+
 * clean names, brands, subcats
     * replace turkish chars 
     * allowed chars are a-z A-Z 0-9 and , . * are, remove all else 
@@ -21,21 +28,8 @@
         ...
     ]
     
-    "nestle": [
-        "kahve kremasi",
-        "krem cikolata ezme",
-        "toz icecek",
-        "krem cikolata ve ezme",
-        "saglikli yasam urunleri",
-        "kahve",
-        "gida icecek",
-        "cikolata",
-        "hediyelik cikolata",
-        "cikolatalar barlar gofretler",
-        "icecek tozu",
-        ...
-    ]
     
+++ create brand frequency 
     
 + create clean_brand_original_brand_pairs
 
@@ -48,9 +42,13 @@
     
 + find the term frequencies of first two tokens in all names (-2 kelimeden fazla olan isimlerin içinde arayalım), add to the brand pool if freq > 60 
 
-+ for every sku, for every name, search the brands in brand_pool in the first 4 tokens of the name 
++ create brand candidates
+    for every sku, for every name, search the brands in brand_pool in the first 4 tokens of the name 
+
++ among the brand candidates, select the most frequent one as brand and the longest one as subbrand 
 
 + for every sku, create possible subcat space
+
     * add subcats in sku, if they are in any of the names
     * add possible_subcats_for_this_brand
     * add possible_subcats_for_this_brands_root_brand 
@@ -60,6 +58,7 @@
 
 + create sub_cat_market_pairs
 - Buradaki tam amacımız nedir? Bu subcat'ler birçok yerde geçince verified subcat falan mı oluyo?
++ amaç subcat seçerken markete göre önceliklendirebilmek 
 
     "zeytinyagi": [
         "rammar",
@@ -69,12 +68,14 @@
     ],
     
   
++ create subcat candidates by searching in names 
+
 + select a subcat 
     * sort possible subcats by length
     * start from the longest, prioritize by [keys.TRENDYOL, keys.GRATIS, keys.WATSONS, keys.MIGROS] 
     * if the subcat belongs to any of, select it 
     * at the and, if none of them is selected, select the longest 
- - Burada vendor'dan gelen subcat verisini direkt olarak doğru mu kabul ediyoruz? Subcat'leri ürün gruplarında aramıyor muyuz?
+
 
 + at this point, we have docs with brands and subcats 
 
