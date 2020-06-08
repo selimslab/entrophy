@@ -47,20 +47,6 @@ def index_brands_and_subcats() -> tuple:
                 continue
             brand_subcats_pairs[b].update(clean_subcats)
 
-    def add_ty():
-        ty_raw = services.read_json(input_dir / "ty_raw.json")
-        for main_cat, filters in ty_raw.items():
-            brands: list = filters.get("brand")
-            subcats: list = filters.get("category")
-            update_brand_subcats_pairs(brands, subcats, keys.TRENDYOL)
-
-    def add_watsons():
-        watsons_raw = services.read_json(input_dir / "watsons_raw.json")
-        for main_cat, filters in watsons_raw.items():
-            brands = filters.get("marka")
-            subcats = filters.get("cats")
-
-            update_brand_subcats_pairs(brands, subcats, keys.WATSONS)
 
     def add_from_raw_docs():
         raw_docs_path = input_dir / "raw_docs.json"
