@@ -1,11 +1,13 @@
+import os
+from collections import Counter
+import logging
+
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
-
-from paths import output_dir
 from tqdm import tqdm
 
 import services
-
+from paths import output_dir
 from services.size_finder import size_finder
 import constants as keys
 
@@ -18,7 +20,7 @@ def new_top_words(model, feature_names, n_top_words):
     return list(set(top_words))
 
 
-def lda(sentences: list, n_gram=1, n_top_words=1):
+def lda(sentences: list, n_gram=2, n_top_words=1):
     n_features = 800
     n_components = 7
 
@@ -44,11 +46,18 @@ def lda(sentences: list, n_gram=1, n_top_words=1):
     return new_top_words(lda, tf_feature_names, n_top_words)
 
 
-def sku_name_generator(tree: dict):
+def filtered_sku_name_generator(tree: dict, token_brand_freq_by_subcat: dict) -> tuple:
+    """
+
+    a topic should be in multiple brands so remove a word if it's only in a single brand
+
+    """
+    logging.info("filtered_sku_name_generator..")
     for subcat, brands in tqdm(tree.items()):
         sku_name_strings_in_subcat = []
         for brand, names in brands.items():
             sku_tokens = services.tokenize_a_nested_list(names)
+            sku_tokens = [t.strip() for t in sku_tokens if token_brand_freq_by_subcat[subcat].get(t, 0) > 1]
             all_names_for_this_sku = " ".join(sku_tokens)
             if all_names_for_this_sku:
                 sku_name_strings_in_subcat.append(all_names_for_this_sku)
@@ -65,6 +74,7 @@ def create_sub_tree(skus_with_brand_and_sub_cat):
     """cat: { sub_cat : { type: {brand: {sub_brand : [products] } }"""
 
     tree = {}
+    logging.info("create_sub_tree..")
 
     for sku in tqdm(skus_with_brand_and_sub_cat):
         brand, subcat = sku.get(keys.BRAND), sku.get(keys.SUBCAT)
@@ -104,16 +114,16 @@ def remove_known(tree: dict, brands_in_results):
     for subcat, brands in tqdm(tree.items()):
 
         for brand, clean_names in brands.items():
-            stripped_groups = []
+            groups = []
             for name_group in clean_names:
-                stripped_names = []
-                for name in name_group:
-                    stripped_name = remove_subcat_brand_barcode_from_clean_names(name, brand, subcat, brands_in_results)
-                    stripped_names.append(stripped_name)
+                names = [
+                    remove_subcat_brand_barcode_from_clean_names(name, brand, subcat, brands_in_results)
+                    for name in name_group
+                ]
+                names = [n for n in names if n]
+                groups.append(names)
 
-                stripped_groups.append(stripped_names)
-
-            tree[subcat][brand] = stripped_groups
+            tree[subcat][brand] = groups
 
     return tree
 
@@ -135,26 +145,45 @@ def clean_for_lda():
 
     clean_tree = remove_known(sub_tree, brands_in_results)
 
-    services.save_json(output_dir / "clean_tree.json", clean_tree)
-
     return clean_tree
 
 
-def get_lda_topics(tree):
-    lda_topics = {}
-    for subcat, sku_name_strings_in_subcat in sku_name_generator(tree):
-        top_words = lda(sku_name_strings_in_subcat)
-        lda_topics[subcat] = top_words
-    return lda_topics
+def get_token_brand_freq_by_subcat(tree):
+    """ in how many brands of a subcat, a token is present """
+    token_brand_freq_by_subcat = {}
+
+    for subcat, brands in tqdm(tree.items()):
+        tokensets = []
+        for brand, names in brands.items():
+            all_tokens = services.tokenize_a_nested_list(names)
+            tokensets += list(set(all_tokens))
+        token_brand_freq_by_subcat[subcat] = Counter(tokensets)
+
+    return token_brand_freq_by_subcat
 
 
 def nlp():
-    clean_tree = clean_for_lda()
-    lda_topics = get_lda_topics(clean_tree)
+    clean_tree_path = output_dir / "clean_tree.json"
+    if os.path.exists(clean_tree_path):
+        clean_tree = services.read_json(clean_tree_path)
+    else:
+        logging.info("creating clean tree..")
+        clean_tree = clean_for_lda()
+        services.save_json(clean_tree_path, clean_tree)
+
+    token_brand_freq_by_subcat = get_token_brand_freq_by_subcat(clean_tree)
+
+    lda_topics = {}
+    logging.info("creating topics..")
+    for subcat, sku_name_strings_in_subcat in filtered_sku_name_generator(clean_tree, token_brand_freq_by_subcat):
+        top_words = lda(sku_name_strings_in_subcat, n_gram=1, n_top_words=1)
+        lda_topics[subcat] = top_words
+
     services.save_json(output_dir / "lda_topics.json", lda_topics)
 
 
 if __name__ == "__main__":
+    logging.getLogger().setLevel(logging.DEBUG)
     nlp()
     """
     plan 
@@ -164,12 +193,13 @@ if __name__ == "__main__":
     
     * remove all sizes 
     
-    1. remove barcodes 
-    to do this sku_ids shuold be present 
+    * Buraya sku'lar ile değil de product group ile girsek mantıklı olmaz mı 
     
-    2. remove brands
+    * remove barcodes  ok
     
-    3. filter len(token)<3
+    remove brands ok 
     
-    4. 
+    filter len(token)<3 
+    
+    a topic should be in multiple brands  ok 
     """
