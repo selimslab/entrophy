@@ -12,3 +12,7 @@ def test_brands():
     filtered_tokens = [token for token in first_n_tokens if len(token) > 2]
     freq = OrderedDict(Counter(filtered_tokens).most_common())
     services.save_json(output_dir / "name_freq_first_5.json", freq)
+
+
+if __name__ == "__main__":
+    ...

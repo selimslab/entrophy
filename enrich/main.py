@@ -73,7 +73,12 @@ def index_brands_and_subcats() -> tuple:
     logging.info("creating brand_subcats_pairs..")
     add_from_raw_docs()
 
-    return brand_subcats_pairs, clean_brand_original_brand_pairs, sub_cat_market_pairs, brand_freq
+    return (
+        brand_subcats_pairs,
+        clean_brand_original_brand_pairs,
+        sub_cat_market_pairs,
+        brand_freq,
+    )
 
 
 def clean_brands(brands: list) -> list:
@@ -349,7 +354,7 @@ def create_indexes():
         brand_subcats_pairs,
         clean_brand_original_brand_pairs,
         sub_cat_market_pairs,
-        brand_freq
+        brand_freq,
     ) = index_brands_and_subcats()
 
     services.save_json(output_dir / "brand_freq.json", brand_freq)
