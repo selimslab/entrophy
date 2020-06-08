@@ -28,7 +28,7 @@ def index_brands_and_subcats() -> tuple:
     brand_subcats_pairs = defaultdict(set)
     clean_brand_original_brand_pairs = {}
     sub_cat_market_pairs = defaultdict(set)
-    brand_freq = Counter()
+    brand_freq = Counter()  # how many items has been given this  brand by a vendor
 
     def update_brand_subcats_pairs(brands: Iterable, subcats: Iterable, market):
         brands = list(set(brands))
@@ -133,7 +133,7 @@ def add_clean_subcats(sku: dict) -> dict:
 
 
 def get_clean_skus(skus: List[dict]):
-    relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES}
+    relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES, keys.SKU_ID, keys.PRODUCT_ID}
     skus = [services.filter_keys(doc, relevant_keys) for doc in skus]
 
     logging.info("cleaning brands, cats, and subcats..")
@@ -145,11 +145,17 @@ def get_clean_skus(skus: List[dict]):
     return skus
 
 
-def select_brand(brand_candidates: list) -> str:
+def select_brand(brand_candidates: list, brand_freq: dict) -> tuple:
     if brand_candidates:
         brand_candidates = list(set(brand_candidates))
-        brand = sorted(brand_candidates, key=len)[-1]
-        return brand
+        brand_candidates_with_freq = {brand: brand_freq.get(brand, 0) for brand in brand_candidates}
+        root_brand = services.get_most_frequent_key(brand_candidates_with_freq)
+        # select the longest
+        sub_brand = ""
+        longest_brand = sorted(brand_candidates, key=len)[-1]
+        if longest_brand != root_brand:
+            sub_brand = longest_brand
+        return root_brand, sub_brand
 
 
 def get_brand_candidates(sku: dict, brand_pool: set) -> list:
@@ -208,7 +214,7 @@ def get_frequent_start_strings_as_brands(names: List[list]) -> set:
     return most_frequent_start_strings
 
 
-def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict) -> List[dict]:
+def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict, brand_freq: dict) -> List[dict]:
     """
     0. cat and subcat are different things, beware
     1. clean well
@@ -242,13 +248,17 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict) -> List
         ]
 
         sku[keys.BRAND_CANDIDATES] = dict(Counter(brand_candidates))
-        sku[keys.BRAND] = select_brand(brand_candidates)
+        root_brand, sub_brand = select_brand(brand_candidates, brand_freq)
+        if root_brand:
+            sku[keys.BRAND] = root_brand
+        if sub_brand:
+            sku[keys.SUB_BRAND] = sub_brand
 
     return clean_skus
 
 
 def get_sku_summary(skus_with_brand_and_sub_cat: List[dict]) -> List[dict]:
-    summary_keys = {keys.CLEAN_NAMES, keys.BRAND, keys.SUBCAT}
+    summary_keys = {keys.CLEAN_NAMES, keys.BRAND, keys.SUB_BRAND, keys.SUBCAT}
     summary = [
         services.filter_keys(doc, summary_keys) for doc in skus_with_brand_and_sub_cat
     ]
@@ -371,7 +381,7 @@ def create_indexes():
         clean_brand_original_brand_pairs,
     )
 
-    return brand_subcats_pairs, sub_cat_market_pairs
+    return brand_subcats_pairs, sub_cat_market_pairs, brand_freq
 
 
 def add_brand_and_subcat(clean_skus: List[dict]):
@@ -387,10 +397,10 @@ def add_brand_and_subcat(clean_skus: List[dict]):
     3. select a category by restricting possible cats for this brand and prioritizing markets
         skus_with_brand_and_sub_cat
     """
-    brand_subcats_pairs, sub_cat_market_pairs = create_indexes()
+    brand_subcats_pairs, sub_cat_market_pairs, brand_freq = create_indexes()
 
     # add brand
-    skus_with_brands = add_brand_to_skus(clean_skus, brand_subcats_pairs)
+    skus_with_brands = add_brand_to_skus(clean_skus, brand_subcats_pairs, brand_freq)
 
     # add subcat
     skus_with_brand_and_sub_cat = add_sub_cat_to_skus(
