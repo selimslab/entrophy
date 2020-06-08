@@ -46,7 +46,7 @@
     ...
     
     
-+ find the term frequencies of first two tokens in all names, add to the brand pool if freq > 60 
++ find the term frequencies of first two tokens in all names (-2 kelimeden fazla olan isimlerin içinde arayalım), add to the brand pool if freq > 60 
 
 + for every sku, for every name, search the brands in brand_pool in the first 4 tokens of the name 
 
@@ -59,6 +59,7 @@
 
 
 + create sub_cat_market_pairs
+- Buradaki tam amacımız nedir? Bu subcat'ler birçok yerde geçince verified subcat falan mı oluyo?
 
     "zeytinyagi": [
         "rammar",
@@ -73,6 +74,7 @@
     * start from the longest, prioritize by [keys.TRENDYOL, keys.GRATIS, keys.WATSONS, keys.MIGROS] 
     * if the subcat belongs to any of, select it 
     * at the and, if none of them is selected, select the longest 
+ - Burada vendor'dan gelen subcat verisini direkt olarak doğru mu kabul ediyoruz? Subcat'leri ürün gruplarında aramıyor muyuz?
 
 + at this point, we have docs with brands and subcats 
 
@@ -96,9 +98,9 @@
 
 + for topic modelling
     * remove subcats and brands from names
-    * -> we may also remove barcodes, all sizes, maybe even gender, color
-    * join all names in an sku so a sku is the smallest unit of the model 
+    * -> we may also remove barcodes, all sizes, maybe even gender, color, and meaningless numbers and codes like 923648 or VR12HJ8
+    * join all names in an sku so a sku is the smallest unit of the model (-Buraya sku'lar ile değil de product group ile girsek mantıklı olmaz mı)
     * for every subcat, train a different LDA model 
     
-
+Devam edeceğim.
 
