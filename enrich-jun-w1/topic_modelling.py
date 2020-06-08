@@ -19,7 +19,6 @@ def new_top_words(model, feature_names, n_top_words):
 
 
 def lda(sentences: list):
-    n_samples = 2000
     n_features = 800
     n_components = 7
     n_top_words = 1
