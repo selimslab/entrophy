@@ -5,9 +5,9 @@
 
     ++ split by / , & 
     
-    "Şeker, Tuz, Baharat" ->  [Şeker, Tuz, Baharat]
+    eg. "Şeker, Tuz, Baharat" ->  [Şeker, Tuz, Baharat]
     
-    "bebek bezi/bebek, oyuncak" -> [ bebek bezi, bebek, oyuncak]
+    eg. "bebek bezi/bebek, oyuncak" -> [ bebek bezi, bebek, oyuncak]
 
 * clean names, brands, subcats
     * replace turkish chars 
@@ -18,8 +18,8 @@
 
     
 + create brand_subcats_pairs
-        
-    "ariel": [
+  ```
+      "ariel": [
         "sivi jel deterjan",
         "matik deterjanlar",
         "camasir yikama urunleri",
@@ -27,9 +27,10 @@
         "anne bebek bakim",
         ...
     ]
-    
-    
-++ create brand frequency 
+  ```
+
+
+  
     
 + create clean_brand_original_brand_pairs
 
@@ -39,7 +40,8 @@
     "pinar": "Pınar" 
     ...
     
-    
++ count brand frequencies only for the brands given by vendors 
+   
 + find the term frequencies of first two tokens in all names (-2 kelimeden fazla olan isimlerin içinde arayalım), add to the brand pool if freq > 60 
 
 + create brand candidates
@@ -79,6 +81,7 @@
 
 + at this point, we have docs with brands and subcats 
 
+```json
     {
         "brand": "prima aktif",
         "subcat": "bebek bezi",
@@ -95,6 +98,8 @@
             "heinz ketcap 700 gr"
         ]
     },
+```
+
 
 
 + for topic modelling
