@@ -88,19 +88,8 @@ def remove_brands(lda_topics):
     services.save_json(output_dir / "lda_topics1.json", lda_topics)
 
 
-def clean_for_lda():
-    """
-    remove barcodes, all sizes, subcats, brands, gender, color, cat, ...
-    """
-    ...
-
-
-def create_sub_tree():
+def create_sub_tree(skus_with_brand_and_sub_cat):
     """cat: { sub_cat : { type: {brand: {sub_brand : [products] } }"""
-
-    skus_with_brand_and_sub_cat = services.read_json(
-        output_dir / "skus_with_brand_and_sub_cat.json"
-    )
 
     tree = {}
 
@@ -113,13 +102,12 @@ def create_sub_tree():
                 tree[subcat][brand] = []
             tree[subcat][brand].append(sku.get(keys.CLEAN_NAMES, []))
 
-    services.save_json(output_dir / "sub_tree.json", tree)
+    return tree
 
 
-def remove_known():
+def remove_known(tree: dict):
     """ remove subcat, brand, size """
 
-    tree = services.read_json(output_dir / "sub_tree.json")
     for subcat, brands in tqdm(tree.items()):
 
         for brand, clean_names in brands.items():
@@ -129,17 +117,14 @@ def remove_known():
                 stripped_names = []
                 for name in name_group:
 
-                    match_and_unit = size_finder.pattern_match(name + " ")
-                    if match_and_unit:
-                        match, _ = match_and_unit
+                    all_matches = size_finder.get_all_matches(name + " ")
+                    for match in all_matches:
                         name = name.replace(match, "")
 
-                    stripped_name = (
-                        " ".join(name.split())
-                            .replace(brand, "")
-                            .replace(subcat, "")
-                            .strip()
-                    )
+                    name = name.replace(brand, "").replace(subcat, "")
+                    name_tokens = [n.strip() for n in name.split() if n > 1]
+
+                    stripped_name = " ".join(name_tokens)
 
                     stripped_names.append(stripped_name)
 
@@ -147,8 +132,41 @@ def remove_known():
 
             tree[subcat][brand] = stripped_groups
 
-    services.save_json(output_dir / "sub_tree_stripped.json", tree)
+    return tree
+
+
+def clean_for_lda():
+    """
+    remove barcodes, all sizes, subcats, brands, gender, color, cat, ...
+    """
+    skus_with_brand_and_sub_cat = services.read_json(
+        output_dir / "skus_with_brand_and_sub_cat.json"
+    )
+
+    sub_tree = create_sub_tree(skus_with_brand_and_sub_cat)
+    services.save_json(output_dir / "sub_tree.json", sub_tree)
+
+    clean_tree = remove_known(sub_tree)
+
+    services.save_json(output_dir / "clean_tree.json", clean_tree)
 
 
 if __name__ == "__main__":
     nlp()
+    """
+    plan 
+    
+    * merge similar brands
+        loreal paris -> loreal 
+    
+    * remove all sizes 
+    
+    1. remove barcodes 
+    to do this sku_ids shuold be present 
+    
+    2. remove brands
+    
+    3. filter len(token)<3
+    
+    4. 
+    """
