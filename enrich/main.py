@@ -5,13 +5,14 @@ from tqdm import tqdm
 import logging
 from typing import List, Iterable, Dict
 import itertools
+import re
 
 import services
 import constants as keys
 from paths import input_dir, output_dir
 
 from one_of_scripts.mongo_service import get_raw_docs_with_markets_and_cats_only
-from .inspect_results import inspect_results
+from inspect_results import inspect_results
 
 
 def index_brands_and_subcats() -> tuple:
@@ -22,10 +23,12 @@ def index_brands_and_subcats() -> tuple:
         ...
         ]
 
+    next: add brand_freq to choose root brand
     """
     brand_subcats_pairs = defaultdict(set)
     clean_brand_original_brand_pairs = {}
     sub_cat_market_pairs = defaultdict(set)
+    brand_freq = Counter()
 
     def update_brand_subcats_pairs(brands: Iterable, subcats: Iterable, market):
         brands = list(set(brands))
@@ -33,7 +36,10 @@ def index_brands_and_subcats() -> tuple:
 
         clean_to_original = {services.clean_name(b): b for b in brands}
         clean_brand_original_brand_pairs.update(clean_to_original)
-        clean_brands = set(b for b in clean_to_original.keys() if len(b) > 1)
+        clean_brands = [b for b in clean_to_original.keys() if len(b) > 1]
+        brand_freq.update(clean_brands)
+
+        brandset = set(clean_brands)
 
         clean_subcats = services.clean_list_of_strings(subcats)
         clean_subcats = [sub for sub in clean_subcats if sub]
@@ -41,7 +47,7 @@ def index_brands_and_subcats() -> tuple:
         for sub in clean_subcats:
             sub_cat_market_pairs[sub].add(market)
 
-        for b in clean_brands:
+        for b in brandset:
             if "brn " in b:
                 continue
             brand_subcats_pairs[b].update(clean_subcats)
@@ -67,7 +73,7 @@ def index_brands_and_subcats() -> tuple:
     logging.info("creating brand_subcats_pairs..")
     add_from_raw_docs()
 
-    return brand_subcats_pairs, clean_brand_original_brand_pairs, sub_cat_market_pairs
+    return brand_subcats_pairs, clean_brand_original_brand_pairs, sub_cat_market_pairs, brand_freq
 
 
 def clean_brands(brands: list) -> list:
@@ -105,13 +111,13 @@ def clean_sub_cats(cats: list) -> list:
             subcats.append(cat)
 
     # "bebek bezi/bebek, oyuncak" -> [ bebek bezi, bebek, oyuncak]
-    subcats = [sub.split("/") for sub in subcats]
+    # subcats = [sub.split("/") for sub in subcats]
 
     # "Şeker, Tuz, Baharat" ->  [Şeker, Tuz, Baharat]
-    subcats = [sub.split(",") for sub in subcats]
-    subcats = [sub.split("&") for sub in subcats]
+    subcats = [re.split("/ |, |&", sub) for sub in subcats]
 
     clean_subcats = services.clean_list_of_strings(services.flatten(subcats))
+    # clean_subcats = [sub for sub in clean_subcats if len(sub)>2]
     return clean_subcats
 
 
@@ -125,6 +131,7 @@ def get_clean_skus(skus: List[dict]):
     relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES}
     skus = [services.filter_keys(doc, relevant_keys) for doc in skus]
 
+    logging.info("cleaning brands, cats, and subcats..")
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         skus = pool.map(add_clean_brand, tqdm(skus))
         skus = pool.map(add_clean_cats, tqdm(skus))
@@ -170,6 +177,7 @@ def get_brand_candidates(sku: dict, brand_pool: set) -> list:
 def get_frequencies_for_all_start_combinations(names: List[list]) -> dict:
     token_lists = services.get_token_lists(names)
     groups = []
+    logging.info("get_frequencies_for_all_start_combinations..")
     for token_list in tqdm(token_lists):
         for i in range(1, len(token_list) + 1):
             groups.append(" ".join(token_list[0:i]))
@@ -219,6 +227,7 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict) -> List
 
     bad_words = {"brn ", "markasiz", "erkek", "kadin"}
 
+    logging.info("adding brand..")
     for sku in tqdm(clean_skus):
         brand_candidates = get_brand_candidates(sku, brand_pool)
         brand_candidates = [
@@ -227,7 +236,7 @@ def add_brand_to_skus(clean_skus: List[dict], brand_subcats_pairs: dict) -> List
             if len(b) > 2 and not any(bad in b for bad in bad_words)
         ]
 
-        sku[keys.BRAND_CANDIDATES] = brand_candidates
+        sku[keys.BRAND_CANDIDATES] = dict(Counter(brand_candidates))
         sku[keys.BRAND] = select_brand(brand_candidates)
 
     return clean_skus
@@ -277,6 +286,7 @@ def add_sub_cat_to_skus(
 
     then we choose prioritizing by market
     """
+    logging.info("adding subcat..")
     for sku in tqdm(skus):
         sub_cat_candidates = []
 
@@ -315,7 +325,7 @@ def add_sub_cat_to_skus(
             )
         )
 
-        sku[keys.SUBCAT_CANDIDATES] = sub_cat_candidates
+        sku[keys.SUBCAT_CANDIDATES] = dict(Counter(sub_cat_candidates))
         if sub_cat_candidates:
             sku[keys.SUBCAT] = select_subcat(sub_cat_candidates, sub_cat_market_pairs)
 
@@ -339,7 +349,10 @@ def create_indexes():
         brand_subcats_pairs,
         clean_brand_original_brand_pairs,
         sub_cat_market_pairs,
+        brand_freq
     ) = index_brands_and_subcats()
+
+    services.save_json(output_dir / "brand_freq.json", brand_freq)
 
     sub_cat_market_pairs = services.convert_dict_set_values_to_list(
         sub_cat_market_pairs
@@ -385,6 +398,8 @@ def add_brand_and_subcat(clean_skus: List[dict]):
 def refresh():
     """
     run the data enrichment from scratch
+
+    next: use sku_ids, will be needed to use with supermatch
     """
     skus = services.read_json(input_dir / "full_skus.json").values()
     clean_skus = get_clean_skus(skus)
