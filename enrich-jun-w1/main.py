@@ -10,7 +10,7 @@ import services
 import constants as keys
 from paths import input_dir, output_dir
 
-from one_of_scripts.mongo_service import get_raw_docs_with_markets_and_cats_only
+from mongo_service import get_raw_docs_with_markets_and_cats_only
 
 
 def index_brands_and_subcats() -> tuple:

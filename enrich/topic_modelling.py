@@ -25,7 +25,9 @@ def lda(sentences: list, n_gram=2, n_top_words=1):
     n_components = 7
 
     try:
-        tf_vectorizer = CountVectorizer(max_features=n_features, ngram_range=(1, n_gram))
+        tf_vectorizer = CountVectorizer(
+            max_features=n_features, ngram_range=(1, n_gram)
+        )
         tf_matrix = tf_vectorizer.fit_transform(sentences)
     except ValueError:
         return []
@@ -57,7 +59,11 @@ def filtered_sku_name_generator(tree: dict, token_brand_freq_by_subcat: dict) ->
         sku_name_strings_in_subcat = []
         for brand, names in brands.items():
             sku_tokens = services.tokenize_a_nested_list(names)
-            sku_tokens = [t.strip() for t in sku_tokens if token_brand_freq_by_subcat[subcat].get(t, 0) > 1]
+            sku_tokens = [
+                t.strip()
+                for t in sku_tokens
+                if token_brand_freq_by_subcat[subcat].get(t, 0) > 1
+            ]
             all_names_for_this_sku = " ".join(sku_tokens)
             if all_names_for_this_sku:
                 sku_name_strings_in_subcat.append(all_names_for_this_sku)
@@ -88,19 +94,18 @@ def create_sub_tree(skus_with_brand_and_sub_cat):
     return tree
 
 
-def remove_subcat_brand_barcode_from_clean_names(name, brand, subcat, brands_in_results):
+def remove_subcat_brand_barcode_from_clean_names(
+        name, brand, subcat, brands_in_results
+):
     all_matches = size_finder.get_all_matches(name + " ")
     for match in all_matches:
         name = name.replace(match, "")
 
     name = name.replace(brand, "").replace(subcat, "")
     name_tokens = [
-        n.strip() for n in name.split()
-        if (
-                n not in brands_in_results
-                and len(n) > 2
-                and not n.isdigit()
-        )
+        n.strip()
+        for n in name.split()
+        if (n not in brands_in_results and len(n) > 2 and not n.isdigit())
     ]
 
     name = " ".join(name_tokens)
@@ -117,7 +122,9 @@ def remove_known(tree: dict, brands_in_results):
             groups = []
             for name_group in clean_names:
                 names = [
-                    remove_subcat_brand_barcode_from_clean_names(name, brand, subcat, brands_in_results)
+                    remove_subcat_brand_barcode_from_clean_names(
+                        name, brand, subcat, brands_in_results
+                    )
                     for name in name_group
                 ]
                 names = [n for n in names if n]
@@ -128,7 +135,7 @@ def remove_known(tree: dict, brands_in_results):
     return tree
 
 
-def clean_for_lda():
+def create_clean_tree():
     """
     remove barcodes, all sizes, subcats, brands, gender, color, cat, ...
     """
@@ -168,14 +175,16 @@ def nlp():
         clean_tree = services.read_json(clean_tree_path)
     else:
         logging.info("creating clean tree..")
-        clean_tree = clean_for_lda()
+        clean_tree = create_clean_tree()
         services.save_json(clean_tree_path, clean_tree)
 
     token_brand_freq_by_subcat = get_token_brand_freq_by_subcat(clean_tree)
 
     lda_topics = {}
     logging.info("creating topics..")
-    for subcat, sku_name_strings_in_subcat in filtered_sku_name_generator(clean_tree, token_brand_freq_by_subcat):
+    for subcat, sku_name_strings_in_subcat in filtered_sku_name_generator(
+            clean_tree, token_brand_freq_by_subcat
+    ):
         top_words = lda(sku_name_strings_in_subcat, n_gram=1, n_top_words=1)
         lda_topics[subcat] = top_words
 
