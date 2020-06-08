@@ -27,8 +27,6 @@ def index_brands_and_subcats() -> tuple:
     clean_brand_original_brand_pairs = {}
     sub_cat_market_pairs = defaultdict(set)
 
-    brand_freq = Counter()
-
     def update_brand_subcats_pairs(brands: Iterable, subcats: Iterable, market):
         brands = list(set(brands))
         subcats = list(set(subcats))
@@ -73,9 +71,6 @@ def index_brands_and_subcats() -> tuple:
 
 
 def clean_brands(brands: list) -> list:
-    """
-     johnson s baby -> johnsons baby
-    """
     return services.clean_list_of_strings(services.flatten(brands))
 
 
@@ -127,10 +122,7 @@ def add_clean_subcats(sku: dict) -> dict:
 
 
 def get_clean_skus(skus: List[dict]):
-    """
-
-    """
-    relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES, keys.NAME}
+    relevant_keys = {keys.CATEGORIES, keys.BRANDS_MULTIPLE, keys.CLEAN_NAMES}
     skus = [services.filter_keys(doc, relevant_keys) for doc in skus]
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
@@ -142,7 +134,6 @@ def get_clean_skus(skus: List[dict]):
 
 
 def select_brand(brand_candidates: list) -> str:
-    # TODO beware position
     if brand_candidates:
         brand_candidates = list(set(brand_candidates))
         brand = sorted(brand_candidates, key=len)[-1]
@@ -151,11 +142,10 @@ def select_brand(brand_candidates: list) -> str:
 
 def get_brand_candidates(sku: dict, brand_pool: set) -> list:
     """
-    find brand first,
+    find brand first
+
     there only a few possible cats for this brand
     indexes should reflect that too
-
-    johnson s baby -> johnsons baby
     """
     candidates = []
     candidates += sku.get(keys.CLEAN_BRANDS, [])
@@ -281,8 +271,10 @@ def add_sub_cat_to_skus(
 ) -> List[dict]:
     """
     There are a set of possible subcats for a given brand
+
     we check them if any of them is in any of the names of the given sku
     this leaves us with a few candidates
+
     then we choose prioritizing by market
     """
     for sku in tqdm(skus):
