@@ -120,6 +120,14 @@ class SizeFinder:
 
         return digits, unit
 
+    def get_all_matches(self, to_be_matched: str):
+        all_matches = []
+        for (pattern, unit) in self.patterns:
+            matches = re.findall(pattern, to_be_matched)
+            if matches:
+                all_matches += [m.strip() for m in matches]
+        return all_matches
+
     def pattern_match(self, to_be_matched: str):
 
         """
@@ -152,5 +160,11 @@ class SizeFinder:
 
 size_finder = SizeFinder()
 
+
+def test_get_all_matches():
+    res = size_finder.get_all_matches("faf 750 gr 56ml 2'li ")
+    print(res)
+
+
 if __name__ == "__main__":
-    ...
+    test_get_all_matches()
