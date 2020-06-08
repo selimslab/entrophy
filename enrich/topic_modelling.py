@@ -18,13 +18,12 @@ def new_top_words(model, feature_names, n_top_words):
     return list(set(top_words))
 
 
-def lda(sentences: list):
+def lda(sentences: list, n_gram=1, n_top_words=1):
     n_features = 800
     n_components = 7
-    n_top_words = 1
 
     try:
-        tf_vectorizer = CountVectorizer(max_features=n_features, ngram_range=(1, 1))
+        tf_vectorizer = CountVectorizer(max_features=n_features, ngram_range=(1, n_gram))
         tf_matrix = tf_vectorizer.fit_transform(sentences)
     except ValueError:
         return []
@@ -45,9 +44,7 @@ def lda(sentences: list):
     return new_top_words(lda, tf_feature_names, n_top_words)
 
 
-def nlp():
-    lda_topics = {}
-    tree = services.read_json(output_dir / "sub_tree_stripped.json")
+def sku_name_generator(tree: dict):
     for subcat, brands in tqdm(tree.items()):
         sku_name_strings_in_subcat = []
         for brand, names in brands.items():
@@ -60,32 +57,8 @@ def nlp():
             continue
         if len(sku_name_strings_in_subcat) < 2:
             continue
-        print(subcat)
 
-        top_words = lda(sku_name_strings_in_subcat)
-        print(top_words)
-        print()
-        lda_topics[subcat] = top_words
-
-    remove_brands(lda_topics)
-
-
-# TODO remove brands from top_words
-
-
-def remove_brands(lda_topics):
-    brands_in_results = services.read_json(output_dir / "brands_in_results.json")
-    brands_in_results = set(brands_in_results)
-    brands_in_results = brands_in_results.difference({"domates", "biber"})
-    for sub, topics in lda_topics.items():
-        topics = [
-            t
-            for t in topics
-            if t not in brands_in_results and len(t) > 2 and not t.isdigit()
-        ]
-        lda_topics[sub] = topics
-
-    services.save_json(output_dir / "lda_topics1.json", lda_topics)
+        yield subcat, sku_name_strings_in_subcat
 
 
 def create_sub_tree(skus_with_brand_and_sub_cat):
@@ -105,27 +78,37 @@ def create_sub_tree(skus_with_brand_and_sub_cat):
     return tree
 
 
-def remove_known(tree: dict):
+def remove_subcat_brand_barcode_from_clean_names(name, brand, subcat, brands_in_results):
+    all_matches = size_finder.get_all_matches(name + " ")
+    for match in all_matches:
+        name = name.replace(match, "")
+
+    name = name.replace(brand, "").replace(subcat, "")
+    name_tokens = [
+        n.strip() for n in name.split()
+        if (
+                n not in brands_in_results
+                and len(n) > 2
+                and not n.isdigit()
+        )
+    ]
+
+    name = " ".join(name_tokens)
+
+    return name
+
+
+def remove_known(tree: dict, brands_in_results):
     """ remove subcat, brand, size """
 
     for subcat, brands in tqdm(tree.items()):
 
         for brand, clean_names in brands.items():
             stripped_groups = []
-
             for name_group in clean_names:
                 stripped_names = []
                 for name in name_group:
-
-                    all_matches = size_finder.get_all_matches(name + " ")
-                    for match in all_matches:
-                        name = name.replace(match, "")
-
-                    name = name.replace(brand, "").replace(subcat, "")
-                    name_tokens = [n.strip() for n in name.split() if n > 1]
-
-                    stripped_name = " ".join(name_tokens)
-
+                    stripped_name = remove_subcat_brand_barcode_from_clean_names(name, brand, subcat, brands_in_results)
                     stripped_names.append(stripped_name)
 
                 stripped_groups.append(stripped_names)
@@ -146,9 +129,29 @@ def clean_for_lda():
     sub_tree = create_sub_tree(skus_with_brand_and_sub_cat)
     services.save_json(output_dir / "sub_tree.json", sub_tree)
 
-    clean_tree = remove_known(sub_tree)
+    brands_in_results = services.read_json(output_dir / "brands_in_results.json")
+    brands_in_results = set(brands_in_results)
+    brands_in_results = brands_in_results.difference({"domates", "biber"})
+
+    clean_tree = remove_known(sub_tree, brands_in_results)
 
     services.save_json(output_dir / "clean_tree.json", clean_tree)
+
+    return clean_tree
+
+
+def get_lda_topics(tree):
+    lda_topics = {}
+    for subcat, sku_name_strings_in_subcat in sku_name_generator(tree):
+        top_words = lda(sku_name_strings_in_subcat)
+        lda_topics[subcat] = top_words
+    return lda_topics
+
+
+def nlp():
+    clean_tree = clean_for_lda()
+    lda_topics = get_lda_topics(clean_tree)
+    services.save_json(output_dir / "lda_topics.json", lda_topics)
 
 
 if __name__ == "__main__":
