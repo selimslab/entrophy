@@ -3,7 +3,7 @@
 * read full skus 
 * convert cat to subcat
 
-    ++ split by / , & 
+    split by / , & 
     
     eg. "Şeker, Tuz, Baharat" ->  [Şeker, Tuz, Baharat]
     
@@ -30,8 +30,7 @@
   ```
 
 
-  
-    
+ 
 + create clean_brand_original_brand_pairs
 
     "uludag": "Uludağ",
@@ -49,6 +48,8 @@
 
 + among the brand candidates, select the most frequent one as brand and the longest one as subbrand 
 
+    idea: Brand correction
+   
 + for every sku, create possible subcat space
 
     * add subcats in sku, if they are in any of the names
@@ -59,8 +60,10 @@
 
 
 + create sub_cat_market_pairs
-- Buradaki tam amacımız nedir? Bu subcat'ler birçok yerde geçince verified subcat falan mı oluyo?
-+ amaç subcat seçerken markete göre önceliklendirebilmek 
+
+-- Buradaki tam amacımız nedir? Bu subcat'ler birçok yerde geçince verified subcat falan mı oluyo?
+
+++ amaç subcat seçerken markete göre önceliklendirebilmek 
 
     "zeytinyagi": [
         "rammar",
@@ -103,10 +106,12 @@
 
 
 + for topic modelling
-    * remove subcats and brands from names
-    * -> we may also remove barcodes, all sizes, maybe even gender, color, and meaningless numbers and codes like 923648 or VR12HJ8
-    * join all names in an sku so a sku is the smallest unit of the model (-Buraya sku'lar ile değil de product group ile girsek mantıklı olmaz mı)
+    * remove any subcat, brand, all detected sizes, all-digit tokens from names
+    * join all names in an sku so a sku is the smallest unit of the model 
+    idea: Buraya sku'lar ile değil de product group ile girsek mantıklı olmaz mı
     * for every subcat, train a different LDA model 
     
 Devam edeceğim.
+
+
 
