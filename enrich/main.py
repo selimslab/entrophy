@@ -11,6 +11,7 @@ import constants as keys
 from paths import input_dir, output_dir
 
 from one_of_scripts.mongo_service import get_raw_docs_with_markets_and_cats_only
+from .inspect_results import inspect_results
 
 
 def index_brands_and_subcats() -> tuple:
@@ -46,7 +47,6 @@ def index_brands_and_subcats() -> tuple:
             if "brn " in b:
                 continue
             brand_subcats_pairs[b].update(clean_subcats)
-
 
     def add_from_raw_docs():
         raw_docs_path = input_dir / "raw_docs.json"
@@ -141,13 +141,6 @@ def get_clean_skus(skus: List[dict]):
     return skus
 
 
-def get_token_lists(names: list) -> List[list]:
-    names = services.flatten(names)
-    names = [n for n in names if n]
-    name_tokens = [name.split() for name in names]
-    return name_tokens
-
-
 def select_brand(brand_candidates: list) -> str:
     # TODO beware position
     if brand_candidates:
@@ -185,7 +178,7 @@ def get_brand_candidates(sku: dict, brand_pool: set) -> list:
 
 
 def get_frequencies_for_all_start_combinations(names: List[list]) -> dict:
-    token_lists = get_token_lists(names)
+    token_lists = services.get_token_lists(names)
     groups = []
     for token_list in tqdm(token_lists):
         for i in range(1, len(token_list) + 1):
@@ -193,11 +186,6 @@ def get_frequencies_for_all_start_combinations(names: List[list]) -> dict:
     groups = [s for s in groups if len(s) > 2]
     freq = OrderedDict(Counter(groups).most_common())
     return freq
-
-
-def find_out_freq_cut_points(freq):
-    for name, count in freq.items():
-        ...
 
 
 def get_frequent_start_strings_as_brands(names: List[list]) -> set:
@@ -402,80 +390,6 @@ def add_brand_and_subcat(clean_skus: List[dict]):
     return skus_with_brand_and_sub_cat
 
 
-def count_fields(docs, target_key):
-    return sum(1 if target_key in doc else 0 for doc in docs)
-
-
-def inspect_results():
-    docs = services.read_json(output_dir / "name_brand_subcat.json")
-
-    with_brand_only = [
-        doc for doc in docs if keys.BRAND in doc and keys.SUBCAT not in doc
-    ]
-    services.save_json(output_dir / "with_brand_only.json", with_brand_only)
-
-    with_subcat_only = [
-        doc for doc in docs if keys.BRAND not in doc and keys.SUBCAT in doc
-    ]
-    services.save_json(output_dir / "with_subcat_only.json", with_subcat_only)
-
-    with_brand_and_sub = [
-        doc for doc in docs if keys.BRAND in doc and keys.SUBCAT in doc
-    ]
-    services.save_json(output_dir / "with_brand_and_sub.json", with_brand_and_sub)
-
-    brands_in_results = [doc.get(keys.BRAND) for doc in docs]
-    subcats_in_results = [doc.get(keys.SUBCAT) for doc in docs]
-
-    services.save_json(
-        output_dir / "brands_in_results.json",
-        sorted(services.dedup_denull(brands_in_results)),
-    )
-    services.save_json(
-        output_dir / "subcats_in_results.json",
-        sorted(services.dedup_denull(subcats_in_results)),
-    )
-
-    with_brand = count_fields(docs, keys.BRAND)
-    with_sub = count_fields(docs, keys.SUBCAT)
-
-    print(
-        "total",
-        len(docs),
-        "\n",
-        "with_brand",
-        with_brand,
-        "\n",
-        "with_sub",
-        with_sub,
-        "\n",
-        "with_subcat_only",
-        len(with_subcat_only),
-        "\n",
-        "with_brand_only",
-        len(with_brand_only),
-        "\n",
-        "with_both_brand_and_subcat",
-        len(with_brand_and_sub),
-        "\n",
-    )
-
-
-def add_gender(sku):
-    men = {"erkek", "men", "bay", "man"}
-    woman = {"kadin", "women", "bayan", "woman"}
-    child = {"cocuk", "child", "children"}
-    unisex = {"unisex"}
-
-
-def add_color(sku):
-    ...
-
-
-def add_sub_brand(sku):
-    ...
-
-
 def refresh():
     """
     run the data enrichment from scratch
@@ -490,60 +404,11 @@ def refresh():
     name_brand_subcat = get_sku_summary(skus_with_brand_and_sub_cat)
     services.save_json(output_dir / "name_brand_subcat.json", name_brand_subcat)
 
-    inspect_results()
+    inspect_results(name_brand_subcat)
     print("done!")
-
-
-def test_brands():
-    # brand_pool = services.read_json(output_dir / "brand_pool.json")
-
-    skus = services.read_json(input_dir / "full_skus.json").values()
-    names = [sku.get(keys.CLEAN_NAMES, []) for sku in skus]
-    token_lists = get_token_lists(names)
-    first_n_tokens = [" ".join(tokens[0:5]) for tokens in token_lists]
-    filtered_tokens = [token for token in first_n_tokens if len(token) > 2]
-    freq = OrderedDict(Counter(filtered_tokens).most_common())
-    services.save_json(output_dir / "name_freq_first_5.json", freq)
-
-
-def test_sub_brand():
-    """ test to find sub brands """
-
-    brand_pool = services.read_json(output_dir / "brand_pool.json")
-    name_brand_subcat = services.read_json(output_dir / "name_brand_subcat.json")
-
-    path = output_dir / "most_frequent_start_strings.json"
-    freq = services.read_json(path)
-
-    for doc in name_brand_subcat:
-        brand = doc.get(keys.BRAND, "")
-        if not brand:
-            continue
-
-        brand_tokens = brand.split()
-        if len(brand_tokens) == 1:
-            continue
-        brand_freq = {}
-        for i in range(1, len(brand_tokens)):
-            root = " ".join(brand_tokens[:i])
-            if root in brand_pool:
-                count = freq.get(root, 0)
-                brand_freq[root] = count
-
-        root_brand = services.get_most_frequent_key(brand_freq)
-        if root_brand:
-            print((brand, root_brand))
-            doc[keys.BRAND] = root_brand
-            doc[keys.SUB_BRAND] = brand
-
-    print("with_subbrand", count_fields(name_brand_subcat, keys.SUB_BRAND))
-    services.save_json(output_dir / "with_subbrand.json", name_brand_subcat)
 
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     brand_subcats_pairs_path = output_dir / "brand_subcats_pairs.json"
     refresh()
-    # inspect_brands()
-    # test_brands()
-    # test_sub_brand()

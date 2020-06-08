@@ -77,6 +77,10 @@ def convert_dict_set_values_to_list(d: dict) -> dict:
     return {k: list(v) for k, v in d.items()}
 
 
+def count_fields(docs: List[dict], target_key: str):
+    return sum(1 if target_key in doc else 0 for doc in docs)
+
+
 ######### List util
 
 

@@ -28,6 +28,13 @@ def create_inverted_index(strings: set, stopwords: set) -> dict:
     return index
 
 
+def get_token_lists(names: list) -> List[list]:
+    names = services.flatten(names)
+    names = [n for n in names if n]
+    name_tokens = [name.split() for name in names]
+    return name_tokens
+
+
 def test_get_tokens_of_a_group():
     x = tokenize_a_nested_list(["quick fox", "lazy dog"])
     assert set(x) == {"quick", "fox", "lazy", "dog"}
