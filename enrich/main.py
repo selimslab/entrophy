@@ -7,7 +7,7 @@ import services
 import constants as keys
 from paths import input_dir, output_dir
 
-from cleaner import get_clean_skus
+from cleaner import get_clean_products
 from indexer import create_indexes
 from brand import add_brand_to_skus
 from subcat import add_sub_cat_to_skus
@@ -76,17 +76,18 @@ def refresh():
 
     next: use sku_ids, will be needed to use with supermatch
     """
-    skus = services.read_json(input_dir / "full_skus.json").values()
-    clean_skus = get_clean_skus(skus)
-    skus_with_brand_and_sub_cat = add_brand_and_subcat(clean_skus)
+    products = services.read_json(input_dir / "products.json")
+    clean_products = get_clean_products(products)
+    products_with_brand_and_sub_cat = add_brand_and_subcat(clean_products)
     services.save_json(
-        output_dir / "skus_with_brand_and_sub_cat.json", skus_with_brand_and_sub_cat
+        output_dir / "products_with_brand_and_sub_cat.json", products_with_brand_and_sub_cat
     )
 
-    name_brand_subcat = get_sku_summary(skus_with_brand_and_sub_cat)
-    services.save_json(output_dir / "name_brand_subcat.json", name_brand_subcat)
+    products_with_brand_and_sub_cat_summary = get_sku_summary(products_with_brand_and_sub_cat)
+    services.save_json(output_dir / "products_with_brand_and_sub_cat_summary.json",
+                       products_with_brand_and_sub_cat_summary)
 
-    inspect_results(name_brand_subcat)
+    inspect_results(products_with_brand_and_sub_cat_summary)
     print("done!")
 
 

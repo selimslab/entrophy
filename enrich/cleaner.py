@@ -35,7 +35,7 @@ def add_clean_subcats(sku: dict) -> dict:
     return sku
 
 
-def get_clean_skus(skus: List[dict]):
+def get_clean_products(skus: List[dict]):
     relevant_keys = {
         keys.CATEGORIES,
         keys.BRANDS_MULTIPLE,
