@@ -2,25 +2,33 @@ import pandas as pd
 import constants as keys
 import logging
 
+colnames = [
+    "product_id",
+    "sku_id",
+    "link",
+    # "name",
+    "clean_name",
+    "digits",
+    "unit",
+    # "size",
+    "market",
+    # "price",
+    # "barcodes",
+    keys.VARIANT_NAME,
+    # "stage",
+    "brand",
+    "our_brand",
+    keys.SUBCAT
+]
 
-def create_excel(full_skus, id_doc_pairs, path):
-    logging.info("creating excel..")
+
+def filter_excel_rows(doc):
+    return {k: v for k, v in doc.items() if k in set(colnames)}
+
+
+def prepare_excel(full_skus, id_doc_pairs):
     rows = list()
-    colnames = [
-        "product_id",
-        "sku_id",
-        "link",
-        "name",
-        "clean_name",
-        "digits",
-        "unit",
-        "size",
-        "market",
-        "price",
-        "barcodes",
-        keys.VARIANT_NAME,
-        "stage",
-    ]
+
     for sku in full_skus.values():
         sku_id = sku.get(keys.SKU_ID)
         product_id = sku.get(keys.PRODUCT_ID)
@@ -28,10 +36,15 @@ def create_excel(full_skus, id_doc_pairs, path):
             doc = id_doc_pairs.get(doc_id, {})
             doc[keys.SKU_ID] = sku_id
             doc[keys.PRODUCT_ID] = product_id
-            doc = {k: v for k, v in doc.items() if k in colnames}
+            doc = filter_excel_rows(doc)
             rows.append(doc)
 
-    items = list(rows)
+    return rows
+
+
+def create_excel(rows: list, path):
+    print("creating excel..")
+    items = [filter_excel_rows(doc) for doc in rows]
     df = pd.DataFrame(items).fillna("")
     cols = [c for c in colnames if c in df.columns]
     df = df[cols]
