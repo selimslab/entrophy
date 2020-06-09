@@ -46,14 +46,6 @@ def get_sliding_window_freq():
         if len(tokens) < 3:
             continue
 
-        for i in range(3, len(tokens)):
-            sub_part = " ".join(tokens[:i])
-            if (
-                    sub_part in sliding_window_freq
-                    and freq >= 0.8 * sliding_window_freq.get(sub_part)
-            ):
-                to_remove.add(sub_part)
-
     pprint(to_remove)
 
     sorted_sliding = sorted(

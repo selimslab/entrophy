@@ -64,25 +64,6 @@ def create_sub_tree(skus_with_brand_and_sub_cat):
     return tree
 
 
-def remove_subcat_brand_barcode_from_clean_names(
-        name, brand, subcat, brands_in_results
-):
-    all_matches = size_finder.get_all_matches(name + " ")
-    for match in all_matches:
-        name = name.replace(match, "")
-
-    name = name.replace(brand, "").replace(subcat, "")
-    name_tokens = [
-        n.strip()
-        for n in name.split()
-        if (n not in brands_in_results and len(n) > 2 and not n.isdigit())
-    ]
-
-    name = " ".join(name_tokens)
-
-    return name
-
-
 def remove_known(tree: dict, brands_in_results):
     """ remove subcat, brand, size """
 

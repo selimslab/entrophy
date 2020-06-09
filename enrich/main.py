@@ -80,12 +80,17 @@ def refresh():
     clean_products = get_clean_products(products)
     products_with_brand_and_sub_cat = add_brand_and_subcat(clean_products)
     services.save_json(
-        output_dir / "products_with_brand_and_sub_cat.json", products_with_brand_and_sub_cat
+        output_dir / "products_with_brand_and_sub_cat.json",
+        products_with_brand_and_sub_cat,
     )
 
-    products_with_brand_and_sub_cat_summary = get_sku_summary(products_with_brand_and_sub_cat)
-    services.save_json(output_dir / "products_with_brand_and_sub_cat_summary.json",
-                       products_with_brand_and_sub_cat_summary)
+    products_with_brand_and_sub_cat_summary = get_sku_summary(
+        products_with_brand_and_sub_cat
+    )
+    services.save_json(
+        output_dir / "products_with_brand_and_sub_cat_summary.json",
+        products_with_brand_and_sub_cat_summary,
+    )
 
     inspect_results(products_with_brand_and_sub_cat_summary)
     print("done!")
