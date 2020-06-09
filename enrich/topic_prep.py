@@ -46,8 +46,6 @@ def filtered_sku_name_generator(
         yield subcat, sku_name_strings_in_subcat
 
 
-
-
 def remove_known(tree: dict, brands_in_results):
     """ remove subcat, brand, size """
 

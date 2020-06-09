@@ -27,7 +27,9 @@ def get_all_colors():
 
 def clean_colors(colors):
     clean_colors = [services.clean_name(c) for c in colors]
-    clean_colors = [c for c in clean_colors if c and not c.isdigit() and "nocolor" not in c]
+    clean_colors = [
+        c for c in clean_colors if c and not c.isdigit() and "nocolor" not in c
+    ]
     clean_colors = sorted(list(set(clean_colors)))
     # letters_only = re.compile(r"[^a-z]")
     # re.sub(letters_only, "", t)

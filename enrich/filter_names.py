@@ -112,9 +112,7 @@ def filter_out_knownword_groups_from_a_name(product, clean_colors):
 
 
 def filter_all_products():
-    products = services.read_json(
-        output_dir / "products_with_brand_and_sub_cat.json"
-    )
+    products = services.read_json(output_dir / "products_with_brand_and_sub_cat.json")
 
     clean_colors = services.read_json(output_dir / "clean_colors.json")
     clean_colors = sorted(list(clean_colors), key=len, reverse=True)
@@ -125,10 +123,7 @@ def filter_all_products():
         print(filtered_names)
         product["filtered_names"] = filtered_names
 
-    services.save_json(
-        output_dir / "products_filtered.json",
-        products
-    )
+    services.save_json(output_dir / "products_filtered.json", products)
 
 
 def create_sub_brand_tree(products_filtered):
@@ -158,9 +153,7 @@ def create_sub_brand_tree(products_filtered):
 
 
 def save_sub_tree():
-    products = services.read_json(
-        output_dir / "products_filtered.json",
-    )
+    products = services.read_json(output_dir / "products_filtered.json", )
     sub_brand_tree = create_sub_brand_tree(products)
     services.save_json(output_dir / "sub_brand_tree.json", sub_brand_tree)
 

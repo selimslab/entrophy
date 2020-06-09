@@ -56,23 +56,25 @@ def get_possible_sub_brands_by_subcat(possible_sub_brands_by_brand):
     possible_sub_brands_by_subcat = {}
     for subcat, brands in possible_sub_brands_by_brand.items():
         word_groups = [
-            list(freq_by_brand.keys())
-            for brand, freq_by_brand in brands.items()
+            list(freq_by_brand.keys()) for brand, freq_by_brand in brands.items()
         ]
         word_groups = services.flatten(word_groups)
         freq_by_subcat = Counter(word_groups)
 
         # a word_group should be in a single brand only, to be a sub-brand
-        possible_sub_brands_for_this_subcat = (word_group
-                                               for word_group, count in freq_by_subcat.items()
-                                               if count == 1
-                                               )
-        possible_sub_brands_by_subcat[subcat] = list(set(possible_sub_brands_for_this_subcat))
+        possible_sub_brands_for_this_subcat = (
+            word_group for word_group, count in freq_by_subcat.items() if count == 1
+        )
+        possible_sub_brands_by_subcat[subcat] = list(
+            set(possible_sub_brands_for_this_subcat)
+        )
 
     return possible_sub_brands_by_subcat
 
 
-def filter_possible_sub_brands(possible_sub_brands_by_brand, possible_sub_brands_by_subcat):
+def filter_possible_sub_brands(
+        possible_sub_brands_by_brand, possible_sub_brands_by_subcat
+):
     for subcat, brands in possible_sub_brands_by_brand.items():
         possible_sub_brands_for_this_subcat = possible_sub_brands_by_subcat[subcat]
 
@@ -81,27 +83,39 @@ def filter_possible_sub_brands(possible_sub_brands_by_brand, possible_sub_brands
             filtered_freq_by_brand = {
                 word_group: count
                 for word_group, count in freq_by_brand.items()
-                if (
-                        word_group in possible_sub_brands_for_this_subcat
-                        and count > 1
-                )
-
+                if (word_group in possible_sub_brands_for_this_subcat and count > 1)
             }
 
-            possible_sub_brands_by_brand[subcat][brand] = OrderedDict(Counter(filtered_freq_by_brand).most_common())
+            possible_sub_brands_by_brand[subcat][brand] = OrderedDict(
+                Counter(filtered_freq_by_brand).most_common()
+            )
     return possible_sub_brands_by_brand
 
 
 def create_possible_sub_brands():
     sub_brand_tree = services.read_json(output_dir / "sub_brand_tree.json")
 
-    word_group_frequency_by_product = get_word_group_frequency_by_product(sub_brand_tree)
-    unfiltered_possible_sub_brands_by_brand = get_possible_sub_brands_by_brand(word_group_frequency_by_product)
-    possible_sub_brands_by_subcat = get_possible_sub_brands_by_subcat(unfiltered_possible_sub_brands_by_brand)
+    word_group_frequency_by_product = get_word_group_frequency_by_product(
+        sub_brand_tree
+    )
+    unfiltered_possible_sub_brands_by_brand = get_possible_sub_brands_by_brand(
+        word_group_frequency_by_product
+    )
+    possible_sub_brands_by_subcat = get_possible_sub_brands_by_subcat(
+        unfiltered_possible_sub_brands_by_brand
+    )
     possible_sub_brands_by_brand = filter_possible_sub_brands(
-        unfiltered_possible_sub_brands_by_brand, possible_sub_brands_by_subcat)
+        unfiltered_possible_sub_brands_by_brand, possible_sub_brands_by_subcat
+    )
 
     # OrderedDict(filtered_freq_by_brand.most_common())
-    services.save_json(output_dir / "word_group_frequency_by_product.json", word_group_frequency_by_product)
-    services.save_json(output_dir / "possible_sub_brands_by_brand.json", possible_sub_brands_by_brand)
-    services.save_json(output_dir / "possible_sub_brands_by_subcat.json", possible_sub_brands_by_subcat)
+    services.save_json(
+        output_dir / "word_group_frequency_by_product.json",
+        word_group_frequency_by_product,
+    )
+    services.save_json(
+        output_dir / "possible_sub_brands_by_brand.json", possible_sub_brands_by_brand
+    )
+    services.save_json(
+        output_dir / "possible_sub_brands_by_subcat.json", possible_sub_brands_by_subcat
+    )
