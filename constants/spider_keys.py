@@ -13,6 +13,8 @@ BRAND_CANDIDATES = "brand_candidates"
 BRANDS_MULTIPLE = "brands"
 CLEAN_BRANDS = "clean_brands"
 
+DOC_IDS = "doc_ids"
+
 CATEGORIES = "categories"
 CLEAN_CATS = "clean_cats"
 
