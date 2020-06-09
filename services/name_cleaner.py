@@ -47,13 +47,6 @@ def clean_list_of_strings(l: List[str]):
     return [clean_name(x) for x in l]
 
 
-def list_to_clean_set(strs: list):
-    res = clean_list_of_strings(strs)
-    res = services.remove_none_from_list(res)
-    res = sorted(list(set(res)))
-    return res
-
-
 if __name__ == "__main__":
     x = clean_name("eti̇ peti̇to")
     print(x)
