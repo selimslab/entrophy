@@ -52,3 +52,4 @@ if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     create_new_matching_from_existing_pairs()
     # why ty is not included in matching ??
+    # because their newly issued sku and pid s are not added to pairs
