@@ -31,7 +31,7 @@ def check_query():
     services.save_json(logs_dir / "skus.json", skus)
 
 
-def create_new_matching():
+def create_new_matching_from_scratch():
     docs_to_match = data_services.get_docs_to_match(
         {keys.MARKET: {"$in": keys.MATCHING_MARKETS}}
     )
@@ -41,7 +41,14 @@ def create_new_matching():
     services.save_json(logs_dir / "skus.json", skus)
 
 
+def create_new_matching_from_existing_pairs():
+    pairs = services.read_json(logs_dir / "pairs.json")
+    skus: dict = create_matching(id_doc_pairs=pairs)
+    services.save_json(logs_dir / "skus.json", skus)
+
+
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    create_new_matching()
+    create_new_matching_from_existing_pairs()
+    # why ty is not included in matching ??

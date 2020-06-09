@@ -150,7 +150,7 @@ class GratisSpider(BaseSpider):
             product[keys.BRAND] = info.get("product.brand").pop()
 
             product[keys.SRC] = (
-                    self.base_url + info.get("product.primaryMediumImageURL").pop()
+                self.base_url + info.get("product.primaryMediumImageURL").pop()
             )
 
             product[keys.CATEGORIES] = info.get("product.category")

@@ -39,10 +39,10 @@ class TopLocalHelper:
         price = product_div.css(".discount-price::text").extract_first()
         price = (
             price.replace("TL", "")
-                .replace(".", "")
-                .replace(",", ".")
-                .replace(" ", "")
-                .strip()
+            .replace(".", "")
+            .replace(",", ".")
+            .replace(" ", "")
+            .strip()
         )
         price = convert_price(price)
         if not price:

@@ -11,6 +11,7 @@ from supermatch.id_selector import select_unique_id
 def get_name_priorities():
     return {
         keys.GRATIS: 8,
+        keys.TRENDYOL:7,
         keys.WATSONS: 7,
         keys.MIGROS: 6,
         keys.A101: 5,
@@ -25,6 +26,7 @@ def get_image_priorities():
     return {
         keys.GRATIS: 8,
         keys.MIGROS: 7,
+        keys.TRENDYOL: 7,
         keys.CARREFOUR: 6,
         keys.A101: 5,
         keys.CEPTESOK: 4,

@@ -80,7 +80,7 @@ class TrendyolSpider(BaseSpider):
 
             yield response.follow(
                 next_page_url,
-                meta={"category_name": category_name, keys.PAGE_NUMBER: page_number, },
+                meta={"category_name": category_name, keys.PAGE_NUMBER: page_number,},
                 callback=self.parse,
             )
 
