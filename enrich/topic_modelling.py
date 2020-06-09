@@ -4,7 +4,7 @@ from sklearn.decomposition import LatentDirichletAllocation
 
 def new_top_words(model, feature_names, n_top_words):
     top_words = (
-        " ".join([feature_names[i] for i in topic.argsort()[: -n_top_words - 1: -1]])
+        " ".join([feature_names[i] for i in topic.argsort()[: -n_top_words - 1 : -1]])
         for topic_idx, topic in enumerate(model.components_)
     )
     return list(set(top_words))

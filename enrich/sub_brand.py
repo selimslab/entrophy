@@ -81,7 +81,7 @@ def get_possible_sub_brands_by_subcat(possible_sub_brands_by_brand):
 
 
 def filter_possible_sub_brands(
-        possible_sub_brands_by_brand, possible_sub_brands_by_subcat
+    possible_sub_brands_by_brand, possible_sub_brands_by_subcat
 ):
     for subcat, brands in possible_sub_brands_by_brand.items():
         possible_sub_brands_for_this_subcat = possible_sub_brands_by_subcat[subcat]
@@ -91,11 +91,12 @@ def filter_possible_sub_brands(
             filtered_freq_by_brand = {
                 word_group: count
                 for word_group, count in freq_by_brand.items()
-                if (word_group in possible_sub_brands_for_this_subcat
+                if (
+                    word_group in possible_sub_brands_for_this_subcat
                     and count >= 3
                     # get top 50%
                     and count > max_count * 0.5
-                    )
+                )
             }
 
             possible_sub_brands_by_brand[subcat][brand] = OrderedDict(
@@ -119,19 +120,10 @@ def decrease_count_of_tokens_in_multi_token_word_groups(sub_brand_freqs):
 
 
 def test_count_decrease():
-    case = {
-        "x":
-            {
-                "y": {
-                    "a": 2,
-                    "b": 3,
-                    "a b": 1
-                }
-            }
-    }
+    case = {"x": {"y": {"a": 2, "b": 3, "a b": 1}}}
     res = decrease_count_of_tokens_in_multi_token_word_groups(case)
 
-    assert res == {'x': {'y': {'a': 1, 'b': 2, 'a b': 1}}}
+    assert res == {"x": {"y": {"a": 1, "b": 2, "a b": 1}}}
 
 
 def create_possible_sub_brands(sub_brand_tree):
@@ -194,7 +186,7 @@ def create_sub_brand_tree(products_filtered):
 
 
 def go():
-    products = services.read_json(output_dir / "products_filtered.json", )
+    products = services.read_json(output_dir / "products_filtered.json",)
     sub_brand_tree = create_sub_brand_tree(products)
     services.save_json(output_dir / "sub_brand_tree.json", sub_brand_tree)
     create_possible_sub_brands(sub_brand_tree)

@@ -117,8 +117,8 @@ def test_vectorizer():
     """.split(
         "\n"
     )[
-             1:-1
-             ]
+        1:-1
+    ]
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform(corpus)
     tokens = tfidf_vectorizer.get_feature_names()

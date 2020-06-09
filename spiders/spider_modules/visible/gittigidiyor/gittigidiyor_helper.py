@@ -14,10 +14,10 @@ class GittigidiyorHelper:
         )
         price = (
             (price_div.find("p"))
-                .text.replace(".", "")
-                .replace(",", ".")
-                .replace("TL", "")
-                .strip()
+            .text.replace(".", "")
+            .replace(",", ".")
+            .replace("TL", "")
+            .strip()
         )
         p = {
             keys.LINK: url,

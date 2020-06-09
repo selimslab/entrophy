@@ -16,12 +16,12 @@ def clean_name(name: str) -> str:
     # replace accented chars with their base forms
     name = (
         name.lower()
-            .replace("ı", "i")
-            .replace("&", " ")
-            .replace("-", " ")
-            .replace("/", " ")
-            .replace(",", ".")
-            .replace("*", " * ")
+        .replace("ı", "i")
+        .replace("&", " ")
+        .replace("-", " ")
+        .replace("/", " ")
+        .replace(",", ".")
+        .replace("*", " * ")
     )
     name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
     allowed_chars = re.compile("[^a-zA-Z0-9,.* ]")

@@ -36,7 +36,7 @@ def clean_sub_cats(cats: list) -> list:
 
 
 def select_subcat(
-        sub_cat_candidates: list, sub_cat_market_pairs: Dict[str, list], subcat_freq: dict
+    sub_cat_candidates: list, sub_cat_market_pairs: Dict[str, list], subcat_freq: dict
 ):
     """ start from the longest and check if a subcat is in a prio. market, if not such found, return longest  """
     if sub_cat_candidates:
@@ -52,7 +52,7 @@ def select_subcat(
             for sub in sorted_by_length:
                 markets_for_this_sub = sub_cat_market_pairs.get(sub, [])
                 if markets_for_this_sub and any(
-                        m in priority_markets for m in markets_for_this_sub
+                    m in priority_markets for m in markets_for_this_sub
                 ):
                     return sub
 
@@ -62,10 +62,10 @@ def select_subcat(
 
 
 def add_sub_cat_to_skus(
-        skus: List[dict],
-        brand_subcats_pairs: Dict[str, list],
-        sub_cat_market_pairs: Dict[str, list],
-        subcat_freq: dict,
+    skus: List[dict],
+    brand_subcats_pairs: Dict[str, list],
+    sub_cat_market_pairs: Dict[str, list],
+    subcat_freq: dict,
 ) -> List[dict]:
     """
     There are a set of possible subcats for a given brand
@@ -97,7 +97,7 @@ def add_sub_cat_to_skus(
                 )
 
         for sub in itertools.chain(
-                sku.get(keys.CLEAN_SUBCATS, []), possible_subcats_for_this_brand
+            sku.get(keys.CLEAN_SUBCATS, []), possible_subcats_for_this_brand
         ):
             if any(sub in name for name in clean_names):
                 sub_cat_candidates.append(sub)

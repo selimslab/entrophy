@@ -38,8 +38,8 @@ class MigrosHelper:
         href = product_div.css(".product-link::attr(href)").extract_first().strip()
         categories = (
             product_div.css(".product-link::attr(data-monitor-category)")
-                .extract_first()
-                .strip()
+            .extract_first()
+            .strip()
         )
 
         src = product_div.css("img::attr(data-src)").extract_first()

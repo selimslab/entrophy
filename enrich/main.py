@@ -61,7 +61,9 @@ def add_brand_and_subcat(clean_products: List[dict]):
     services.save_json(brand_subcats_pairs_path, brand_subcats_pairs)
 
     # add brand
-    skus_with_brands = add_brand_to_skus(clean_products, brand_subcats_pairs, brand_freq)
+    skus_with_brands = add_brand_to_skus(
+        clean_products, brand_subcats_pairs, brand_freq
+    )
 
     # add subcat
     skus_with_brand_and_sub_cat = add_sub_cat_to_skus(

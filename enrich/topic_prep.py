@@ -13,7 +13,7 @@ from topic_modelling import lda
 
 
 def filtered_sku_name_generator(
-        tree: dict, token_brand_freq_by_subcat: dict, sub_freq: dict
+    tree: dict, token_brand_freq_by_subcat: dict, sub_freq: dict
 ) -> tuple:
     """
 
@@ -30,8 +30,8 @@ def filtered_sku_name_generator(
                     t.strip()
                     for t in sku_tokens
                     if (
-                            token_brand_freq_by_subcat[subcat].get(t, 0) >= 2
-                            and sub_freq[subcat].get(t, 0) >= 4
+                        token_brand_freq_by_subcat[subcat].get(t, 0) >= 2
+                        and sub_freq[subcat].get(t, 0) >= 4
                     )
                 ]
                 all_names_for_this_sku = " ".join(sku_tokens)
@@ -136,7 +136,7 @@ def create_input():
 
     input_names = {}
     for subcat, sku_names_in_subcat in filtered_sku_name_generator(
-            clean_tree, token_brand_freq_by_subcat, sub_freq
+        clean_tree, token_brand_freq_by_subcat, sub_freq
     ):
         input_names[subcat] = sku_names_in_subcat
     return input_names

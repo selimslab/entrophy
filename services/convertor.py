@@ -5,12 +5,12 @@ from typing import Union
 def convert_price(price: str) -> Union[int, float, None]:
     price = (
         str(price)
-            .lower()
-            .replace("tl", "")
-            .replace("₺", "")
-            .replace("try", "")
-            .replace(" ", "")
-            .strip()
+        .lower()
+        .replace("tl", "")
+        .replace("₺", "")
+        .replace("try", "")
+        .replace(" ", "")
+        .strip()
     )
 
     dot_split = str(price).split(".")

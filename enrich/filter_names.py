@@ -44,6 +44,7 @@ def remove_a_list_of_strings(s: str, to_remove: list):
             s = s.replace(bad, "")
     return s
 
+
 def is_barcode(s: str):
     return len(s) > 4 and s.isdigit()
 
@@ -82,11 +83,11 @@ def test_plural_to_singular():
 
 def is_known_token(s: str):
     return (
-            is_barcode(s)
-            or is_gender(s)
-            or is_color(s)
-            or is_stopword(s)
-            or is_mixed_letters_and_words(s)
+        is_barcode(s)
+        or is_gender(s)
+        or is_color(s)
+        or is_stopword(s)
+        or is_mixed_letters_and_words(s)
     )
 
 
@@ -161,7 +162,6 @@ def filter_all_products():
         product["filtered_names"] = filtered_names
 
     services.save_json(output_dir / "products_filtered.json", products)
-
 
 
 if __name__ == "__main__":
