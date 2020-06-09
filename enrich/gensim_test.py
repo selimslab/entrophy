@@ -6,7 +6,7 @@ logging.basicConfig(
     format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO
 )
 
-documents = [
+docs = [
     "Human machine interface for lab abc computer applications",
     "A survey of user opinion of computer system response time",
     "The EPS user interface management system",
@@ -18,6 +18,9 @@ documents = [
     "Graph minors A survey",
 ]
 
+documents = [
+    ""
+]
 # remove common words and tokenize
 stoplist = set("for a of the and to in".split())
 texts = [
