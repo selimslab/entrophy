@@ -35,7 +35,7 @@ def get_token_lists(names: list) -> List[list]:
     return name_tokens
 
 
-def test_get_tokens_of_a_group():
+def test_tokenize_a_nested_list():
     x = tokenize_a_nested_list(["quick fox", "lazy dog"])
     assert set(x) == {"quick", "fox", "lazy", "dog"}
     y = tokenize_a_nested_list([{"quick fox"}, "lazy dog"])
