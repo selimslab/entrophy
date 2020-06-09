@@ -46,22 +46,6 @@ def filtered_sku_name_generator(
         yield subcat, sku_name_strings_in_subcat
 
 
-def create_sub_tree(skus_with_brand_and_sub_cat):
-    """cat: { sub_cat : { type: {brand: {sub_brand : [products] } }"""
-
-    tree = {}
-    logging.info("create_sub_tree..")
-
-    for sku in tqdm(skus_with_brand_and_sub_cat):
-        brand, subcat = sku.get(keys.BRAND), sku.get(keys.SUBCAT)
-        if brand and subcat:
-            if subcat not in tree:
-                tree[subcat] = {}
-            if brand not in tree[subcat]:
-                tree[subcat][brand] = []
-            tree[subcat][brand].append(sku.get(keys.CLEAN_NAMES, []))
-
-    return tree
 
 
 def remove_known(tree: dict, brands_in_results):
