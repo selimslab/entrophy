@@ -15,9 +15,6 @@ def get_brands_from_markets():
     return sorted(list(brand_subcats_pairs.keys()), key=len, reverse=True)
 
 
-
-
-
 def get_known_strings():
     brand_subcats_pairs_path = output_dir / "brand_subcats_pairs.json"
     brand_subcats_pairs = services.read_json(brand_subcats_pairs_path)
@@ -64,5 +61,3 @@ def sub_exp2():
     services.save_json(
         output_dir / "exp_sub_brand.json", OrderedDict(sorted(freq.items()))
     )
-
-

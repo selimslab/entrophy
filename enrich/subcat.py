@@ -65,7 +65,7 @@ def add_sub_cat_to_skus(
         skus: List[dict],
         brand_subcats_pairs: Dict[str, list],
         sub_cat_market_pairs: Dict[str, list],
-        subcat_freq: dict
+        subcat_freq: dict,
 ) -> List[dict]:
     """
     There are a set of possible subcats for a given brand
@@ -116,6 +116,8 @@ def add_sub_cat_to_skus(
 
         sku[keys.SUBCAT_CANDIDATES] = dict(Counter(sub_cat_candidates))
         if sub_cat_candidates:
-            sku[keys.SUBCAT] = select_subcat(sub_cat_candidates, sub_cat_market_pairs, subcat_freq)
+            sku[keys.SUBCAT] = select_subcat(
+                sub_cat_candidates, sub_cat_market_pairs, subcat_freq
+            )
 
     return skus

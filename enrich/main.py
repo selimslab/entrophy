@@ -51,7 +51,12 @@ def add_brand_and_subcat(clean_skus: List[dict]):
     3. select a category by restricting possible cats for this brand and prioritizing markets
         skus_with_brand_and_sub_cat
     """
-    brand_subcats_pairs, sub_cat_market_pairs, brand_freq = create_indexes()
+    (
+        brand_subcats_pairs,
+        sub_cat_market_pairs,
+        brand_freq,
+        subcat_freq,
+    ) = create_indexes()
     services.save_json(brand_subcats_pairs_path, brand_subcats_pairs)
 
     # add brand
@@ -59,7 +64,7 @@ def add_brand_and_subcat(clean_skus: List[dict]):
 
     # add subcat
     skus_with_brand_and_sub_cat = add_sub_cat_to_skus(
-        skus_with_brands, brand_subcats_pairs, sub_cat_market_pairs
+        skus_with_brands, brand_subcats_pairs, sub_cat_market_pairs, subcat_freq
     )
 
     return skus_with_brand_and_sub_cat

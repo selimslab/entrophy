@@ -1,6 +1,7 @@
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 
+
 def new_top_words(model, feature_names, n_top_words):
     top_words = (
         " ".join([feature_names[i] for i in topic.argsort()[: -n_top_words - 1: -1]])
@@ -22,9 +23,7 @@ def lda(sentences: list, n_gram=2, n_top_words=1):
         return []
 
     lda = LatentDirichletAllocation(
-        n_components=n_components,
-        learning_method="online",
-        random_state=0,
+        n_components=n_components, learning_method="online", random_state=0,
     )
     lda.fit(tf_matrix)
 

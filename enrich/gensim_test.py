@@ -18,9 +18,7 @@ docs = [
     "Graph minors A survey",
 ]
 
-documents = [
-    ""
-]
+documents = [""]
 # remove common words and tokenize
 stoplist = set("for a of the and to in".split())
 texts = [

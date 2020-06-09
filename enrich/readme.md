@@ -110,6 +110,7 @@
     * join all names in an sku so a sku is the smallest unit of the model 
     idea: Buraya sku'lar ile değil de product group ile girsek mantıklı olmaz mı
     * for every subcat, train a different LDA model 
+    * a type should be in min. 2 brands, and min. 5 skus 
     
 Devam edeceğim.
 

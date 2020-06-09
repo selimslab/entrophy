@@ -18,7 +18,7 @@ colnames = [
     # "stage",
     "brand",
     "our_brand",
-    keys.SUBCAT
+    keys.SUBCAT,
 ]
 
 

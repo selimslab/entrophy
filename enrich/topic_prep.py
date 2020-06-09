@@ -12,7 +12,9 @@ import constants as keys
 from topic_modelling import lda
 
 
-def filtered_sku_name_generator(tree: dict, token_brand_freq_by_subcat: dict, sub_freq: dict) -> tuple:
+def filtered_sku_name_generator(
+        tree: dict, token_brand_freq_by_subcat: dict, sub_freq: dict
+) -> tuple:
     """
 
     a topic should be in multiple brands so remove a word if it's only in a single brand
@@ -27,8 +29,10 @@ def filtered_sku_name_generator(tree: dict, token_brand_freq_by_subcat: dict, su
                 sku_tokens = [
                     t.strip()
                     for t in sku_tokens
-                    if (token_brand_freq_by_subcat[subcat].get(t, 0) >= 2
-                        and sub_freq[subcat].get(t, 0) >= 4)
+                    if (
+                            token_brand_freq_by_subcat[subcat].get(t, 0) >= 2
+                            and sub_freq[subcat].get(t, 0) >= 4
+                    )
                 ]
                 all_names_for_this_sku = " ".join(sku_tokens)
                 if all_names_for_this_sku:
@@ -139,9 +143,16 @@ def count_tokens_by_subcat(clean_tree):
     sub_freq = {}
 
     for sub, brands in clean_tree.items():
-        names = [list(set(services.tokenize_a_nested_list(names))) for brand, names in brands.items()]
+        names = [
+            list(set(services.tokenize_a_nested_list(names)))
+            for brand, names in brands.items()
+        ]
         name_tokens = services.flatten(names)
-        freq = {token: count for token, count in dict(Counter(name_tokens)).items() if count >= 5}
+        freq = {
+            token: count
+            for token, count in dict(Counter(name_tokens)).items()
+            if count >= 5
+        }
         sub_freq[sub] = freq
 
     return sub_freq
@@ -176,7 +187,9 @@ def create_topics():
     logging.info("creating topics..")
     for subcat, sku_names_in_subcat in tqdm(input_names.items()):
         top_words = lda(sku_names_in_subcat, n_gram=2, n_top_words=1)
-        top_words = [t for t in top_words if not len(t.split()) > 1 and len(set(t.split())) == 1]
+        top_words = [
+            t for t in top_words if not len(t.split()) > 1 and len(set(t.split())) == 1
+        ]
         lda_topics[subcat] = top_words
 
     services.save_json(output_dir / "lda_topics22.json", lda_topics)

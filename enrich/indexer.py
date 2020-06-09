@@ -78,7 +78,7 @@ def index_brands_and_subcats() -> tuple:
         clean_brand_original_brand_pairs,
         sub_cat_market_pairs,
         brand_freq,
-        subcat_freq
+        subcat_freq,
     )
 
 
@@ -88,10 +88,12 @@ def create_indexes():
         clean_brand_original_brand_pairs,
         sub_cat_market_pairs,
         brand_freq,
-        subcat_freq
+        subcat_freq,
     ) = index_brands_and_subcats()
 
-    subcat_freq = {s: count for s, count in subcat_freq.items() if len(s) >= 2 and count >= 2}
+    subcat_freq = {
+        s: count for s, count in subcat_freq.items() if len(s) >= 2 and count >= 2
+    }
     services.save_json(output_dir / "brand_freq.json", brand_freq)
 
     sub_cat_market_pairs = services.convert_dict_set_values_to_list(

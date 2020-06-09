@@ -48,7 +48,10 @@ def get_sliding_window_freq():
 
         for i in range(3, len(tokens)):
             sub_part = " ".join(tokens[:i])
-            if sub_part in sliding_window_freq and freq >= 0.8 * sliding_window_freq.get(sub_part):
+            if (
+                    sub_part in sliding_window_freq
+                    and freq >= 0.8 * sliding_window_freq.get(sub_part)
+            ):
                 to_remove.add(sub_part)
 
     pprint(to_remove)
@@ -61,6 +64,4 @@ def get_sliding_window_freq():
 
 if __name__ == "__main__":
     sliding_window_freq = get_sliding_window_freq()
-    services.save_json(
-        output_dir / "sliding_window_freq.json", sliding_window_freq
-    )
+    services.save_json(output_dir / "sliding_window_freq.json", sliding_window_freq)
