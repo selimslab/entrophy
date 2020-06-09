@@ -15,36 +15,7 @@ def get_brands_from_markets():
     return sorted(list(brand_subcats_pairs.keys()), key=len, reverse=True)
 
 
-def experiment_sliding_window_freq():
-    from main import get_token_lists
 
-    known = get_known_strings()
-    known_pattern = re.compile("|".join(known))
-
-    skus = services.read_json(input_dir / "full_skus.json").values()
-    names = [sku.get(keys.CLEAN_NAMES, []) for sku in skus]
-    names = services.flatten(names)
-    names = [n for n in names if n]
-    names = [known_pattern.sub("", name) for name in tqdm(names[:100])]
-
-    token_lists = get_token_lists(names)
-    groups = []
-    for token_list in tqdm(token_lists):
-        for start in range(len(token_list)):
-            for end in range(start + 1, len(token_list) + 1):
-                s = " ".join(token_list[start:end]).strip()
-                groups.append(s)
-    sliding_window_freq = OrderedDict(Counter(groups).most_common())
-    sliding_window_freq = {
-        s: freq for s, freq in sliding_window_freq.items() if freq > 1
-    }
-
-    sorted_sliding = sorted(
-        sliding_window_freq.items(), key=itemgetter(1), reverse=True
-    )
-    services.save_json(
-        output_dir / "brand_cat_removed.json", OrderedDict(sorted_sliding)
-    )
 
 
 def get_known_strings():
@@ -95,5 +66,3 @@ def sub_exp2():
     )
 
 
-if __name__ == "__main__":
-    sub_exp2()
