@@ -1,6 +1,11 @@
 from collections import Counter, OrderedDict, defaultdict
+import logging
+
+from tqdm import tqdm
+
 import services
 from paths import output_dir
+import constants as keys
 
 
 def get_all_contigious_substrings_of_a_string(s: str):
@@ -92,9 +97,7 @@ def filter_possible_sub_brands(
     return possible_sub_brands_by_brand
 
 
-def create_possible_sub_brands():
-    sub_brand_tree = services.read_json(output_dir / "sub_brand_tree.json")
-
+def create_possible_sub_brands(sub_brand_tree):
     word_group_frequency_by_product = get_word_group_frequency_by_product(
         sub_brand_tree
     )
@@ -119,3 +122,40 @@ def create_possible_sub_brands():
     services.save_json(
         output_dir / "possible_sub_brands_by_subcat.json", possible_sub_brands_by_subcat
     )
+
+
+def create_sub_brand_tree(products_filtered):
+    """cat: { sub_cat : { type: {brand: {sub_brand : [products] } }"""
+
+    tree = {}
+    logging.info("create_sub_brand_tree..")
+
+    for product in tqdm(products_filtered):
+        brand, subcat = product.get(keys.BRAND), product.get(keys.SUBCAT)
+
+        if not (brand and subcat):
+            continue
+
+        filtered_names = product.get("filtered_names")
+        if not filtered_names:
+            continue
+
+        if subcat not in tree:
+            tree[subcat] = {}
+        if brand not in tree[subcat]:
+            tree[subcat][brand] = []
+
+        tree[subcat][brand].append(filtered_names)
+
+    return tree
+
+
+def save_sub_tree():
+    products = services.read_json(output_dir / "products_filtered.json", )
+    sub_brand_tree = create_sub_brand_tree(products)
+    services.save_json(output_dir / "sub_brand_tree.json", sub_brand_tree)
+    create_possible_sub_brands(sub_brand_tree)
+
+
+if __name__ == "__main__":
+    save_sub_tree()
