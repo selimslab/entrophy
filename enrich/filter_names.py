@@ -37,6 +37,8 @@ color = {
 
 stopwords = {"ve", "ile", "for", "icin", "veya", "li", "lu", "ml", "gr", "kg", "lt"}
 
+plural = ["leri", "lari", "ler", "lar"]
+
 
 def remove_a_list_of_strings(s: str, to_remove: list):
     for bad in to_remove:
@@ -66,6 +68,15 @@ def is_stopword(s: str):
     return s in stopwords
 
 
+def plural_to_singular(s: str):
+    last_4 = s[-4:]
+    for p in plural:
+        if p in last_4:
+            last_4 = last_4.replace(p, "")
+
+    return s[:-4] + last_4
+
+
 def is_known_token(s: str):
     return (
             is_barcode(s)
@@ -79,6 +90,7 @@ def is_known_token(s: str):
 def filter_tokens(name: str):
     tokens = name.split()
     filtered_tokens = [t.strip() for t in tokens if not is_known_token(t)]
+    filtered_tokens = [plural_to_singular(t) for t in filtered_tokens]
     filtered_tokens = [t for t in filtered_tokens if len(t) > 1 and t.isalnum()]
     return " ".join(filtered_tokens)
 
@@ -126,39 +138,10 @@ def filter_all_products():
     services.save_json(output_dir / "products_filtered.json", products)
 
 
-def create_sub_brand_tree(products_filtered):
-    """cat: { sub_cat : { type: {brand: {sub_brand : [products] } }"""
-
-    tree = {}
-    logging.info("create_sub_brand_tree..")
-
-    for product in tqdm(products_filtered):
-        brand, subcat = product.get(keys.BRAND), product.get(keys.SUBCAT)
-
-        if not (brand and subcat):
-            continue
-
-        filtered_names = product.get("filtered_names")
-        if not filtered_names:
-            continue
-
-        if subcat not in tree:
-            tree[subcat] = {}
-        if brand not in tree[subcat]:
-            tree[subcat][brand] = []
-
-        tree[subcat][brand].append(filtered_names)
-
-    return tree
-
-
-def save_sub_tree():
-    products = services.read_json(output_dir / "products_filtered.json", )
-    sub_brand_tree = create_sub_brand_tree(products)
-    services.save_json(output_dir / "sub_brand_tree.json", sub_brand_tree)
-
+def test_plural_to_singular():
+    assert plural_to_singular("selimleri") == "selim"
+    assert plural_to_singular("selimlar") == "selim"
+    assert plural_to_singular("selimlari") == "selim"
 
 if __name__ == "__main__":
-    # filter_all_products()
-    # save_sub_tree()
-    ...
+    filter_all_products()
