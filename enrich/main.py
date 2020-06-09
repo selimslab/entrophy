@@ -7,6 +7,7 @@ import services
 import constants as keys
 from paths import input_dir, output_dir
 
+from create_product_groups import create_product_groups
 from cleaner import get_clean_products
 from indexer import create_indexes
 from brand import add_brand_to_skus
@@ -38,7 +39,7 @@ def create_subcat_index():
     services.save_json(output_dir / "subcat_index.json", subcat_index)
 
 
-def add_brand_and_subcat(clean_skus: List[dict]):
+def add_brand_and_subcat(clean_products: List[dict]):
     """
     brand and subcats are together because a brand restricts the possible subcats
 
@@ -60,7 +61,7 @@ def add_brand_and_subcat(clean_skus: List[dict]):
     services.save_json(brand_subcats_pairs_path, brand_subcats_pairs)
 
     # add brand
-    skus_with_brands = add_brand_to_skus(clean_skus, brand_subcats_pairs, brand_freq)
+    skus_with_brands = add_brand_to_skus(clean_products, brand_subcats_pairs, brand_freq)
 
     # add subcat
     skus_with_brand_and_sub_cat = add_sub_cat_to_skus(
@@ -76,7 +77,8 @@ def refresh():
 
     next: use sku_ids, will be needed to use with supermatch
     """
-    products = services.read_json(input_dir / "products.json")
+    skus = services.read_json(input_dir / "skus.json")
+    products = create_product_groups(skus)
     clean_products = get_clean_products(products)
     products_with_brand_and_sub_cat = add_brand_and_subcat(clean_products)
     services.save_json(

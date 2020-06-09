@@ -12,6 +12,7 @@ SUB_BRAND = "sub_brand"
 BRAND_CANDIDATES = "brand_candidates"
 BRANDS_MULTIPLE = "brands"
 CLEAN_BRANDS = "clean_brands"
+COLOR = "color"
 
 DOC_IDS = "doc_ids"
 

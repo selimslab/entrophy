@@ -17,7 +17,9 @@ def get_docs_to_match(query: dict):
         keys.VARIANT_NAME: 1,
         keys.SKU_ID: 1,
         keys.BRAND: 1,
+        keys.COLOR: 1,
         keys.CATEGORIES: 1,
+
     }
     cursor = collections.items_collection.find(query, projection)
     return cursor

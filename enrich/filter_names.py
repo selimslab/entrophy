@@ -44,7 +44,6 @@ def remove_a_list_of_strings(s: str, to_remove: list):
             s = s.replace(bad, "")
     return s
 
-
 def is_barcode(s: str):
     return len(s) > 4 and s.isdigit()
 
@@ -75,6 +74,12 @@ def plural_to_singular(s: str):
     return s[:-4] + last_4
 
 
+def test_plural_to_singular():
+    assert plural_to_singular("selimleri") == "selim"
+    assert plural_to_singular("selimlar") == "selim"
+    assert plural_to_singular("selimlari") == "selim"
+
+
 def is_known_token(s: str):
     return (
             is_barcode(s)
@@ -101,6 +106,28 @@ def remove_size(name: str):
 
 
 def filter_out_knownword_groups_from_a_name(product, clean_colors):
+    """
+    remove brand candidates, subcat_candidates, color, gender, plural_to_singular
+
+    remove tokens like fsf343
+
+    remove stopwords {"ve", "ile", "for", "icin", "veya", "li", "lu", "ml", "gr", "kg", "lt"}
+
+    remove gender
+        men = {"erkek", "men", "bay", "man"}
+        woman = {"kadin", "women", "bayan", "woman"}
+        child = {"cocuk", "child", "children", "bebe"}
+        unisex = {"unisex"}
+
+        remove len(s) > 4 and s.isdigit()
+
+    remove non-alphanumeric chars
+
+    remove single letters
+
+    remove colors
+
+    """
     clean_names = product.get(keys.CLEAN_NAMES)
     brand_candidates = product.get(keys.BRAND_CANDIDATES)
     subcat_candidates = product.get(keys.SUBCAT_CANDIDATES)
@@ -136,10 +163,6 @@ def filter_all_products():
     services.save_json(output_dir / "products_filtered.json", products)
 
 
-def test_plural_to_singular():
-    assert plural_to_singular("selimleri") == "selim"
-    assert plural_to_singular("selimlar") == "selim"
-    assert plural_to_singular("selimlari") == "selim"
 
 if __name__ == "__main__":
     filter_all_products()

@@ -81,7 +81,7 @@ def get_frequent_start_strings_as_brands(names: List[list]) -> set:
 
 
 def add_brand_to_skus(
-        clean_skus: List[dict], brand_subcats_pairs: dict, brand_freq: dict
+        clean_products: List[dict], brand_subcats_pairs: dict, brand_freq: dict
 ) -> List[dict]:
     """
     0. cat and subcat are different things, beware
@@ -98,7 +98,7 @@ def add_brand_to_skus(
     brands = brand_subcats_pairs.keys()
     brand_pool = set(brands)
 
-    names = [sku.get(keys.CLEAN_NAMES, []) for sku in clean_skus]
+    names = [sku.get(keys.CLEAN_NAMES, []) for sku in clean_products]
     most_frequent_start_strings = get_frequent_start_strings_as_brands(names)
     brand_pool.update(most_frequent_start_strings)
 
@@ -107,7 +107,7 @@ def add_brand_to_skus(
     bad_words = {"brn ", "markasiz", "erkek", "kadin"}
 
     logging.info("adding brand..")
-    for sku in tqdm(clean_skus):
+    for sku in tqdm(clean_products):
         brand_candidates = get_brand_candidates(sku, brand_pool)
         brand_candidates = [
             b
@@ -125,4 +125,4 @@ def add_brand_to_skus(
                 # sku[keys.SUB_BRAND] = sub_brand
                 ...
 
-    return clean_skus
+    return clean_products

@@ -14,6 +14,7 @@ def get_clean_id_doc_pairs(docs_to_match: Iterator) -> dict:
 
 
 def create_id_doc_pairs(docs_to_match: Iterator) -> dict:
+    logging.info("create_id_doc_pairs..")
     return {
         str(doc.pop("_id")): doc
         for doc in tqdm(docs_to_match)
@@ -24,6 +25,7 @@ def create_id_doc_pairs(docs_to_match: Iterator) -> dict:
 def clone_docs_with_multiple_barcodes(pairs):
     clones = {}
     cloned_doc_ids = set()
+    logging.info("clone_docs_with_multiple_barcodes..")
     for doc_id, doc in tqdm(pairs.items()):
         barcodes = doc.get(keys.BARCODES, [])
         if barcodes and len(barcodes) > 1:
@@ -47,7 +49,7 @@ def clone_docs_with_multiple_barcodes(pairs):
 
 
 def clean_links(pairs):
-    # make sure link is clean
+    logging.info("clean_links..")
     for doc_id, doc in tqdm(pairs.items()):
         link = doc.get(keys.LINK)
         if link[-1] == "/":

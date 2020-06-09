@@ -15,14 +15,17 @@ from paths import input_dir, output_dir
 
 def index_brands_and_subcats() -> tuple:
     """
-        "finish": [
+
+    "finish": [
         "kirec onleyici",
         "bulasik yikama urunleri",
         ...
         ]
 
     next: add brand_freq to choose root brand
+
     """
+
     brand_subcats_pairs = defaultdict(set)
     clean_brand_original_brand_pairs = {}
     sub_cat_market_pairs = defaultdict(set)

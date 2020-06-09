@@ -33,6 +33,9 @@ def get_doc_freq(names: list):
 
 
 def get_word_group_frequency_by_product(sub_brand_tree):
+    """
+    sliding window frequency
+    """
     for subcat, brands in sub_brand_tree.items():
         for brand, name_groups in brands.items():
             freqs = []
@@ -82,19 +85,53 @@ def filter_possible_sub_brands(
 ):
     for subcat, brands in possible_sub_brands_by_brand.items():
         possible_sub_brands_for_this_subcat = possible_sub_brands_by_subcat[subcat]
-
         for brand, freq_by_brand in brands.items():
-            # a word_group should be in at least 2 products, to be a sub-brand
+            # a word_group should be in at least 3 products, to be a sub-brand
+            max_count = max(freq_by_brand.values())
             filtered_freq_by_brand = {
                 word_group: count
                 for word_group, count in freq_by_brand.items()
-                if (word_group in possible_sub_brands_for_this_subcat and count > 1)
+                if (word_group in possible_sub_brands_for_this_subcat
+                    and count >= 3
+                    # get top 50%
+                    and count > max_count * 0.5
+                    )
             }
 
             possible_sub_brands_by_brand[subcat][brand] = OrderedDict(
                 Counter(filtered_freq_by_brand).most_common()
             )
     return possible_sub_brands_by_brand
+
+
+def decrease_count_of_tokens_in_multi_token_word_groups(sub_brand_freqs):
+    for subcat, brands in sub_brand_freqs.items():
+        for brand, freq_by_brand in brands.items():
+            for word_group, count in freq_by_brand.items():
+                tokens = word_group.split()
+                if len(tokens) == 1:
+                    continue
+                for token in tokens:
+                    if token in freq_by_brand:
+                        freq_by_brand[token] -= 1
+
+    return sub_brand_freqs
+
+
+def test_count_decrease():
+    case = {
+        "x":
+            {
+                "y": {
+                    "a": 2,
+                    "b": 3,
+                    "a b": 1
+                }
+            }
+    }
+    res = decrease_count_of_tokens_in_multi_token_word_groups(case)
+
+    assert res == {'x': {'y': {'a': 1, 'b': 2, 'a b': 1}}}
 
 
 def create_possible_sub_brands(sub_brand_tree):
@@ -107,6 +144,10 @@ def create_possible_sub_brands(sub_brand_tree):
     possible_sub_brands_by_subcat = get_possible_sub_brands_by_subcat(
         unfiltered_possible_sub_brands_by_brand
     )
+
+    unfiltered_possible_sub_brands_by_brand = decrease_count_of_tokens_in_multi_token_word_groups(
+        unfiltered_possible_sub_brands_by_brand
+    )
     possible_sub_brands_by_brand = filter_possible_sub_brands(
         unfiltered_possible_sub_brands_by_brand, possible_sub_brands_by_subcat
     )
@@ -116,11 +157,13 @@ def create_possible_sub_brands(sub_brand_tree):
         output_dir / "word_group_frequency_by_product.json",
         word_group_frequency_by_product,
     )
-    services.save_json(
-        output_dir / "possible_sub_brands_by_brand.json", possible_sub_brands_by_brand
-    )
+
     services.save_json(
         output_dir / "possible_sub_brands_by_subcat.json", possible_sub_brands_by_subcat
+    )
+
+    services.save_json(
+        output_dir / "possible_sub_brands_by_brand.json", possible_sub_brands_by_brand
     )
 
 
@@ -150,7 +193,7 @@ def create_sub_brand_tree(products_filtered):
     return tree
 
 
-def save_sub_tree():
+def go():
     products = services.read_json(output_dir / "products_filtered.json", )
     sub_brand_tree = create_sub_brand_tree(products)
     services.save_json(output_dir / "sub_brand_tree.json", sub_brand_tree)
@@ -158,4 +201,4 @@ def save_sub_tree():
 
 
 if __name__ == "__main__":
-    save_sub_tree()
+    go()
