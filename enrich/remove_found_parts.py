@@ -97,41 +97,40 @@ def remove_size(name: str):
     return name
 
 
-def remove_known():
-    products_with_brand_and_sub_cat = services.read_json(
+def filter_out_knownword_groups_from_a_name(product):
+    clean_names = product.get(keys.CLEAN_NAMES)
+    brand_candidates = product.get(keys.BRAND_CANDIDATES)
+    subcat_candidates = product.get(keys.SUBCAT_CANDIDATES)
+
+    sorted_brands = sorted(brand_candidates.keys(), key=len, reverse=True)
+    sorted_subcats = sorted(subcat_candidates.keys(), key=len, reverse=True)
+
+    filtered_names = []
+    for name in clean_names:
+        name = remove_size(name)
+        name = remove_brand(name, sorted_brands)
+        name = remove_subcat(name, sorted_subcats)
+        name = filter_tokens(name)
+        if name:
+            filtered_names.append(name)
+
+    return filtered_names
+
+
+def filter_all_products():
+    products = services.read_json(
         output_dir / "products_with_brand_and_sub_cat.json"
     )
+    for product in tqdm(products):
+        filtered_names = filter_out_knownword_groups_from_a_name(product)
+        print(filtered_names)
+        product["filtered_names"] = filtered_names
 
-    for product in tqdm(products_with_brand_and_sub_cat[:1000]):
-
-        clean_names = product.get(keys.CLEAN_NAMES)
-        brand_candidates = product.get(keys.BRAND_CANDIDATES)
-        subcat_candidates = product.get(keys.SUBCAT_CANDIDATES)
-
-        sorted_brands = sorted(brand_candidates.keys(), key=len, reverse=True)
-        sorted_subcats = sorted(subcat_candidates.keys(), key=len, reverse=True)
-
-        names_without_size_barcode_brand_subcat = []
-        for name in clean_names:
-            name = remove_size(name)
-            name = remove_brand(name, sorted_brands)
-            name = remove_subcat(name, sorted_subcats)
-            name = filter_tokens(name)
-            if name:
-                names_without_size_barcode_brand_subcat.append(name)
-
-        product[
-            "names_without_size_barcode_brand_subcat"
-        ] = names_without_size_barcode_brand_subcat
-        print(names_without_size_barcode_brand_subcat)
-
-    """
     services.save_json(
-        output_dir / "products_stripped.json", 
-        products_with_brand_and_sub_cat
+        output_dir / "products_filtered.json",
+        products
     )
-    """
 
 
 if __name__ == "__main__":
-    remove_known()
+    filter_all_products()
