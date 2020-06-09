@@ -122,6 +122,7 @@ def add_brand_to_skus(
             if root_brand:
                 sku[keys.BRAND] = root_brand
             if sub_brand:
-                sku[keys.SUB_BRAND] = sub_brand
+                # sku[keys.SUB_BRAND] = sub_brand
+                ...
 
     return clean_skus

@@ -19,7 +19,7 @@ def ask_a_question():
     from data_services.mongo.collections import items_collection
     from pprint import pprint
 
-    cursor = items_collection.find({keys.BRAND: {"$in": ["Elixir", "Limon"]}, }, )
+    cursor = items_collection.find({})
     for doc in cursor:
         pprint(doc)
 
