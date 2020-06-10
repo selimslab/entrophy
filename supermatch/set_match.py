@@ -8,6 +8,8 @@ from .clean_name import tokenize
 import services
 
 
+# TODO these 2 functions could be refactored to 4-5 functions and simplified
+
 def match_singles(self, id, name):
     """ connect single name to a group """
 
@@ -73,6 +75,21 @@ def match_singles(self, id, name):
 
 
 def set_match(self):
+    """
+    1. tokenize item names
+    2. tokenize already grouped skus
+    3. for every group
+        create a common set, tokens common to all names in a group
+        create a diff set
+    4. if a single name covers the common the set of a group
+        and the group covers all tokens in this name, it's a match!
+
+
+    note: don't be surprised,
+    passing self to a function is normal and practical here,
+    as many examples in python standard libraries
+    """
+
     id_groups = self.create_connected_component_groups(self.sku_graph)
 
     # filter without barcode
@@ -116,7 +133,8 @@ def set_match(self):
         if "clone" not in id
     ]
     logging.info("matching singles..")
-    # this could be parallel
+    # TODO here is a bottleneck
+    # this could be parallel but cloud server has problems with multiprocessing code
     matched_names = [
         match_singles(self, id, name) for id, name in tqdm(single_names) if name
     ]
