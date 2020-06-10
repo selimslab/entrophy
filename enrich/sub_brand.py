@@ -102,7 +102,9 @@ def filter_possible_sub_brands(
     return possible_sub_brands_by_brand
 
 
-def decrease_count_of_tokens_in_multi_token_word_groups(sub_brand_freqs):
+def decrease_sub_token_count(sub_brand_freqs):
+    """ decrease_count_of_tokens_in_multi_token_word_groups
+    """
     for subcat, brands in sub_brand_freqs.items():
         for brand, freq_by_brand in brands.items():
             for word_group, count in freq_by_brand.items():
@@ -116,7 +118,7 @@ def decrease_count_of_tokens_in_multi_token_word_groups(sub_brand_freqs):
     return sub_brand_freqs
 
 
-def test_count_decrease():
+def test_decrease_sub_token_count():
     case = {"x": {"y": {"a": 2, "b": 3, "a b": 1}}}
     res = decrease_count_of_tokens_in_multi_token_word_groups(case)
 
