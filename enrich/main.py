@@ -1,6 +1,5 @@
 from collections import defaultdict
 import logging
-
 from typing import List
 
 import services
@@ -73,13 +72,12 @@ def add_brand_and_subcat(clean_products: List[dict]):
     return skus_with_brand_and_sub_cat
 
 
-def refresh():
+def refresh(skus):
     """
     run the data enrichment from scratch
 
     next: use sku_ids, will be needed to use with supermatch
     """
-    skus = services.read_json(input_dir / "skus.json")
     products = create_product_groups(skus)
     clean_products = get_clean_products(products)
     products_with_brand_and_sub_cat = add_brand_and_subcat(clean_products)
@@ -103,4 +101,5 @@ def refresh():
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     brand_subcats_pairs_path = output_dir / "brand_subcats_pairs.json"
-    refresh()
+    skus = services.read_json(input_dir / "skus.json")
+    refresh(skus)

@@ -20,7 +20,7 @@ cwd = pathlib.Path.cwd()
 logs_dir = cwd / "logs"
 
 
-def check_query():
+def create_new_matching_from_query():
     links = services.read_json("test_logs/old/links.json")
     query = {keys.LINK: {"$in": services.flatten(links)}}
     docs_to_match = data_services.get_docs_to_match(query)

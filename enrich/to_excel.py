@@ -7,7 +7,7 @@ from services import excel
 import constants as keys
 
 
-def to_excel():
+def add_sku_id_and_product_id_to_pairs():
     skus = services.read_json(input_dir / "skus.json")
     pairs = services.read_json(input_dir / "pairs.json")
 
@@ -23,7 +23,13 @@ def to_excel():
                 pairs[doc_id]["our_brand"] = sku.get(keys.BRAND)
                 pairs[doc_id][keys.SUBCAT] = sku.get(keys.SUBCAT)
                 pairs[doc_id][keys.PRODUCT_ID] = product_id
+                pairs[doc_id][keys.SKU_ID] = sku_id
+    return pairs
 
+
+def to_excel():
+    pairs = add_sku_id_and_product_id_to_pairs()
+    services.save_json(output_dir / "pairs_matched.json", pairs)
     excel.create_excel(pairs.values(), "jun9.xlsx")
 
 
