@@ -46,20 +46,6 @@ def select_subcat(
         sub = services.get_most_frequent_key(subcat_candidates_with_freq)
         return sub
 
-        def prioritize_by_markets():
-            priority_markets = [keys.TRENDYOL, keys.GRATIS, keys.WATSONS, keys.MIGROS]
-            sorted_by_length = sorted(sub_cat_candidates, key=len, reverse=True)
-            for sub in sorted_by_length:
-                markets_for_this_sub = sub_cat_market_pairs.get(sub, [])
-                if markets_for_this_sub and any(
-                    m in priority_markets for m in markets_for_this_sub
-                ):
-                    return sub
-
-            #  as a last resort, select longest
-            sub_cat = sorted_by_length[0]
-            return sub_cat
-
 
 def add_sub_cat_to_skus(
     skus: List[dict],
