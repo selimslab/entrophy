@@ -26,6 +26,7 @@ def create_product_groups(skus: dict) -> List[dict]:
             products.append(sku)
 
     for pid, docs in groups.items():
+        # merge info from multiple skus
         brands = [doc.get(keys.BRANDS_MULTIPLE) for doc in docs]
         cats = [doc.get(keys.CATEGORIES) for doc in docs]
         clean_names = [doc.get(keys.CLEAN_NAMES) for doc in docs]
