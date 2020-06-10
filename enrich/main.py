@@ -103,3 +103,7 @@ if __name__ == "__main__":
     brand_subcats_pairs_path = output_dir / "brand_subcats_pairs.json"
     skus = services.read_json(input_dir / "skus.json")
     refresh(skus)
+    # main -> filter names -> sub_brand
+    # connect them
+    # fix naming
+    # clean up
