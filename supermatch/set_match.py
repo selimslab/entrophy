@@ -10,6 +10,7 @@ import services
 
 # TODO these 2 functions could be refactored to 4-5 functions and simplified
 
+
 def match_singles(self, id, name):
     """ connect single name to a group """
 

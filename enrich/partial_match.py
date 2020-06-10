@@ -60,7 +60,7 @@ def partial_string_search(haystack: str, needle: str) -> Union[str, None, bool]:
     for start in range(len(haystack_tokens) - n + 1):
         # Aranacak olan token, aranan yerde aynı sıralama ile geçmeli.
         # this windowing strategy ensures the order
-        window_tokens = haystack_tokens[start: start + n]
+        window_tokens = haystack_tokens[start : start + n]
         print()
         print(needle_tokens, window_tokens)
         # found
@@ -83,7 +83,6 @@ def pre_test_match_partially():
         ("fasfsa T kağıdı aasda", "Tuvalet Kağıdı", True),
         ("423 Tuv Kağıdı 545745", "Tuvalet Kağıdı", True),
         (" Sıvı Bulaşık Deterjanı ", "Sıvı B Deterjan", True),
-
     ]
     for case in test_cases:
         (haystack, needle) = services.clean_list_of_strings(list(case[:2]))
