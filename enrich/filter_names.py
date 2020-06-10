@@ -40,7 +40,8 @@ plural = ["leri", "lari", "ler", "lar"]
 
 def remove_a_list_of_strings(s: str, to_remove: list):
     for bad in to_remove:
-        if bad in s:
+        #  a string should include all tokens of the removal string
+        if bad in s and set(s.split()).issuperset(bad.split()):
             s = s.replace(bad, "")
     return s
 
