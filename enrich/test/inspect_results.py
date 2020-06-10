@@ -1,6 +1,6 @@
 import services
 import constants as keys
-from paths import input_dir, output_dir
+from paths import  output_dir
 
 
 def inspect_results(docs):

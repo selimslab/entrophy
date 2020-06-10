@@ -80,7 +80,7 @@ def to_excel():
     services.save_json(output_dir / "pairs_matched.json", pairs)
     rows = list(pairs.values())
     rows = [row for row in rows if keys.SKU_ID in row]
-    excel.create_excel(rows, "jun10.xlsx")
+    excel.create_excel(rows, "../derived/jun10.xlsx")
 
 
 if __name__ == "__main__":

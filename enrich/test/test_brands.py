@@ -5,6 +5,8 @@ from collections import Counter, OrderedDict
 
 
 def test_brands():
+    """ test an approach to find  brands """
+
     skus = services.read_json(input_dir / "full_skus.json").values()
     names = [sku.get(keys.CLEAN_NAMES, []) for sku in skus]
     token_lists = services.get_token_lists(names)

@@ -120,7 +120,7 @@ def decrease_sub_token_count(sub_brand_freqs):
 
 def test_decrease_sub_token_count():
     case = {"x": {"y": {"a": 2, "b": 3, "a b": 1}}}
-    res = decrease_count_of_tokens_in_multi_token_word_groups(case)
+    res = decrease_sub_token_count(case)
 
     assert res == {"x": {"y": {"a": 1, "b": 2, "a b": 1}}}
 
@@ -136,7 +136,7 @@ def create_possible_sub_brands(sub_brand_tree):
         unfiltered_possible_sub_brands_by_brand
     )
 
-    unfiltered_possible_sub_brands_by_brand = decrease_count_of_tokens_in_multi_token_word_groups(
+    unfiltered_possible_sub_brands_by_brand = decrease_sub_token_count(
         unfiltered_possible_sub_brands_by_brand
     )
     possible_sub_brands_by_brand = filter_possible_sub_brands(

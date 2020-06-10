@@ -4,7 +4,7 @@ from paths import output_dir
 
 
 def test_sub_brand():
-    """ test to find sub brands """
+    """ test an approach to find sub brands """
 
     brand_pool = services.read_json(output_dir / "brand_pool.json")
     name_brand_subcat = services.read_json(output_dir / "name_brand_subcat.json")

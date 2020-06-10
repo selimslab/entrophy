@@ -6,7 +6,7 @@ from typing import Iterable
 import services
 import constants as keys
 
-from mongo_service import get_raw_docs_with_markets_and_cats_only
+from data_services.mongo.mongo_service import get_raw_docs_with_markets_and_cats_only
 
 from subcat import clean_sub_cats
 

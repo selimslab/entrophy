@@ -6,12 +6,12 @@ import services
 import constants as keys
 from paths import input_dir, output_dir
 
-from create_product_groups import create_product_groups
-from cleaner import get_clean_products
-from indexer import create_indexes
+from prep.create_product_groups import create_product_groups
+from prep.cleaner import get_clean_products
+from prep.indexer import create_indexes
 from brand import add_brand_to_skus
 from subcat import add_sub_cat_to_skus
-from inspect_results import inspect_results
+from test.inspect_results import inspect_results
 
 
 def get_sku_summary(skus_with_brand_and_sub_cat: List[dict]) -> List[dict]:
