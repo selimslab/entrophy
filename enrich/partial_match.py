@@ -2,7 +2,7 @@ from typing import Union
 import services
 
 
-def compare_tokensets(window_tokens: list, needle_tokens: list) -> bool:
+def is_eligible_tokensets(window_tokens: list, needle_tokens: list) -> bool:
     if len(window_tokens) != len(needle_tokens):
         return False
     # Aranacak olan token'ın en az 1 kelimesi, aranan yerde geçmeli
@@ -13,6 +13,10 @@ def compare_tokensets(window_tokens: list, needle_tokens: list) -> bool:
     if len(commonset) == 1 and len(commonset.pop()) < 4:
         return False
 
+    return True
+
+
+def compare_tokensets(window_tokens: list, needle_tokens: list) -> bool:
     diff = []
     tolerate_single_letter = True
     for window_token, needle_token in zip(window_tokens, needle_tokens):
@@ -34,9 +38,13 @@ def compare_tokensets(window_tokens: list, needle_tokens: list) -> bool:
     return True
 
 
-def match_partially(haystack: str, needle: str) -> Union[str, None, bool]:
+def partial_string_search(haystack: str, needle: str) -> Union[str, None, bool]:
     """
-
+    as long as there is a substring with
+    1. the same number of tokens,
+    2. all tokens starting with the same letter
+    3. they are in the same order
+    4. they have at least 1 common token with len>4
     """
     needle_tokens = needle.split()
 
@@ -59,11 +67,11 @@ def match_partially(haystack: str, needle: str) -> Union[str, None, bool]:
         if window_tokens == needle_tokens:
             return True
 
-        is_found = compare_tokensets(window_tokens, needle_tokens)
-        print("found", is_found)
-
-        if is_found:
-            return True
+        ok = is_eligible_tokensets(window_tokens, needle_tokens)
+        if ok:
+            is_found = compare_tokensets(window_tokens, needle_tokens)
+            if is_found:
+                return True
 
     return False
 
@@ -81,7 +89,9 @@ def pre_test_match_partially():
         (haystack, needle) = services.clean_list_of_strings(list(case[:2]))
         expected = case[2]
         try:
-            assert match_partially(haystack, needle) == expected
+            is_found = partial_string_search(haystack, needle) == expected
+            print(haystack, needle, is_found)
+            assert is_found
         except AssertionError as e:
             print(e)
 
