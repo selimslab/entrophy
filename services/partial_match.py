@@ -20,7 +20,7 @@ def compare_tokensets(window_tokens: list, needle_tokens: list) -> bool:
     diff = []
     tolerate_single_letter = True
     for window_token, needle_token in zip(window_tokens, needle_tokens):
-        print("diff", diff)
+        # print("diff", diff)
         if window_token == needle_token:
             continue
         elif window_token[0] == needle_token[0]:
@@ -62,7 +62,6 @@ def partial_string_search(haystack: str, needle: str) -> Union[str, None, bool]:
         # this windowing strategy ensures the order
         window_tokens = haystack_tokens[start : start + n]
         print()
-        print(needle_tokens, window_tokens)
         # found
         if window_tokens == needle_tokens:
             return True
@@ -70,8 +69,13 @@ def partial_string_search(haystack: str, needle: str) -> Union[str, None, bool]:
         ok = is_eligible_tokensets(window_tokens, needle_tokens)
         if ok:
             is_found = compare_tokensets(window_tokens, needle_tokens)
+            print(window_tokens, needle_tokens, is_found)
             if is_found:
                 return True
+        else:
+            print(window_tokens, needle_tokens, False)
+
+
 
     return False
 
@@ -89,7 +93,6 @@ def pre_test_match_partially():
         expected = case[2]
         try:
             is_found = partial_string_search(haystack, needle) == expected
-            print(haystack, needle, is_found)
             assert is_found
         except AssertionError as e:
             print(e)
