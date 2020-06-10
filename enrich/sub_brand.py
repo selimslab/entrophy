@@ -87,15 +87,12 @@ def filter_possible_sub_brands(
         possible_sub_brands_for_this_subcat = possible_sub_brands_by_subcat[subcat]
         for brand, freq_by_brand in brands.items():
             # a word_group should be in at least 3 products, to be a sub-brand
-            max_count = max(freq_by_brand.values())
             filtered_freq_by_brand = {
                 word_group: count
                 for word_group, count in freq_by_brand.items()
                 if (
                     word_group in possible_sub_brands_for_this_subcat
-                    and count >= 3
-                    # get top 50%
-                    and count > max_count * 0.5
+                    and count > 2
                 )
             }
 
