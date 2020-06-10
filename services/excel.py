@@ -16,7 +16,7 @@ colnames = [
     "market",
     # "price",
     "barcodes",
-    keys.OUT_OF_STOCK,
+    # keys.OUT_OF_STOCK,
     # keys.VARIANT_NAME,
     # "stage",
     "brand",
