@@ -12,7 +12,7 @@ from freq import get_brand_freq
 
 
 def add_brand(
-    products: List[dict], brand_original_to_clean: dict, brand_pool: set
+        products: List[dict], brand_original_to_clean: dict, brand_pool: set
 ) -> List[dict]:
     brand_freq: dict = get_brand_freq(products, brand_original_to_clean)
     brand_pool_sorted = services.sort_from_long_to_short(brand_pool)
@@ -28,42 +28,25 @@ def add_brand(
     return products
 
 
-def get_frequencies_for_all_start_combinations(names: List[list]) -> dict:
-    token_lists = services.get_token_lists(names)
-    groups = []
-    logging.info("get_frequencies_for_all_start_combinations..")
-    for token_list in tqdm(token_lists):
-        for i in range(1, len(token_list) + 1):
-            groups.append(" ".join(token_list[0:i]))
-    groups = [s for s in groups if len(s) > 2]
-    freq = OrderedDict(Counter(groups).most_common())
-    return freq
-
-
-def get_frequent_start_strings_as_brands(names: List[list]) -> set:
-    freq = get_frequencies_for_all_start_combinations(names)
-    filtered_freq = {s: freq for s, freq in freq.items() if freq > 60}
-    services.save_json(
-        output_dir / "most_frequent_start_strings.json",
-        OrderedDict(sorted(filtered_freq.items())),
-    )
-
-    max_brand_size = 2
-    most_frequent_start_strings = set(filtered_freq.keys())
-    most_frequent_start_strings = {
-        b for b in most_frequent_start_strings if len(b.split()) <= max_brand_size
-    }
-
-    return most_frequent_start_strings
-
-
 def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set:
     # brands given by vendors
     brands = possible_subcats_by_brand.keys()
     brand_pool = set(brands)
 
-    names = [product.get(keys.CLEAN_NAMES, []) for product in products]
-    most_frequent_start_strings = get_frequent_start_strings_as_brands(names)
+    window_frequencies = Counter()
+    max_brand_size = 4
+    for product in products:
+        clean_names = product.get(keys.CLEAN_NAMES, [])
+        for name in clean_names:
+            sliding_windows = services.string_to_extending_windows(name, max_brand_size)
+            window_frequencies.update(sliding_windows)
+
+    most_frequent_start_strings = {
+        s for s, count in window_frequencies.items()
+        if len(s) > 2 and count > 42
+    }
+
+    # OrderedDict(Counter(groups).most_common())
     brand_pool.update(most_frequent_start_strings)
 
     to_filter_out = {"brn ", "markasiz", "erkek", "kadin"}
@@ -76,8 +59,21 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
     return brand_pool
 
 
+def check_partial(brand_pool_sorted, to_partial_search):
+    """ l paris -> loreal paris ? """
+    brand_candidates = set()
+    for brand in brand_pool_sorted:
+        if brand in brand_candidates:
+            continue
+        for s in to_partial_search:
+            if services.partial_string_search(s, brand):
+                brand_candidates.add(s)
+                print((s, brand))
+    return brand_candidates
+
+
 def get_brand_candidates(
-    product: dict, brand_pool: set, brand_pool_sorted: list
+        product: dict, brand_pool: set, brand_pool_sorted: list
 ) -> set:
     """
     find brand first
@@ -102,13 +98,7 @@ def get_brand_candidates(
                 to_partial_search.add(s)
 
     if not brand_candidates and to_partial_search:
-        for brand in brand_pool_sorted:
-            if brand in brand_candidates:
-                continue
-            for s in to_partial_search:
-                if services.partial_string_search(s, brand):
-                    brand_candidates.add(s)
-                    print((s, brand))
+        brand_candidates = check_partial(brand_pool_sorted, to_partial_search)
 
     return brand_candidates
 
