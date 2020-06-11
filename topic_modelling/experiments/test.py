@@ -1,5 +1,4 @@
-from collections import OrderedDict, Counter
-from operator import itemgetter
+from collections import OrderedDict
 import itertools
 from tqdm import tqdm
 import re

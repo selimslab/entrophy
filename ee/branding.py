@@ -9,6 +9,21 @@ import constants as keys
 from paths import output_dir
 
 
+from freq import get_brand_freq
+
+
+def add_brand(products: List[dict], brand_original_to_clean: dict, brand_pool: set) -> List[dict]:
+    brand_freq: dict = get_brand_freq(products, brand_original_to_clean)
+    for product in products:
+        brand_candidates = get_brand_candidates(product, brand_pool)
+        product[keys.BRAND_CANDIDATES] = dict(Counter(brand_candidates))
+
+        the_most_frequent_brand = select_brand(brand_candidates, brand_freq)
+        product[keys.BRAND] = the_most_frequent_brand
+
+    return products
+
+
 def get_frequencies_for_all_start_combinations(names: List[list]) -> dict:
     token_lists = services.get_token_lists(names)
     groups = []

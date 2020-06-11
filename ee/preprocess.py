@@ -5,7 +5,7 @@ import services
 import constants as keys
 
 
-def filter_docs(docs):
+def filter_docs(docs: List[dict]) -> List[dict]:
     relevant_keys = {
         keys.CATEGORIES,
         keys.BRANDS_MULTIPLE,
