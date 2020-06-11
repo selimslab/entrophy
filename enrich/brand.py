@@ -33,16 +33,19 @@ def get_brand_candidates(sku: dict, brand_pool: set) -> list:
     """
     candidates = []
     candidates += sku.get(keys.CLEAN_BRANDS, [])
-
     clean_names = sku.get(keys.CLEAN_NAMES, [])
 
     # instead of searching every possible brand in name, we search parts of name in brands set
     for name in clean_names:
         # brand is in first 4 tokens mostly
-        name_tokens = name.split()
-        start_strings = [" ".join(name_tokens[:i]) for i in range(1, 4)]
-        brands_from_frequent_words = [s for s in start_strings if s in brand_pool]
-        candidates += brands_from_frequent_words
+        start = " ".join(name.split()[:4])
+        for brand in brand_pool:
+            is_brand_in_string = services.partial_string_search(start, brand)
+            if is_brand_in_string:
+                candidates += brand
+                if start not in brand_pool:
+                    print(start, brand)
+
 
     return candidates
 

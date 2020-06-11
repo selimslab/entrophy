@@ -6,3 +6,4 @@ from .json_util import *
 from .name_cleaner import *
 from .token_util import *
 from .collections_util import *
+from .partial_match import partial_string_search

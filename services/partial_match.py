@@ -38,7 +38,7 @@ def compare_tokensets(window_tokens: list, needle_tokens: list) -> bool:
     return True
 
 
-def partial_string_search(haystack: str, needle: str) -> Union[str, None, bool]:
+def partial_string_search(haystack: str, needle: str) -> bool:
     """
     as long as there is a substring with
     1. the same number of tokens,
@@ -51,7 +51,7 @@ def partial_string_search(haystack: str, needle: str) -> Union[str, None, bool]:
     #  Aranacak olan subcat, brand vs. 2 ve daha fazla kelimeli olmalı.
     #  Örnek: Loreal Paris, Tuvalet Kağıdı
     if len(needle_tokens) < 2:
-        return
+        return False
 
     haystack_tokens = haystack.split()
 
@@ -74,8 +74,6 @@ def partial_string_search(haystack: str, needle: str) -> Union[str, None, bool]:
                 return True
         else:
             print(window_tokens, needle_tokens, False)
-
-
 
     return False
 
