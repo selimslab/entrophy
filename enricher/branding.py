@@ -12,7 +12,7 @@ from freq import get_brand_freq
 
 
 def add_brand(
-        products: List[dict], brand_original_to_clean: dict, brand_pool: set
+    products: List[dict], brand_original_to_clean: dict, brand_pool: set
 ) -> List[dict]:
     brand_freq: dict = get_brand_freq(products, brand_original_to_clean)
     brand_pool_sorted = services.sort_from_long_to_short(brand_pool)
@@ -42,8 +42,7 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
             window_frequencies.update(sliding_windows)
 
     most_frequent_start_strings = {
-        s for s, count in window_frequencies.items()
-        if count > 42
+        s for s, count in window_frequencies.items() if count > 42
     }
 
     # OrderedDict(Counter(groups).most_common())
@@ -72,7 +71,7 @@ def check_partial(brand_pool_sorted, to_partial_search):
 
 
 def get_brand_candidates(
-        product: dict, brand_pool: set, brand_pool_sorted: list
+    product: dict, brand_pool: set, brand_pool_sorted: list
 ) -> set:
     """
     find brand first

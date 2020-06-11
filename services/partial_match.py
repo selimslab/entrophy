@@ -61,7 +61,7 @@ def partial_string_search(haystack: str, needle: str) -> bool:
     for start in range(len(haystack_tokens) - n + 1):
         # Aranacak olan token, aranan yerde aynı sıralama ile geçmeli.
         # this windowing strategy ensures the order
-        window_tokens = haystack_tokens[start: start + n]
+        window_tokens = haystack_tokens[start : start + n]
         # found
         if window_tokens == needle_tokens:
             return True
@@ -85,7 +85,12 @@ def pre_test_match_partially():
     ]
     for (haystack, needle, expected) in test_cases:
         try:
-            assert partial_string_search(services.clean_string(haystack), services.clean_string(needle)) == expected
+            assert (
+                partial_string_search(
+                    services.clean_string(haystack), services.clean_string(needle)
+                )
+                == expected
+            )
         except AssertionError as e:
             print(e)
 
