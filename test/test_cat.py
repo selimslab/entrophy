@@ -36,7 +36,7 @@ def test_cat():
 
     pprint(subcats)
 
-    subcats = [services.clean_name(c).split() for c in subcats if c]
+    subcats = [services.clean_string(c).split() for c in subcats if c]
     subcats = services.collections_util.flatten(subcats)
     cat_freq = collections.Counter(subcats)
 

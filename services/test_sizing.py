@@ -38,7 +38,7 @@ def test_sizing():
 
     for case, answer in test_cases:
         try:
-            clean_name = services.clean_name(case)
+            clean_name = services.clean_string(case)
             result = size_finder.get_digits_unit_size(clean_name)
             try:
                 assert answer == tuple(result[:2])

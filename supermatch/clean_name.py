@@ -19,7 +19,7 @@ def tokenize(s):
 
 
 def replace_size(id, name):
-    name = services.clean_name(name)
+    name = services.clean_string(name)
     if not name:
         return
 

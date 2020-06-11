@@ -4,7 +4,8 @@ from typing import List
 import services
 
 
-def clean_name(name: str) -> str:
+## TODO refactor
+def clean_string(name: str) -> str:
     """
     replace turkish chars
     allowed chars are a-z A-Z 0-9 and , . * are, remove all else
@@ -16,12 +17,12 @@ def clean_name(name: str) -> str:
     # replace accented chars with their base forms
     name = (
         name.lower()
-        .replace("ı", "i")
-        .replace("&", " ")
-        .replace("-", " ")
-        .replace("/", " ")
-        .replace(",", ".")
-        .replace("*", " * ")
+            .replace("ı", "i")
+            .replace("&", " ")
+            .replace("-", " ")
+            .replace("/", " ")
+            .replace(",", ".")
+            .replace("*", " * ")
     )
     name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
     allowed_chars = re.compile("[^a-zA-Z0-9,.* ]")
@@ -44,9 +45,9 @@ def clean_name(name: str) -> str:
 
 
 def clean_list_of_strings(l: List[str]):
-    return [clean_name(x) for x in l]
+    return [clean_string(x) for x in l]
 
 
 if __name__ == "__main__":
-    x = clean_name("eti̇ peti̇to")
+    x = clean_string("eti̇ peti̇to")
     print(x)
