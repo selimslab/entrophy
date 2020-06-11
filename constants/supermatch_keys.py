@@ -1,5 +1,4 @@
 PRICES = "prices"
-SUBS = "subs"
 
 BEST_PRICE = "best_price"
 MARKETS = "markets"
