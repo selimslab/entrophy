@@ -1,6 +1,16 @@
 import services
 import constants as keys
-from paths import  output_dir
+from paths import output_dir
+
+
+def summarize(products):
+    summary_keys = {keys.CLEAN_NAMES, keys.BRAND, keys.SUB_BRAND, keys.SUBCAT}
+    summary = [services.filter_keys(doc, summary_keys) for doc in products]
+    for doc in summary:
+        doc["names"] = list(set(doc.pop(keys.CLEAN_NAMES)))[:3]
+
+    summary = [services.remove_null_dict_values(doc) for doc in summary]
+    return summary
 
 
 def inspect_results(docs):
@@ -19,9 +29,10 @@ def inspect_results(docs):
     ]
     services.save_json(output_dir / "with_brand_and_sub.json", with_brand_and_sub)
 
+    """
     brands_in_results = [doc.get(keys.BRAND) for doc in docs]
     subcats_in_results = [doc.get(keys.SUBCAT) for doc in docs]
-
+      
     services.save_json(
         output_dir / "brands_in_results.json",
         sorted(services.dedup_denull(brands_in_results)),
@@ -30,6 +41,8 @@ def inspect_results(docs):
         output_dir / "subcats_in_results.json",
         sorted(services.dedup_denull(subcats_in_results)),
     )
+    
+    """
 
     with_brand = services.count_fields(docs, keys.BRAND)
     with_sub = services.count_fields(docs, keys.SUBCAT)

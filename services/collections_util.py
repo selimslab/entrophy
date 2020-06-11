@@ -84,6 +84,10 @@ def count_fields(docs: List[dict], target_key: str):
 ######### List util
 
 
+def sort_from_long_to_short(it: Iterable) -> list:
+    return sorted(list(it), key=len, reverse=True)
+
+
 def get_n_most_common_list_elements(l: list, n: int) -> list:
     return [pair[0] for pair in Counter(l).most_common(n)]
 

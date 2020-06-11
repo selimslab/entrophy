@@ -33,9 +33,22 @@ color = {
     "yesil",
 }
 
-stopwords = {"ve", "ile", "for", "icin", "veya", "li", "lu", "ml", "gr", "kg", "lt"}
-
-plural = ["leri", "lari", "ler", "lar"]
+stopwords = {
+    "ve",
+    "and",
+    "ile",
+    "adet",
+    "for",
+    "icin",
+    "veya",
+    "li",
+    "lu",
+    "ml",
+    "gr",
+    "kg",
+    "lt",
+}
+plural = ["ler", "lar"]
 
 
 def remove_a_list_of_strings(s: str, to_remove: list):

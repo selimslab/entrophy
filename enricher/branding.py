@@ -8,15 +8,19 @@ import services
 import constants as keys
 from paths import output_dir
 
-
 from freq import get_brand_freq
 
 
-def add_brand(products: List[dict], brand_original_to_clean: dict, brand_pool: set) -> List[dict]:
+def add_brand(
+    products: List[dict], brand_original_to_clean: dict, brand_pool: set
+) -> List[dict]:
     brand_freq: dict = get_brand_freq(products, brand_original_to_clean)
-    for product in products:
-        brand_candidates = get_brand_candidates(product, brand_pool)
-        product[keys.BRAND_CANDIDATES] = dict(Counter(brand_candidates))
+    brand_pool_sorted = services.sort_from_long_to_short(brand_pool)
+    for product in tqdm(products):
+        brand_candidates: set = get_brand_candidates(
+            product, brand_pool, brand_pool_sorted
+        )
+        product[keys.BRAND_CANDIDATES] = list(brand_candidates)
 
         the_most_frequent_brand = select_brand(brand_candidates, brand_freq)
         product[keys.BRAND] = the_most_frequent_brand
@@ -72,31 +76,44 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
     return brand_pool
 
 
-def get_brand_candidates(sku: dict, brand_pool: set) -> list:
+def get_brand_candidates(
+    product: dict, brand_pool: set, brand_pool_sorted: list
+) -> set:
     """
     find brand first
 
     there only a few possible cats for this brand
     indexes should reflect that too
     """
-    candidates = []
-    clean_names = sku.get(keys.CLEAN_NAMES, [])
+    brand_candidates = set()
+    clean_names = product.get(keys.CLEAN_NAMES, [])
+
+    # O(ok + (len(names)-ok)*len(brand_pool))
 
     # instead of searching every possible brand in name, we search parts of name in brands set
+    to_partial_search = set()
     for name in clean_names:
         # brand is in first 4 tokens mostly
-        start = " ".join(name.split()[:4])
-        for brand in brand_pool:
-            is_brand_in_string = services.partial_string_search(start, brand)
-            if is_brand_in_string:
-                candidates += brand
-                if start not in brand_pool:
-                    print(start, brand)
+        start_strings = services.string_to_extending_windows(name, 4)
+        for s in start_strings:
+            if s in brand_pool:
+                brand_candidates.add(s)
+            else:
+                to_partial_search.add(s)
 
-    return candidates
+    if not brand_candidates and to_partial_search:
+        for brand in brand_pool_sorted:
+            if brand in brand_candidates:
+                continue
+            for s in to_partial_search:
+                if services.partial_string_search(s, brand):
+                    brand_candidates.add(s)
+                    print((s, brand))
+
+    return brand_candidates
 
 
-def select_brand(brand_candidates, brand_freq):
+def select_brand(brand_candidates: set, brand_freq: dict) -> str:
     brand_candidates_with_freq = {
         brand: brand_freq.get(brand, 0) for brand in set(brand_candidates)
     }

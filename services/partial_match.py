@@ -61,19 +61,15 @@ def partial_string_search(haystack: str, needle: str) -> bool:
         # Aranacak olan token, aranan yerde aynı sıralama ile geçmeli.
         # this windowing strategy ensures the order
         window_tokens = haystack_tokens[start : start + n]
-        print()
         # found
         if window_tokens == needle_tokens:
             return True
 
-        ok = is_eligible_tokensets(window_tokens, needle_tokens)
-        if ok:
+        if is_eligible_tokensets(window_tokens, needle_tokens):
             is_found = compare_tokensets(window_tokens, needle_tokens)
-            print(window_tokens, needle_tokens, is_found)
+            # print(window_tokens, needle_tokens, is_found)
             if is_found:
                 return True
-        else:
-            print(window_tokens, needle_tokens, False)
 
     return False
 
@@ -96,4 +92,5 @@ def pre_test_match_partially():
             print(e)
 
 
-pre_test_match_partially()
+if __name__ == "__main__":
+    pre_test_match_partially()

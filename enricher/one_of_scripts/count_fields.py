@@ -1,5 +1,4 @@
 from pprint import pprint
-from collections import Counter, OrderedDict
 from data_services.mongo.collections import items_collection
 import constants as keys
 import services
