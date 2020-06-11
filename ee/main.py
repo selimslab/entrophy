@@ -3,7 +3,7 @@ from typing import List
 
 import services
 import constants as keys
-from paths import skus_path
+import paths as paths
 
 from preprocess import filter_docs, group_products
 from original_to_clean import get_brand_original_to_clean, get_subcat_original_to_clean
@@ -39,14 +39,16 @@ def enrich_product_data(products: List[dict]):
     )
 
     brand_pool = get_brand_pool(products, possible_subcats_by_brand)
-    # services.save_json(output_dir / "brand_pool.json", sorted(list(brand_pool)))
+    services.save_json(paths.brand_pool, sorted(list(brand_pool)))
     products = add_brand(products, brand_original_to_clean, brand_pool)
 
     products = add_subcat(products, subcat_original_to_clean, possible_subcats_by_brand)
 
+    return products
+
 
 def prepare_input():
-    skus: list = services.read_json(skus_path).values()
+    skus: list = services.read_json(paths.skus).values()
     filtered_skus = filter_docs(skus)
     products = group_products(filtered_skus)
     return products
@@ -55,5 +57,7 @@ def prepare_input():
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     products = prepare_input()
-    enrich_product_data(products)
+    products_with_brand_and_subcat = enrich_product_data(products)
+    services.save_json(paths.products_with_brand_and_subcat, products_with_brand_and_subcat)
+
     print("done!")
