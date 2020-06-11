@@ -36,15 +36,11 @@ def get_brand_candidates(sku: dict, brand_pool: set) -> list:
 
     clean_names = sku.get(keys.CLEAN_NAMES, [])
 
-    # this search is 2 parts to make it faster,
-    # we don't have to search every possible brand in name
+    # instead of searching every possible brand in name, we search parts of name in brands set
     for name in clean_names:
-        # search single-word brands
-        # brand is in first two tokens mostly
-
+        # brand is in first 4 tokens mostly
         name_tokens = name.split()
         start_strings = [" ".join(name_tokens[:i]) for i in range(1, 4)]
-        # search multiple-word brands
         brands_from_frequent_words = [s for s in start_strings if s in brand_pool]
         candidates += brands_from_frequent_words
 
