@@ -17,23 +17,24 @@ def is_eligible_tokensets(window_tokens: list, needle_tokens: list) -> bool:
 
 
 def compare_tokensets(window_tokens: list, needle_tokens: list) -> bool:
-    diff = []
+    # diff = []
     tolerate_single_letter = True
     for window_token, needle_token in zip(window_tokens, needle_tokens):
-        # print("diff", diff)
         if window_token == needle_token:
             continue
-        elif window_token[0] == needle_token[0]:
-            diff.append((window_token, needle_token))
-            #  tolerate max 1 single-letter-token diff
-            # Aranan yerde bir harfli olan kelimeyi doldurma toleransımız sadece 1(bir).
-            if len(window_token) == 1:
-                if not tolerate_single_letter:
-                    return False
-                tolerate_single_letter = False
         else:
-            # tokens are different, so does first letters
-            return False
+            min_token_len = min(len(window_token), len(needle_token))
+            if window_token[:min_token_len] == needle_token[:min_token_len]:
+                # diff.append((window_token, needle_token))
+                #  tolerate max 1 single-letter-token diff
+                # Aranan yerde bir harfli olan kelimeyi doldurma toleransımız sadece 1(bir).
+                if len(window_token) == 1:
+                    if not tolerate_single_letter:
+                        return False
+                    tolerate_single_letter = False
+            else:
+                # tokens are different, so does first parts
+                return False
 
     return True
 
@@ -60,7 +61,7 @@ def partial_string_search(haystack: str, needle: str) -> bool:
     for start in range(len(haystack_tokens) - n + 1):
         # Aranacak olan token, aranan yerde aynı sıralama ile geçmeli.
         # this windowing strategy ensures the order
-        window_tokens = haystack_tokens[start : start + n]
+        window_tokens = haystack_tokens[start: start + n]
         # found
         if window_tokens == needle_tokens:
             return True
