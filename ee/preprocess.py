@@ -5,8 +5,6 @@ import services
 import constants as keys
 
 
-
-
 def filter_docs(docs):
     relevant_keys = {
         keys.CATEGORIES,
@@ -43,5 +41,3 @@ def group_products(filtered_skus: List[dict]) -> List[dict]:
         products.append(product)
 
     return products
-
-

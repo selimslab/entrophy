@@ -10,10 +10,17 @@ from preprocess import filter_docs, group_products
 from original_to_clean import get_brand_original_to_clean, get_subcat_original_to_clean
 from freq import get_brand_freq, get_subcat_freq
 from branding import get_brand_pool, get_brand_candidates, select_brand
-from subcat import cat_to_subcats
+from subcats import (
+    cat_to_subcats,
+    get_possible_subcats_for_this_product,
+    get_subcat_candidates,
+    select_subcat
+)
 
 
-def get_possible_subcats_by_brand(products, brand_original_to_clean, subcat_original_to_clean):
+def get_possible_subcats_by_brand(
+        products, brand_original_to_clean, subcat_original_to_clean
+):
     """ which subcats are possible for this brand
 
     "ariel": [
@@ -60,9 +67,9 @@ def refresh(skus):
 
     brand_freq = get_brand_freq(products, brand_original_to_clean)
     subcat_freq = get_subcat_freq(products, subcat_original_to_clean)
-    possible_subcats_by_brand = get_possible_subcats_by_brand(products,
-                                                              brand_original_to_clean,
-                                                              subcat_original_to_clean)
+    possible_subcats_by_brand = get_possible_subcats_by_brand(
+        products, brand_original_to_clean, subcat_original_to_clean
+    )
 
     brand_pool = get_brand_pool(products, possible_subcats_by_brand)
     services.save_json(output_dir / "brand_pool.json", sorted(list(brand_pool)))
@@ -74,6 +81,18 @@ def refresh(skus):
 
         the_most_frequent_brand = select_brand(brand_candidates, brand_freq)
         product[keys.BRAND] = the_most_frequent_brand
+
+    # add subcat
+    for product in products:
+        possible_subcats_for_this_product = get_possible_subcats_for_this_product(
+            product, possible_subcats_by_brand, subcat_original_to_clean
+        )
+        subcat_candidates = get_subcat_candidates(
+            product, possible_subcats_for_this_product
+        )
+        if subcat_candidates:
+            product[keys.SUBCAT_CANDIDATES] = dict(Counter(subcat_candidates))
+            product[keys.SUBCAT] = select_subcat(subcat_candidates, subcat_freq)
 
 
 if __name__ == "__main__":

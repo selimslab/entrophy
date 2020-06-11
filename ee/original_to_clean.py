@@ -5,8 +5,6 @@ import services
 import constants as keys
 
 
-
-
 def get_brand_original_to_clean(products: List[dict]):
     logging.info("cleaning brands..")
     brand_original_to_clean = {}

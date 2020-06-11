@@ -49,11 +49,9 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
 
     to_filter_out = {"brn ", "markasiz", "erkek", "kadin"}
     brand_pool = {
-        b for b in brand_pool
-        if (len(b) > 2
-            and not any(bad in b for bad in to_filter_out)
-            )
-
+        b
+        for b in brand_pool
+        if (len(b) > 2 and not any(bad in b for bad in to_filter_out))
     }
 
     return brand_pool
