@@ -53,7 +53,6 @@ def add_brand_and_subcat(clean_products: List[dict]):
     """
     (
         brand_subcats_pairs,
-        sub_cat_market_pairs,
         brand_freq,
         subcat_freq,
     ) = create_indexes()
@@ -66,7 +65,7 @@ def add_brand_and_subcat(clean_products: List[dict]):
 
     # add subcat
     skus_with_brand_and_sub_cat = add_sub_cat_to_skus(
-        skus_with_brands, brand_subcats_pairs, sub_cat_market_pairs, subcat_freq
+        skus_with_brands, brand_subcats_pairs, subcat_freq
     )
 
     return skus_with_brand_and_sub_cat

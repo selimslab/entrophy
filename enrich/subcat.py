@@ -36,7 +36,7 @@ def clean_sub_cats(cats: list) -> list:
 
 
 def select_subcat(
-    sub_cat_candidates: list, sub_cat_market_pairs: Dict[str, list], subcat_freq: dict
+    sub_cat_candidates: list, subcat_freq: dict
 ):
     """ start from the longest and check if a subcat is in a prio. market, if not such found, return longest  """
     if sub_cat_candidates:
@@ -50,7 +50,6 @@ def select_subcat(
 def add_sub_cat_to_skus(
     skus: List[dict],
     brand_subcats_pairs: Dict[str, list],
-    sub_cat_market_pairs: Dict[str, list],
     subcat_freq: dict,
 ) -> List[dict]:
     """
@@ -103,7 +102,7 @@ def add_sub_cat_to_skus(
         sku[keys.SUBCAT_CANDIDATES] = dict(Counter(sub_cat_candidates))
         if sub_cat_candidates:
             sku[keys.SUBCAT] = select_subcat(
-                sub_cat_candidates, sub_cat_market_pairs, subcat_freq
+                sub_cat_candidates, subcat_freq
             )
 
     return skus

@@ -28,7 +28,6 @@ def index_brands_and_subcats() -> tuple:
 
     brand_subcats_pairs = defaultdict(set)
     clean_brand_original_brand_pairs = {}
-    sub_cat_market_pairs = defaultdict(set)
     brand_freq = Counter()  # how many items has been given this  brand by a vendor
     subcat_freq = Counter()
 
@@ -48,9 +47,6 @@ def index_brands_and_subcats() -> tuple:
         clean_subcats = services.clean_list_of_strings(subcats)
         clean_subcats = [sub for sub in clean_subcats if sub]
         subcat_freq.update(clean_subcats)
-
-        for sub in clean_subcats:
-            sub_cat_market_pairs[sub].add(market)
 
         for b in brandset:
             brand_subcats_pairs[b].update(clean_subcats)
@@ -79,7 +75,6 @@ def index_brands_and_subcats() -> tuple:
     return (
         brand_subcats_pairs,
         clean_brand_original_brand_pairs,
-        sub_cat_market_pairs,
         brand_freq,
         subcat_freq,
     )
@@ -89,7 +84,6 @@ def create_indexes():
     (
         brand_subcats_pairs,
         clean_brand_original_brand_pairs,
-        sub_cat_market_pairs,
         brand_freq,
         subcat_freq,
     ) = index_brands_and_subcats()
@@ -99,15 +93,10 @@ def create_indexes():
     }
     services.save_json(output_dir / "brand_freq.json", brand_freq)
 
-    sub_cat_market_pairs = services.convert_dict_set_values_to_list(
-        sub_cat_market_pairs
-    )
-    services.save_json(output_dir / "sub_cat_market_pairs.json", sub_cat_market_pairs)
-
     brand_subcats_pairs = services.convert_dict_set_values_to_list(brand_subcats_pairs)
     services.save_json(
         output_dir / "clean_brand_original_brand_pairs.json",
         clean_brand_original_brand_pairs,
     )
 
-    return brand_subcats_pairs, sub_cat_market_pairs, brand_freq, subcat_freq
+    return brand_subcats_pairs, brand_freq, subcat_freq

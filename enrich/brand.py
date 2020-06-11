@@ -46,7 +46,6 @@ def get_brand_candidates(sku: dict, brand_pool: set) -> list:
                 if start not in brand_pool:
                     print(start, brand)
 
-
     return candidates
 
 
@@ -80,7 +79,7 @@ def get_frequent_start_strings_as_brands(names: List[list]) -> set:
 
 
 def add_brand_to_skus(
-    clean_products: List[dict], brand_subcats_pairs: dict, brand_freq: dict
+        clean_products: List[dict], brand_subcats_pairs: dict, brand_freq: dict
 ) -> List[dict]:
     """
     0. cat and subcat are different things, beware
