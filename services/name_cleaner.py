@@ -4,6 +4,15 @@ from typing import List
 import services
 
 
+def remove_whitespace(s: str):
+    remove_whitespace_pattern = re.compile(r"\s+")
+    return re.sub(remove_whitespace_pattern, " ", str(s)).strip()
+
+
+def test_remove_whitespace():
+    assert remove_whitespace("a  b   c") == "a b c"
+
+
 ## TODO refactor
 def clean_string(name: str) -> str:
     """
@@ -17,19 +26,18 @@ def clean_string(name: str) -> str:
     # replace accented chars with their base forms
     name = (
         name.lower()
-        .replace("ı", "i")
-        .replace("&", " ")
-        .replace("-", " ")
-        .replace("/", " ")
-        .replace(",", ".")
-        .replace("*", " * ")
+            .replace("ı", "i")
+            .replace("&", " ")
+            .replace("-", " ")
+            .replace("/", " ")
+            .replace(",", ".")
+            .replace("*", " * ")
     )
     name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
     allowed_chars = re.compile("[^a-zA-Z0-9,.* ]")
     name = allowed_chars.sub("", name)
 
-    remove_whitespace_pattern = re.compile(r"\s+")
-    name = re.sub(remove_whitespace_pattern, " ", str(name)).strip()
+    name = remove_whitespace(name)
 
     # only size can have .
     tokens = []
@@ -44,10 +52,9 @@ def clean_string(name: str) -> str:
     return name
 
 
-def clean_list_of_strings(l: List[str]):
-    return [clean_string(x) for x in l]
+def test_clean_string():
+    assert clean_string("Ülker   şğ  çİ") == "ulker sg ci"
 
 
 if __name__ == "__main__":
-    x = clean_string("eti̇ peti̇to")
-    print(x)
+    ...

@@ -83,12 +83,9 @@ def pre_test_match_partially():
         ("423 Tuv Kağıdı 545745", "Tuvalet Kağıdı", True),
         (" Sıvı Bulaşık Deterjanı ", "Sıvı B Deterjan", True),
     ]
-    for case in test_cases:
-        (haystack, needle) = services.clean_list_of_strings(list(case[:2]))
-        expected = case[2]
+    for (haystack, needle, expected) in test_cases:
         try:
-            is_found = partial_string_search(haystack, needle) == expected
-            assert is_found
+            assert partial_string_search(services.clean_string(haystack), services.clean_string(needle)) == expected
         except AssertionError as e:
             print(e)
 
