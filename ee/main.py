@@ -9,7 +9,7 @@ from paths import input_dir, output_dir
 from preprocess import filter_docs, group_products
 from original_to_clean import get_brand_original_to_clean, get_subcat_original_to_clean
 from freq import get_brand_freq, get_subcat_freq
-from branding import get_brand_pool
+from branding import get_brand_pool, get_brand_candidates, select_brand
 from subcat import cat_to_subcats
 
 
@@ -65,7 +65,15 @@ def refresh(skus):
                                                               subcat_original_to_clean)
 
     brand_pool = get_brand_pool(products, possible_subcats_by_brand)
-    # services.save_json(output_dir / "brand_pool.json", sorted(list(brand_pool)))
+    services.save_json(output_dir / "brand_pool.json", sorted(list(brand_pool)))
+
+    # add brand
+    for product in products:
+        brand_candidates = get_brand_candidates(product, brand_pool)
+        product[keys.BRAND_CANDIDATES] = dict(Counter(brand_candidates))
+
+        the_most_frequent_brand = select_brand(brand_candidates, brand_freq)
+        product[keys.BRAND] = the_most_frequent_brand
 
 
 if __name__ == "__main__":
