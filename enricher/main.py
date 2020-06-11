@@ -62,3 +62,10 @@ if __name__ == "__main__":
     )
 
     print("done!")
+    """
+    remove sub tokens of a string, too
+    
+    plural for subcat only 
+    
+    restrict color by brand or subcat 
+    """
