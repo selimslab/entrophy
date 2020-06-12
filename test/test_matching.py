@@ -1,20 +1,14 @@
 import logging
 import sys
 import itertools
+import pathlib
 
-import services
 import constants as keys
 import data_services
 import services
+
 from supermatch.main import create_matching
-from test import paths
-
-from supermatch.syncer import Syncer
 from supermatch import preprocess
-
-from pprint import pprint
-
-import pathlib
 
 cwd = pathlib.Path.cwd()
 input_dir = cwd / "in"
