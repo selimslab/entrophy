@@ -1,21 +1,10 @@
 import re
-from services.string_cleaner import remove_whitespace
-from services.size_util import get_digits, create_size_patterns, convert_to_standard
+from services.size_util import get_digits, create_size_patterns, convert_to_standard, max_digits
 
 
 class SizeFinder:
     def __init__(self):
         self.patterns = create_size_patterns()
-        self.max_digits = {
-            "yıkama": 100,
-            "tablet": 400,
-            "adet": 1000,
-            "lt": 100,
-            "kg": 100,
-            "gr": 40000,
-            "ml": 40000,
-            "cl": 10000,
-        }
 
     def get_first_match(self, s: str):
         """
@@ -40,19 +29,9 @@ class SizeFinder:
         if match_and_unit:
             match, unit = match_and_unit
             digits = get_digits(match)
-            if digits and digits < self.max_digits.get(unit, 1000):
+            if digits and digits < max_digits.get(unit, 1000):
                 digits, unit = convert_to_standard(digits, unit)
                 return digits, unit
-
-    def size_pattern_to_digit_unit(self, size_pattern: str, unit: str) -> tuple:
-        """
-        find digits
-        convert unit to standard unit
-        """
-        digits = get_digits(size_pattern)
-        if digits and digits < self.max_digits.get(unit, 1000):
-            digits, unit = convert_to_standard(digits, unit)
-            return digits, unit
 
     def get_size_unit_tuples(self, s: str) -> list:
         """

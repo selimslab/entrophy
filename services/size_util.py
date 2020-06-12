@@ -104,3 +104,26 @@ def convert_to_standard(digits, unit):
         digits = int(digits)
 
     return digits, unit
+
+
+max_digits = {
+    "yıkama": 100,
+    "tablet": 400,
+    "adet": 1000,
+    "lt": 100,
+    "kg": 100,
+    "gr": 40000,
+    "ml": 40000,
+    "cl": 10000,
+}
+
+
+def size_pattern_to_digit_unit(size_pattern: str, unit: str) -> tuple:
+    """
+    find digits
+    convert unit to standard unit
+    """
+    digits = get_digits(size_pattern)
+    if digits and digits < max_digits.get(unit, 1000):
+        digits, unit = convert_to_standard(digits, unit)
+        return digits, unit

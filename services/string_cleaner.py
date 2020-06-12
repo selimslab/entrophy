@@ -1,5 +1,7 @@
 import re
 import unicodedata
+import logging
+
 from typing import List, Iterable
 import services
 
@@ -7,17 +9,8 @@ import services
 def remove_patterns_from_string(s: str, to_remove: Iterable) -> str:
     for bad in to_remove:
         s = s.replace(bad, "")
-    s = remove_whitespace(s)
+    s = services.remove_whitespace(s)
     return s
-
-
-def remove_whitespace(s: str):
-    remove_whitespace_pattern = re.compile(r"\s+")
-    return re.sub(remove_whitespace_pattern, " ", str(s)).strip()
-
-
-def test_remove_whitespace():
-    assert remove_whitespace("a  b   c") == "a b c"
 
 
 def normalize(s: str):
@@ -48,6 +41,41 @@ def replace_chars(s: str):
     )
 
 
+def plural_to_singular(s: str):
+    first_part, last_4 = s[:-4], s[-4:]
+    plural = ["ler", "lar"]
+
+    for p in plural:
+        if p in last_4:
+            last_4 = last_4.replace(p, "")
+
+    return first_part + last_4
+
+
+def test_plural_to_singular():
+    assert plural_to_singular("selimleri") == "selim"
+    assert plural_to_singular("selimlar") == "selim"
+    assert plural_to_singular("selimlari") == "selim"
+
+
+def remove_stopwords(tokens: list) -> list:
+    stopwords = {"ml", "gr", "kg", "adet", "ve", "and", "ile", "for", "icin"}
+    return [t for t in tokens if t not in stopwords]
+
+
+def is_single_letter(s: str) -> bool:
+    return len(s) > 1 or s.isdigit()
+
+
+def is_barcode(s: str) -> bool:
+    return s.isdigit() and len(s) in {8, 10, 11, 13}
+
+
+def is_mixed_letters_and_words(s: str):
+    """ nonsense like adas42342 """
+    return len(s) > 5 and (s.isalnum() and not s.isdigit() and not s.isalpha())
+
+
 def clean_string(name: str) -> str:
     """
     replace turkish chars
@@ -62,7 +90,7 @@ def clean_string(name: str) -> str:
     name = normalize(name)
     allowed_chars = re.compile("[^a-zA-Z0-9,. ]")
     name = allowed_chars.sub("", name)
-    name = remove_whitespace(name)
+    name = services.remove_whitespace(name)
     return name
 
 
