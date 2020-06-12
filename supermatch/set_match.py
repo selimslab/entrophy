@@ -4,17 +4,30 @@ import itertools
 import collections
 from tqdm import tqdm
 
-from .clean_name import tokenize
 import services
+import constants as keys
+
+from .clean_name import remove_stopwords
 
 
 # TODO these 2 functions could be refactored to 4-5 functions and simplified
 
 
+def filter_tokens(s):
+    try:
+        tokens = s.split()
+        tokens = remove_stopwords(tokens)
+        tokens = set(t for t in set(tokens) if len(t) > 1 or t.isdigit())
+        return tokens
+    except AttributeError as e:
+        logging.error(e)
+        return set()
+
+
 def match_singles(self, id, name):
     """ connect single name to a group """
 
-    token_set = tokenize(name)
+    token_set = filter_tokens(name)
     candidate_groups = [self.inverted_index.get(token, []) for token in token_set]
     candidate_groups = set(itertools.chain(*candidate_groups))
     if not candidate_groups:
@@ -113,7 +126,7 @@ def set_match(self):
         ]
         names = [n for n in names if n]
         self.group_names[tuple(id_group)] = names
-        token_sets = [tokenize(name) for name in names]
+        token_sets = [filter_tokens(name) for name in names]
         if token_sets:
             commons = set.intersection(*token_sets)
             common_tokens[tuple(id_group)] = commons
@@ -128,15 +141,15 @@ def set_match(self):
 
     unmatched_ids = set(self.id_doc_pairs.keys()).difference(self.connected_ids)
     single_names = [
-        (id, self.id_doc_pairs.get(id).get("clean_name"))
-        for id in unmatched_ids
-        if "clone" not in id
+        (doc_id, self.id_doc_pairs.get(doc_id, {}).get(keys.CLEAN_NAME))
+        for doc_id in unmatched_ids
+        if "clone" not in doc_id
     ]
     logging.info("matching singles..")
-    # TODO here is a bottleneck
-    # this could be parallel but cloud server has problems with multiprocessing code
+    # TODO match_singles is a bottleneck
+    # this could be parallel but there are problems with multiprocessing code with class instances
     matched_names = [
-        match_singles(self, id, name) for id, name in tqdm(single_names) if name
+        match_singles(self, doc_id, clean_name) for doc_id, clean_name in tqdm(single_names) if clean_name
     ]
     matched_names = [m for m in matched_names if m]
 

@@ -6,9 +6,8 @@ import collections
 
 import constants as keys
 import services
-from .clean_name import add_clean_name
-from .promoted import promoted_match
 from .test_set_match import test_set_match
+from .promoted import promoted_match
 from .set_match import set_match
 
 
@@ -47,7 +46,9 @@ class SKUGraphCreator(services.GenericGraph):
         self.stages = {**dict.fromkeys(self.connected_ids, "barcode")}
 
     def exact_name_match(self):
-        """ merge barcode-less items with the same name """
+        """ merge barcode-less items with the same name
+        TODO iff they have the same size
+        """
         name_barcode_pairs = collections.defaultdict(set)
         name_id_pairs = collections.defaultdict(set)
         for doc_id, doc in self.id_doc_pairs.items():
@@ -76,8 +77,6 @@ class SKUGraphCreator(services.GenericGraph):
 
         print("barcode match..")
         self.barcode_match()
-
-        add_clean_name(self.id_doc_pairs)
 
         print("exact_name_match..")
         self.exact_name_match()
