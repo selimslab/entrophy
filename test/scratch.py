@@ -49,7 +49,6 @@ def barz():
     return x
 
 
-
 if __name__ == "__main__":
     res = itertools.islice(d.items(), 1)
     print(dict(res))

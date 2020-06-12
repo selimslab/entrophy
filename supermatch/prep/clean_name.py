@@ -18,12 +18,16 @@ def name_to_clean(doc_id, name):
     clean_name = services.clean_string(name)
     size_unit_tuples = size_finder.get_size_unit_tuples(clean_name)
     size_patterns_to_remove = [pattern for pattern, unit in size_unit_tuples]
-    clean_name = services.remove_patterns_from_string(clean_name, size_patterns_to_remove)
+    clean_name = services.remove_patterns_from_string(
+        clean_name, size_patterns_to_remove
+    )
     tokens = clean_name.split()
     tokens = services.remove_stopwords(tokens)
-    tokens = [t for t in tokens
-              if not services.is_single_letter(t) and not services.is_barcode(t)
-              ]
+    tokens = [
+        t
+        for t in tokens
+        if not services.is_single_letter(t) and not services.is_barcode(t)
+    ]
     clean_name = " ".join(tokens)
     clean_name = services.remove_non_alpha_numeric_chars(clean_name)
     clean_name = services.remove_whitespace(clean_name)

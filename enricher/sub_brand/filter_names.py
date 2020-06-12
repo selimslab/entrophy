@@ -58,12 +58,7 @@ def remove_a_list_of_strings(s: str, to_remove: list):
 
 
 def is_known_token(s: str):
-    return (
-            services.is_barcode(s)
-            or s in gender
-            or s in color
-            or s in stopwords
-    )
+    return services.is_barcode(s) or s in gender or s in color or s in stopwords
 
 
 def filter_tokens(name: str):

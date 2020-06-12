@@ -1,5 +1,10 @@
 import re
-from services.size_util import get_digits, create_size_patterns, convert_to_standard, max_digits
+from services.size_util import (
+    get_digits,
+    create_size_patterns,
+    convert_to_standard,
+    max_digits,
+)
 
 
 class SizeFinder:

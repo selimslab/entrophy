@@ -31,12 +31,13 @@ def index_groups(self, id_groups):
 
     for id_group in tqdm(id_groups):
         group = dict()
-        docs = [self.id_doc_pairs.get(doc_id, {}) for doc_id in id_group if "clone" not in doc_id]
-
-        names = [
-            doc.get(keys.CLEAN_NAME)
-            for doc in docs
+        docs = [
+            self.id_doc_pairs.get(doc_id, {})
+            for doc_id in id_group
+            if "clone" not in doc_id
         ]
+
+        names = [doc.get(keys.CLEAN_NAME) for doc in docs]
         names = [n for n in names if n]
 
         token_sets = [set(name.split()) for name in names]
@@ -55,8 +56,7 @@ def index_groups(self, id_groups):
         for token in all_tokens:
             self.inverted_index[token].add(tuple(id_group))
 
-        size_tuples = [doc.get(keys.DIGIT_UNIT_TUPLES)
-                       for doc in docs]
+        size_tuples = [doc.get(keys.DIGIT_UNIT_TUPLES) for doc in docs]
         size_tuples = set(services.flatten(size_tuples))
         group[keys.DIGIT_UNIT_TUPLES] = size_tuples
 
