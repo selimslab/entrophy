@@ -34,8 +34,6 @@ def get_matches(self, name: str) -> List[tuple]:
         if not group_tokens.issuperset(token_set):
             continue
 
-        ### diff_size = len(group_tokens.difference(token_set))
-
         # first common, if commons same, difference
         matches.add((len(group_common), id_group))
 
