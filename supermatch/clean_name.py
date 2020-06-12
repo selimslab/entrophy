@@ -36,7 +36,7 @@ def replace_size(id, name):
     return id, name, digits, unit, size_match
 
 
-def add_clean_name(id_doc_pairs, debug):
+def add_clean_name(id_doc_pairs):
     logging.info("add_clean_name..")
 
     to_clean = list()

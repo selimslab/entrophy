@@ -71,22 +71,19 @@ class SKUGraphCreator(services.GenericGraph):
                     self.stages.update({**dict.fromkeys(single_doc_ids, "exact_name")})
                     self.connected_ids.update(single_doc_ids)
 
-    def create_graph(self, debug=False):
+    def create_graph(self):
         self.init_sku_graph()
 
         print("barcode match..")
         self.barcode_match()
 
-        add_clean_name(self.id_doc_pairs, debug)
+        add_clean_name(self.id_doc_pairs)
 
-        if debug:
-            test_set_match(self)
-        else:
-            print("exact_name_match..")
-            self.exact_name_match()
+        print("exact_name_match..")
+        self.exact_name_match()
 
-            print("set match..")
-            set_match(self)
+        print("set match..")
+        set_match(self)
 
         print("promoted match..")
         promoted_match(self)

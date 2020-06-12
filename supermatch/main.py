@@ -10,9 +10,9 @@ import data_services
 import services
 
 
-def get_sku_groups(id_doc_pairs, debug):
+def get_sku_groups(id_doc_pairs):
     sku_graph_creator = SKUGraphCreator(id_doc_pairs)
-    graph_of_raw_docs, stages = sku_graph_creator.create_graph(debug)
+    graph_of_raw_docs, stages = sku_graph_creator.create_graph()
     groups_of_doc_ids = sku_graph_creator.create_connected_component_groups(
         graph_of_raw_docs
     )
@@ -58,7 +58,7 @@ def add_product_info(groups_of_sku_ids, skus):
     return skus
 
 
-def create_matching(id_doc_pairs: dict, debug=False) -> dict:
+def create_matching(id_doc_pairs: dict) -> dict:
     links_of_products = data_services.get_links_of_gratis_products(id_doc_pairs)
     # don't use gratis products for doc grouping
     id_doc_pairs = {
@@ -70,7 +70,7 @@ def create_matching(id_doc_pairs: dict, debug=False) -> dict:
     variants = (doc.get(keys.VARIANTS) for doc in id_doc_pairs.values())
     variants = [v for v in variants if v]
 
-    groups_of_doc_ids = get_sku_groups(id_doc_pairs, debug)
+    groups_of_doc_ids = get_sku_groups(id_doc_pairs)
     skus = reduce_docs(groups_of_doc_ids, id_doc_pairs)
 
     logging.info(f"skus # {len(skus)}")
