@@ -8,7 +8,6 @@ import services
 import constants as keys
 
 
-# TODO these 2 functions could be refactored to 4-5 functions and simplified
 def get_matches(self, name):
     token_set = name.split()
     candidate_groups = [self.inverted_index.get(token, []) for token in token_set]
@@ -22,28 +21,21 @@ def get_matches(self, name):
         # TODO iff same sizes
 
         group = self.group_info.get(id_group, {})
-
+        group_tokens = group.get("group_tokens", set())
         group_common = group.get("common_tokens", set())
-        if not group_common:
-            continue
 
         # single name must cover all common tokens of the group
         if not token_set.issuperset(group_common):
             continue
 
-        group_tokens = group.get("group_tokens", set())
-
         # the group  must cover all tokens of the single name
-
         if not group_tokens.issuperset(token_set):
             continue
 
-        common_set_size, diff_size = (
-            len(group_common),
-            len(group_tokens.difference(token_set)),
-        )
+        ### diff_size = len(group_tokens.difference(token_set))
+
         # first common, if commons same, difference
-        matches.add((common_set_size, id_group))
+        matches.add((len(group_common), id_group))
 
     return matches
 
@@ -61,7 +53,7 @@ def select_a_match(matches):
     return match
 
 
-def get_a_group_to_match(self, name):
+def search_a_group_to_connect(self, name):
     """ connect single name to a group """
 
     # a single name could be matched to multiple groups
@@ -77,6 +69,22 @@ def get_a_group_to_match(self, name):
 
 
 def prep(self, id_groups):
+    """
+    add group_info and inverted_index to the self
+
+    group_info : {
+        (member ids, ..) : {
+            tokens : set()
+            common_tokens: set()
+            DIGIT_UNIT_TUPLES: [ (75, "ml"), .. ]
+        }
+    }
+
+
+    inverted_index : {
+        token : set( (member_ids.. ), ..)
+    }
+    """
     logging.info("creating group_info and inverted index..")
 
     self.group_info = collections.defaultdict(dict)
@@ -91,8 +99,6 @@ def prep(self, id_groups):
             for doc in docs
         ]
         names = [n for n in names if n]
-
-        group["names"] = names
 
         token_sets = [set(name.split()) for name in names]
 
@@ -115,6 +121,31 @@ def prep(self, id_groups):
         group[keys.DIGIT_UNIT_TUPLES] = list(set(services.flatten(size_tuples)))
 
         self.group_info[tuple(id_group)] = group
+
+
+def add_edges_by_set_match(self, single_names):
+    logging.info("matching singles..")
+    # this could be parallel but there are problems with multiprocessing code with class instances
+    for doc_id, clean_name in tqdm(single_names):
+        if clean_name:
+            group_to_connect = search_a_group_to_connect(self, clean_name)
+            if group_to_connect:
+                # connect to single doc to the first element of id group,
+                # since the group is all connected, any member will do
+                nodes_to_connect = [(doc_id, group_to_connect[0])]
+                self.sku_graph.add_edges_from(nodes_to_connect)
+                self.connected_ids.add(doc_id)
+                self.stages[doc_id] = "set_match"
+
+
+def get_single_names(self):
+    unmatched_ids = set(self.id_doc_pairs.keys()).difference(self.connected_ids)
+    single_names = [
+        (doc_id, self.id_doc_pairs.get(doc_id, {}).get(keys.CLEAN_NAME))
+        for doc_id in unmatched_ids
+        if "clone" not in doc_id
+    ]
+    return single_names
 
 
 def set_match(self):
@@ -141,24 +172,7 @@ def set_match(self):
         for id_group in id_groups
         if all(id in self.connected_ids for id in id_group)
     ]
-
+    #
     prep(self, id_groups)
-
-    unmatched_ids = set(self.id_doc_pairs.keys()).difference(self.connected_ids)
-    single_names = [
-        (doc_id, self.id_doc_pairs.get(doc_id, {}).get(keys.CLEAN_NAME))
-        for doc_id in unmatched_ids
-        if "clone" not in doc_id
-    ]
-    logging.info("matching singles..")
-    # this could be parallel but there are problems with multiprocessing code with class instances
-    for doc_id, clean_name in tqdm(single_names):
-        if clean_name:
-            id_group = get_a_group_to_match(self, clean_name)
-            if id_group:
-                # connect to single doc to the first element of id group,
-                # since the group is all connected, any member will do
-                nodes_to_connect = [(doc_id, id_group[0])]
-                self.sku_graph.add_edges_from(nodes_to_connect)
-                self.connected_ids.add(doc_id)
-                self.stages[doc_id] = "set_match"
+    single_names = get_single_names(self)
+    add_edges_by_set_match(self, single_names)
