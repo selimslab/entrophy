@@ -21,7 +21,9 @@ def get_matches(self, name):
     for id_group in candidate_groups:
         # TODO iff same sizes
 
-        group_common = self.common_tokens.get(id_group, set())
+        group = self.group_info.get(id_group, {})
+
+        group_common = group.get("common_tokens", set())
         if not group_common:
             continue
 
@@ -29,16 +31,16 @@ def get_matches(self, name):
         if not token_set.issuperset(group_common):
             continue
 
-        group_all = self.group_tokens.get(id_group, set())
+        group_tokens = group.get("group_tokens", set())
 
         # the group  must cover all tokens of the single name
 
-        if not group_all.issuperset(token_set):
+        if not group_tokens.issuperset(token_set):
             continue
 
         common_set_size, diff_size = (
             len(group_common),
-            len(group_all.difference(token_set)),
+            len(group_tokens.difference(token_set)),
         )
         # first common, if commons same, difference
         matches.add(
@@ -47,7 +49,7 @@ def get_matches(self, name):
                 diff_size,
                 id_group,
                 tuple(group_common),
-                tuple(group_all.difference(token_set)),
+                tuple(group_tokens.difference(token_set)),
                 name,
                 tuple(self.group_names.get(id_group)),
             )
@@ -89,42 +91,21 @@ def match_singles(self, doc_id, name):
         group_names,
     ) = match
 
-    self.sku_graph.add_edges_from([(doc_id, id_group[0])])
+    # connect to single doc to the first element of id group,
+    # since the group is all connected, any member will do
+    nodes_to_connect = [(doc_id, id_group[0])]
+    self.sku_graph.add_edges_from(nodes_to_connect)
     self.connected_ids.add(doc_id)
     self.stages[doc_id] = "set_match"
 
     return name, group_names, common_set, diff_set
 
 
-def set_match(self):
-    """
-
-
-    1. tokenize item names
-    2. tokenize already grouped skus
-    3. for every group
-        create a common set, tokens common to all names in a group
-        create a diff set
-    4. if a single name covers the common the set of a group
-        and the group covers all tokens in this name, it's a match!
-
-    note: passing self to a function is normal and practical here,
-    as many examples in python standard libraries
-    """
-
-    id_groups = self.create_connected_component_groups(self.sku_graph)
-
-    # filter without barcode
-    id_groups = [
-        id_group
-        for id_group in id_groups
-        if all(id in self.connected_ids for id in id_group)
-    ]
+def prep(self, id_groups):
+    logging.info("creating group_info and inverted index..")
 
     self.group_info = collections.defaultdict(dict)
     self.inverted_index = collections.defaultdict(set)
-
-    logging.info("creating inverted index..")
 
     for id_group in tqdm(id_groups):
         group = dict()
@@ -160,6 +141,34 @@ def set_match(self):
 
         self.group_info[tuple(id_group)] = group
 
+
+def set_match(self):
+    """
+
+
+    1. tokenize item names
+    2. tokenize already grouped skus
+    3. for every group
+        create a common set, tokens common to all names in a group
+        create a diff set
+    4. if a single name covers the common the set of a group
+        and the group covers all tokens in this name, it's a match!
+
+    note: passing self to a function is normal and practical here,
+    as many examples in python standard libraries
+    """
+
+    id_groups = self.create_connected_component_groups(self.sku_graph)
+
+    # filter without barcode
+    id_groups = [
+        id_group
+        for id_group in id_groups
+        if all(id in self.connected_ids for id in id_group)
+    ]
+
+    prep(self, id_groups)
+
     unmatched_ids = set(self.id_doc_pairs.keys()).difference(self.connected_ids)
     single_names = [
         (doc_id, self.id_doc_pairs.get(doc_id, {}).get(keys.CLEAN_NAME))
@@ -168,10 +177,6 @@ def set_match(self):
     ]
     logging.info("matching singles..")
     # this could be parallel but there are problems with multiprocessing code with class instances
-    matched_names = [
-        match_singles(self, doc_id, clean_name) for doc_id, clean_name in tqdm(single_names) if clean_name
-    ]
-    matched_names = [m for m in matched_names if m]
-
-    logging.info("saving matched_names..")
-    services.save_json("matched_names.json", matched_names)
+    for doc_id, clean_name in tqdm(single_names):
+        if clean_name:
+            match_singles(self, doc_id, clean_name)
