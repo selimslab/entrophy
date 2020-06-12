@@ -14,8 +14,8 @@ cwd = pathlib.Path.cwd()
 input_dir = cwd / "in"
 output_dir = cwd / "out"
 
-raw_docs_path = input_dir / "raw_docs_path.json",
-pairs_path = input_dir / "pairs.json",
+raw_docs_path = input_dir / "raw_docs_path.json"
+pairs_path = input_dir / "pairs.json"
 skus_path = output_dir / "skus.json"
 
 
@@ -42,12 +42,17 @@ def create_new_matching_from_scratch():
     match_and_save(pairs)
 
 
-def create_new_matching_from_existing_pairs():
+def create_new_matching_from_existing_pairs(start: int = None, end: int = None):
     pairs = services.read_json(pairs_path)
-    match_and_save(pairs)
+    if start is None:
+        start = 0
+    if end is None:
+        end = len(pairs)
+    slice = itertools.islice(pairs.items(), start, end)
+    match_and_save(dict(slice))
 
 
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    create_new_matching_from_existing_pairs()
+    create_new_matching_from_existing_pairs(10000, 110000)
