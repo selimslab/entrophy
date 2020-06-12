@@ -9,8 +9,6 @@ import constants as keys
 
 
 # TODO these 2 functions could be refactored to 4-5 functions and simplified
-
-
 def get_matches(self, name):
     token_set = name.split()
     candidate_groups = [self.inverted_index.get(token, []) for token in token_set]
@@ -21,6 +19,8 @@ def get_matches(self, name):
     matches = set()
 
     for id_group in candidate_groups:
+        # TODO iff same sizes
+
         group_common = self.common_tokens.get(id_group, set())
         if not group_common:
             continue
@@ -56,23 +56,29 @@ def get_matches(self, name):
     return matches
 
 
+def select_a_match(matches):
+    # which group has the max number of tokens in common with this name
+    max_common_size = max(matches, key=operator.itemgetter(0))[0]
+    matches_with_max_common_size = [
+        match for match in matches if match[0] == max_common_size
+    ]
+    if len(matches_with_max_common_size) == 1:
+        match = matches_with_max_common_size.pop()
+    else:
+        match = min(matches_with_max_common_size, key=operator.itemgetter(1))
+    return match
+
+
 def match_singles(self, doc_id, name):
     """ connect single name to a group """
 
+    # a single name could be matched to multiple groups
     matches = get_matches(self, name)
 
     if not matches:
         return
 
-    max_common_size = max(matches, key=operator.itemgetter(0))[0]
-    matches_with_max_common_size = [
-        match for match in matches if match[0] == max_common_size
-    ]
-    if len(matches_with_max_common_size) > 1:
-        match = min(matches_with_max_common_size, key=operator.itemgetter(1))
-    else:
-        match = matches_with_max_common_size.pop()
-
+    match = select_a_match(matches)
     (
         common_set_size,
         diff_size,
@@ -90,19 +96,10 @@ def match_singles(self, doc_id, name):
     return name, group_names, common_set, diff_set
 
 
-def get_names(id_group, id_doc_pairs):
-    names = [
-        id_doc_pairs.get(id, {}).get(keys.CLEAN_NAME)
-        for id in id_group
-        if "clone" not in id
-    ]
-    names = [n for n in names if n]
-    return names
-
-
 def set_match(self):
     """
-    TODO iff same sizes
+
+
     1. tokenize item names
     2. tokenize already grouped skus
     3. for every group
@@ -110,7 +107,6 @@ def set_match(self):
         create a diff set
     4. if a single name covers the common the set of a group
         and the group covers all tokens in this name, it's a match!
-
 
     note: passing self to a function is normal and practical here,
     as many examples in python standard libraries
@@ -125,35 +121,44 @@ def set_match(self):
         if all(id in self.connected_ids for id in id_group)
     ]
 
-    common_tokens = dict()
-    group_tokens = dict()
+    self.group_info = collections.defaultdict(dict)
     self.inverted_index = collections.defaultdict(set)
-    self.group_names = dict()
 
     logging.info("creating inverted index..")
-    for id_group in tqdm(id_groups):
-        names = get_names(id_group, self.id_doc_pairs)
-        self.group_names[tuple(id_group)] = names
 
-        token_sets = [filter_tokens(name) for name in names]
-        if not token_sets:
-            continue
+    for id_group in tqdm(id_groups):
+        group = dict()
+        docs = [self.id_doc_pairs.get(doc_id, {}) for doc_id in id_group if "clone" not in doc_id]
+
+        names = [
+            doc.get(keys.CLEAN_NAME)
+            for doc in docs
+        ]
+        names = [n for n in names if n]
+
+        group["names"] = names
+
+        token_sets = [set(name.split()) for name in names]
 
         # update common_tokens
         commons = set.intersection(*token_sets)
-        common_tokens[tuple(id_group)] = commons
+        if commons:
+            group["common_tokens"] = commons
 
         # update group_tokens
         all_tokens = set.union(*token_sets)
-        group_tokens[tuple(id_group)] = all_tokens
+        if all_tokens:
+            group["tokens"] = all_tokens
 
         # update inverted_index
         for token in all_tokens:
             self.inverted_index[token].add(tuple(id_group))
 
-    # filter empty sets
-    self.common_tokens = {k: v for k, v in common_tokens.items() if v}
-    self.group_tokens = {k: v for k, v in group_tokens.items() if v}
+        size_tuples = [doc.get(keys.DIGIT_UNIT_TUPLES)
+                       for doc in docs]
+        group[keys.DIGIT_UNIT_TUPLES] = list(set(services.flatten(size_tuples)))
+
+        self.group_info[tuple(id_group)] = group
 
     unmatched_ids = set(self.id_doc_pairs.keys()).difference(self.connected_ids)
     single_names = [
@@ -162,7 +167,6 @@ def set_match(self):
         if "clone" not in doc_id
     ]
     logging.info("matching singles..")
-    # TODO match_singles is a bottleneck
     # this could be parallel but there are problems with multiprocessing code with class instances
     matched_names = [
         match_singles(self, doc_id, clean_name) for doc_id, clean_name in tqdm(single_names) if clean_name
