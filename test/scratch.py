@@ -39,6 +39,17 @@ def x():
     print(d)
 
 
+def barz():
+    x = set()
+
+    def bar():
+        x.add(3)
+
+    bar()
+    return x
+
+
+
 if __name__ == "__main__":
     res = itertools.islice(d.items(), 1)
     print(dict(res))

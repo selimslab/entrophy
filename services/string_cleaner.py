@@ -13,7 +13,33 @@ def test_remove_whitespace():
     assert remove_whitespace("a  b   c") == "a b c"
 
 
-## TODO refactor
+def normalize(s:str):
+    return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
+
+
+def dot_iff_size(s):
+    # only size can have .
+    tokens = []
+    for t in s.split():
+        if not t.replace(".", "").isdigit():
+            tokens.append(t.replace(".", " "))
+        else:
+            tokens.append(t)
+
+    return " ".join(tokens)
+
+def replace_chars(s:str):
+    return (
+        s.lower()
+            .replace("ı", "i")
+            .replace("&", " ")
+            .replace("-", " ")
+            .replace("/", " ")
+            .replace(",", ".")
+            .replace("*", " * ")
+    )
+
+
 def clean_string(name: str) -> str:
     """
     replace turkish chars
@@ -24,31 +50,11 @@ def clean_string(name: str) -> str:
     if not name:
         return ""
     # replace accented chars with their base forms
-    name = (
-        name.lower()
-        .replace("ı", "i")
-        .replace("&", " ")
-        .replace("-", " ")
-        .replace("/", " ")
-        .replace(",", ".")
-        .replace("*", " * ")
-    )
-    name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
+    name = replace_chars(name)
+    name = normalize(name)
     allowed_chars = re.compile("[^a-zA-Z0-9,.* ]")
     name = allowed_chars.sub("", name)
-
     name = remove_whitespace(name)
-
-    # only size can have .
-    tokens = []
-    for t in name.split():
-        if not t.replace(".", "").isdigit():
-            tokens.append(t.replace(".", " "))
-        else:
-            tokens.append(t)
-
-    name = " ".join(tokens)
-
     return name
 
 

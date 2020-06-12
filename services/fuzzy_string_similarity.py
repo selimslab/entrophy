@@ -4,7 +4,6 @@ from fuzzywuzzy import fuzz
 from tqdm import tqdm
 
 import constants as keys
-import data_services.mongo.collections as collections
 
 
 class NodeSimilarity:

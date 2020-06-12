@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from services.convertor import convert_price
+from services.convert_price import convert_price
 
 import constants as keys
 

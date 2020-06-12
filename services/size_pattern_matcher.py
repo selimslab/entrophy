@@ -1,5 +1,5 @@
 import re
-from services.name_cleaner import remove_whitespace
+from services.string_cleaner import remove_whitespace
 from services.size_util import get_digits, create_size_patterns, convert_to_standard
 
 

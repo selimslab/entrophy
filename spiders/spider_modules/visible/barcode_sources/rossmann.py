@@ -3,7 +3,7 @@ import requests
 
 import constants as keys
 from data_services import mark_out_of_stock
-from services.convertor import convert_price
+from services.convert_price import convert_price
 from spiders.spider_modules.base import BaseSpider
 from spiders.test_spider import debug_spider
 
