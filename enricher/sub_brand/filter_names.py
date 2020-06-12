@@ -4,9 +4,8 @@ import itertools
 
 from tqdm import tqdm
 
-import services
 from paths import output_dir
-from services.size_pattern_matcher import size_finder
+import services
 import constants as keys
 
 men = {"erkek", "men", "bay", "man"}
@@ -48,7 +47,6 @@ stopwords = {
     "kg",
     "lt",
 }
-plural = ["ler", "lar"]
 
 
 def remove_a_list_of_strings(s: str, to_remove: list):
@@ -59,56 +57,19 @@ def remove_a_list_of_strings(s: str, to_remove: list):
     return s
 
 
-def is_barcode(s: str):
-    return len(s) > 4 and s.isdigit()
-
-
-def is_mixed_letters_and_words(s: str):
-    """ nonsense like adas42342 """
-    return len(s) > 5 and (s.isalnum() and not s.isdigit() and not s.isalpha())
-
-
-def is_gender(s: str):
-    return s in gender
-
-
-def is_color(s: str):
-    return s in color
-
-
-def is_stopword(s: str):
-    return s in stopwords
-
-
-def plural_to_singular(s: str):
-    last_4 = s[-4:]
-    for p in plural:
-        if p in last_4:
-            last_4 = last_4.replace(p, "")
-
-    return s[:-4] + last_4
-
-
-def test_plural_to_singular():
-    assert plural_to_singular("selimleri") == "selim"
-    assert plural_to_singular("selimlar") == "selim"
-    assert plural_to_singular("selimlari") == "selim"
-
-
 def is_known_token(s: str):
     return (
-        is_barcode(s)
-        or is_gender(s)
-        or is_color(s)
-        or is_stopword(s)
-        or is_mixed_letters_and_words(s)
+            services.is_barcode(s)
+            or s in gender
+            or s in color
+            or s in stopwords
     )
 
 
 def filter_tokens(name: str):
     tokens = name.split()
     filtered_tokens = [t.strip() for t in tokens if not is_known_token(t)]
-    filtered_tokens = [plural_to_singular(t) for t in filtered_tokens]
+    filtered_tokens = [services.plural_to_singular(t) for t in filtered_tokens]
     filtered_tokens = [t for t in filtered_tokens if len(t) > 1 and t.isalnum()]
     return " ".join(filtered_tokens)
 
