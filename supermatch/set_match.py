@@ -24,9 +24,7 @@ def filter_tokens(s):
         return set()
 
 
-def match_singles(self, id, name):
-    """ connect single name to a group """
-
+def get_matches(self, name):
     token_set = filter_tokens(name)
     candidate_groups = [self.inverted_index.get(token, []) for token in token_set]
     candidate_groups = set(itertools.chain(*candidate_groups))
@@ -39,63 +37,77 @@ def match_singles(self, id, name):
         group_common = self.common_tokens.get(id_group, set())
         if not group_common:
             continue
-        if token_set.issuperset(group_common):
-            group_all = self.group_tokens.get(id_group, set())
+        if not token_set.issuperset(group_common):
+            continue
 
-            if group_all.issuperset(token_set):
-                common_set_size, diff_size = (
-                    len(group_common),
-                    len(group_all.difference(token_set)),
-                )
-                # first common, if commons same, difference
-                matches.add(
-                    (
-                        common_set_size,
-                        diff_size,
-                        id,
-                        id_group,
-                        tuple(group_common),
-                        tuple(group_all.difference(token_set)),
-                        name,
-                        tuple(self.group_names.get(id_group)),
-                    )
-                )
-    if matches:
-        max_common_size = max(matches, key=operator.itemgetter(0))[0]
-        matches_with_max_common_size = [
-            match for match in matches if match[0] == max_common_size
-        ]
-        if len(matches_with_max_common_size) > 1:
-            match = min(matches_with_max_common_size, key=operator.itemgetter(1))
-        else:
-            match = matches_with_max_common_size.pop()
+        group_all = self.group_tokens.get(id_group, set())
 
-        (
-            common_set_size,
-            diff_size,
-            id,
-            id_group,
-            common_set,
-            diff_set,
-            name,
-            group_names,
-        ) = match
+        if not group_all.issuperset(token_set):
+            continue
 
-        self.sku_graph.add_edges_from([(id, id_group[0])])
-        self.connected_ids.add(id)
-        self.stages[id] = "set_match"
+        common_set_size, diff_size = (
+            len(group_common),
+            len(group_all.difference(token_set)),
+        )
+        # first common, if commons same, difference
+        matches.add(
+            (
+                common_set_size,
+                diff_size,
+                id_group,
+                tuple(group_common),
+                tuple(group_all.difference(token_set)),
+                name,
+                tuple(self.group_names.get(id_group)),
+            )
+        )
 
-        return name, group_names, common_set, diff_set
+    return matches
+
+
+def match_singles(self, doc_id, name):
+    """ connect single name to a group """
+
+    matches = get_matches(self, name)
+
+    if not matches:
+        return
+
+    max_common_size = max(matches, key=operator.itemgetter(0))[0]
+    matches_with_max_common_size = [
+        match for match in matches if match[0] == max_common_size
+    ]
+    if len(matches_with_max_common_size) > 1:
+        match = min(matches_with_max_common_size, key=operator.itemgetter(1))
+    else:
+        match = matches_with_max_common_size.pop()
+
+    (
+        common_set_size,
+        diff_size,
+        id_group,
+        common_set,
+        diff_set,
+        name,
+        group_names,
+    ) = match
+
+    self.sku_graph.add_edges_from([(doc_id, id_group[0])])
+    self.connected_ids.add(doc_id)
+    self.stages[doc_id] = "set_match"
+
+    return name, group_names, common_set, diff_set
 
 
 def get_names(id_group, id_doc_pairs):
     names = [
-        id_doc_pairs.get(id,{}).get(keys.CLEAN_NAME)
+        id_doc_pairs.get(id, {}).get(keys.CLEAN_NAME)
         for id in id_group
         if "clone" not in id
     ]
     names = [n for n in names if n]
     return names
+
 
 def set_match(self):
     """
