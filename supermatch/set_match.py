@@ -88,8 +88,18 @@ def match_singles(self, id, name):
         return name, group_names, common_set, diff_set
 
 
+def get_names(id_group, id_doc_pairs):
+    names = [
+        id_doc_pairs.get(id,{}).get(keys.CLEAN_NAME)
+        for id in id_group
+        if "clone" not in id
+    ]
+    names = [n for n in names if n]
+    return names
+
 def set_match(self):
     """
+    TODO iff same sizes
     1. tokenize item names
     2. tokenize already grouped skus
     3. for every group
@@ -109,7 +119,7 @@ def set_match(self):
     id_groups = [
         id_group
         for id_group in id_groups
-        if all(id in self.connected_ids for id in id_group)  # len(id_group)>1 and
+        if all(id in self.connected_ids for id in id_group)
     ]
 
     common_tokens = dict()
@@ -119,21 +129,24 @@ def set_match(self):
 
     logging.info("creating inverted index..")
     for id_group in tqdm(id_groups):
-        names = [
-            self.id_doc_pairs.get(id).get("clean_name")
-            for id in id_group
-            if "clone" not in id
-        ]
-        names = [n for n in names if n]
+        names = get_names(id_group, self.id_doc_pairs)
         self.group_names[tuple(id_group)] = names
+
         token_sets = [filter_tokens(name) for name in names]
-        if token_sets:
-            commons = set.intersection(*token_sets)
-            common_tokens[tuple(id_group)] = commons
-            all_tokens = set.union(*token_sets)
-            group_tokens[tuple(id_group)] = all_tokens
-            for token in all_tokens:
-                self.inverted_index[token].add(tuple(id_group))
+        if not token_sets:
+            continue
+
+        # update common_tokens
+        commons = set.intersection(*token_sets)
+        common_tokens[tuple(id_group)] = commons
+
+        # update group_tokens
+        all_tokens = set.union(*token_sets)
+        group_tokens[tuple(id_group)] = all_tokens
+
+        # update inverted_index
+        for token in all_tokens:
+            self.inverted_index[token].add(tuple(id_group))
 
     # filter empty sets
     self.common_tokens = {k: v for k, v in common_tokens.items() if v}
