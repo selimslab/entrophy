@@ -3,7 +3,7 @@ import logging
 
 import constants as keys
 import services
-from services.size_finder import size_finder, SizingException
+from services.size_pattern_matcher import size_finder
 import multiprocessing
 
 
@@ -18,45 +18,29 @@ def tokenize(s):
         return set()
 
 
-def replace_size(id, name):
-    name = services.clean_string(name)
+def name_to_clean(doc_id, name):
     if not name:
         return
-
-    digits = unit = size_match = None
-    try:
-        size = size_finder.get_digits_unit_size(name)
-        if size:
-            digits, unit, size_match = size
-            best_size = " ".join([str(digits), unit])
-            name = name.replace(size_match, best_size)
-    except SizingException:
-        pass
-
-    return id, name, digits, unit, size_match
+    clean_name = services.clean_string(name)
+    clean_name, raw_size_unit_tuples = size_finder.get_name_without_size_and_all_matched_size_patterns(clean_name)
+    return doc_id, clean_name, raw_size_unit_tuples
 
 
 def add_clean_name(id_doc_pairs):
     logging.info("add_clean_name..")
 
-    to_clean = list()
-    for doc_id, doc in id_doc_pairs.items():
-        if "name" in doc and "clean_name" not in doc:
-            to_clean.append((doc_id, doc.get("name")))
-
     cpu_count = multiprocessing.cpu_count()
     logging.info(f"cpu_count {cpu_count}")
-    cpu_count = min(6, cpu_count)  # server memory not enough
+    cpu_count = min(6, cpu_count)  # server memory not enough for more than 6 processes
 
+    to_clean = [(doc_id, doc.get(keys.NAME)) for doc_id, doc in id_doc_pairs.items()]
     with multiprocessing.Pool(processes=cpu_count) as pool:
-        results = pool.starmap(replace_size, tqdm(to_clean))
+        results = pool.starmap(name_to_clean, tqdm(to_clean))
 
     results = (r for r in results if r)
-    for doc_id, clean_name, digits, unit, size_match in results:
+    for doc_id, clean_name, raw_size_unit_tuples in results:
         info = {
-            "clean_name": clean_name,
-            keys.DIGITS: digits,
-            keys.UNIT: unit,
-            keys.SIZE: size_match,
+            keys.CLEAN_NAME: clean_name,
+            keys.RAW_SIZE_UNIT_TUPLES: raw_size_unit_tuples,
         }
         id_doc_pairs[doc_id].update(info)

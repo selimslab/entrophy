@@ -11,7 +11,7 @@ import pandas as pd
 
 from paths import input_dir, output_dir
 import services
-from services.size_finder import size_finder
+from services.size_pattern_matcher import size_finder
 import constants as keys
 
 

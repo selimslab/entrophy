@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 import services
 from paths import output_dir
-from services.size_finder import size_finder
+from services.size_pattern_matcher import size_finder
 import constants as keys
 
 men = {"erkek", "men", "bay", "man"}
@@ -113,13 +113,6 @@ def filter_tokens(name: str):
     return " ".join(filtered_tokens)
 
 
-def remove_size(name: str):
-    all_matches = size_finder.get_all_matches(name + " ")
-    for match in all_matches:
-        name = name.replace(match, "")
-    return name
-
-
 def filter_out_knownword_groups_from_a_name(product, clean_colors):
     """
     remove brand candidates, subcat_candidates, color, gender, plural_to_singular
@@ -152,7 +145,7 @@ def filter_out_knownword_groups_from_a_name(product, clean_colors):
 
     filtered_names = []
     for name in clean_names:
-        name = remove_size(name)
+        name, _ = size_finder.get_name_without_size_and_all_matched_size_patterns(name)
         name = remove_a_list_of_strings(name, sorted_brands)
         name = remove_a_list_of_strings(name, sorted_subcats)
         name = remove_a_list_of_strings(name, clean_colors)

@@ -1,5 +1,5 @@
 import services
-from services.size_finder import size_finder, SizingException
+from services.size_pattern_matcher import size_finder
 
 
 def test_sizing():
@@ -15,8 +15,6 @@ def test_sizing():
         ("f54 8 yıkama ", (8, "yıkama")),
         ("F20 200 ML dwa", (200, "ml")),
         ("2x200 ML afdas", (400, "ml")),
-        ("2*200 ML 32352", (400, "ml")),
-        ("ewtew 2/4 2*200 ML 46", (400, "ml")),
         ("dasd 4 x 200 ML 565dfds", (800, "ml")),
         ("2/1 360 ML ada", (360, "ml")),
         (" 0.75 L adfa", (750, "ml")),
@@ -37,16 +35,15 @@ def test_sizing():
     )
 
     for case, answer in test_cases:
+        clean_name = services.clean_string(case)
+        result = size_finder.get_first_digits_unit(clean_name)
         try:
-            clean_name = services.clean_string(case)
-            result = size_finder.get_digits_unit_size(clean_name)
-            try:
-                assert answer == tuple(result[:2])
-            except (AssertionError, AttributeError, IndexError, TypeError) as e:
-                print("FAIL", case, "#", clean_name, "#", answer, "#", result)
-                print(e)
-
-        except SizingException as e:
+            assert answer == result
+        except (AssertionError, AttributeError, IndexError, TypeError) as e:
+            print("FAIL", case)
+            print(clean_name)
+            print("expected", answer)
+            print("got", result)
             print(e)
 
 

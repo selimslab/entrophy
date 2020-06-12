@@ -1,5 +1,6 @@
 # spider keys
 NAME = "name"
+CLEAN_NAME = "clean_name"
 CLEAN_NAMES = "clean_names"
 BARCODES = "barcodes"
 MARKET = "market"
@@ -36,6 +37,7 @@ PROMOTED = "promoted"
 VARIANTS = "variants"
 
 # size
+RAW_SIZE_UNIT_TUPLES = "raw_size_unit_tuples"
 DIGITS = "digits"
 UNIT = "unit"
 SIZE = "size"
