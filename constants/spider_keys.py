@@ -37,7 +37,7 @@ PROMOTED = "promoted"
 VARIANTS = "variants"
 
 # size
-RAW_SIZE_UNIT_TUPLES = "raw_size_unit_tuples"
+DIGIT_UNIT_TUPLES = "digit_unit_tuples"
 DIGITS = "digits"
 UNIT = "unit"
 SIZE = "size"

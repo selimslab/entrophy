@@ -23,7 +23,10 @@ def name_to_clean(doc_id, name):
         return
     clean_name = services.clean_string(name)
     clean_name, raw_size_unit_tuples = size_finder.get_name_without_size_and_all_matched_size_patterns(clean_name)
-    return doc_id, clean_name, raw_size_unit_tuples
+    digit_unit_tuples = [size_finder.size_pattern_to_digit_unit(raw_size, unit)
+                         for raw_size, unit in raw_size_unit_tuples]
+    digit_unit_tuples = [d for d in digit_unit_tuples if d]
+    return doc_id, clean_name, digit_unit_tuples
 
 
 def add_clean_name(id_doc_pairs):
@@ -38,9 +41,9 @@ def add_clean_name(id_doc_pairs):
         results = pool.starmap(name_to_clean, tqdm(to_clean))
 
     results = (r for r in results if r)
-    for doc_id, clean_name, raw_size_unit_tuples in results:
+    for doc_id, clean_name, digit_unit_tuples in results:
         info = {
             keys.CLEAN_NAME: clean_name,
-            keys.RAW_SIZE_UNIT_TUPLES: raw_size_unit_tuples,
+            keys.DIGIT_UNIT_TUPLES: digit_unit_tuples,
         }
         id_doc_pairs[doc_id].update(info)

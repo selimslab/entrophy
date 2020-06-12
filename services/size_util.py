@@ -5,10 +5,6 @@ def join_digits_units(digits, unit):
     return " ".join([str(digits), unit])
 
 
-def filter_size_matches():
-    ...
-
-
 # the order is important for patterns and units
 digit_patterns = [
     "\\d+\\.\\d+",
@@ -90,7 +86,7 @@ def get_digits(match: str):
     return digits
 
 
-def convert(digits, unit):
+def convert_to_standard(digits, unit):
     if unit == "kg":
         unit = "gr"
         digits = digits * 1000

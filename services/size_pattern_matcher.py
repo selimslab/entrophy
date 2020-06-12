@@ -1,6 +1,6 @@
 import re
 from services.name_cleaner import remove_whitespace
-from services.size_util import get_digits, create_size_patterns, convert
+from services.size_util import get_digits, create_size_patterns, convert_to_standard
 
 
 class SizeFinder:
@@ -41,7 +41,7 @@ class SizeFinder:
             match, unit = match_and_unit
             digits = get_digits(match)
             if digits and digits < self.max_digits.get(unit, 1000):
-                digits, unit = convert(digits, unit)
+                digits, unit = convert_to_standard(digits, unit)
                 return digits, unit
 
     def size_pattern_to_digit_unit(self, size_pattern: str, unit: str) -> tuple:
@@ -51,7 +51,7 @@ class SizeFinder:
         """
         digits = get_digits(size_pattern)
         if digits and digits < self.max_digits.get(unit, 1000):
-            digits, unit = convert(digits, unit)
+            digits, unit = convert_to_standard(digits, unit)
             return digits, unit
 
     def get_name_without_size_and_all_matched_size_patterns(self, s: str) -> tuple:
