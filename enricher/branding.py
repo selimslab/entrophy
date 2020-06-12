@@ -64,6 +64,8 @@ def check_partial(brand_pool_sorted, to_partial_search):
         if brand in brand_candidates:
             continue
         for s in to_partial_search:
+            if brand in brand_candidates:
+                continue
             if services.partial_string_search(s, brand):
                 brand_candidates.add(s)
                 print((s, brand))
