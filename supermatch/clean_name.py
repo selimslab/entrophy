@@ -14,7 +14,7 @@ def name_to_clean(doc_id, name):
     (
         clean_name,
         raw_size_unit_tuples,
-    ) = size_finder.get_name_without_size_and_all_matched_size_patterns(clean_name)
+    ) = size_finder.get_size_unit_tuples_and_name_without_size(clean_name)
     digit_unit_tuples = [
         size_finder.size_pattern_to_digit_unit(raw_size, unit)
         for raw_size, unit in raw_size_unit_tuples
@@ -23,14 +23,16 @@ def name_to_clean(doc_id, name):
     return doc_id, clean_name, digit_unit_tuples
 
 
-
 def remove_stopwords(tokens: list) -> list:
     stopwords = {"ml", "gr", "kg", "adet", "ve", "and", "ile", "for", "icin"}
     return [t for t in tokens if t not in stopwords]
 
 
-
 def add_clean_name(id_doc_pairs):
+    """
+    clean
+    remove all sizes
+    """
     logging.info("add_clean_name..")
 
     to_clean = [(doc_id, doc.get(keys.NAME)) for doc_id, doc in id_doc_pairs.items()]
