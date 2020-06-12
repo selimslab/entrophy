@@ -6,9 +6,9 @@ import collections
 
 import constants as keys
 import services
-from .test_set_match import test_set_match
-from .promoted import promoted_match
-from .set_match import set_match
+from supermatch.docs_to_sku.promoted import promoted_match
+from supermatch.docs_to_sku.set_match import set_match
+from supermatch.docs_to_sku.sku_exact_name_match import exact_name_match
 
 
 class SKUGraphCreator(services.GenericGraph):
@@ -45,33 +45,6 @@ class SKUGraphCreator(services.GenericGraph):
 
         self.stages = {**dict.fromkeys(self.connected_ids, "barcode")}
 
-    def exact_name_match(self):
-        """ merge barcode-less items with the same name
-        TODO iff they have the same size
-        """
-        name_barcode_pairs = collections.defaultdict(set)
-        name_id_pairs = collections.defaultdict(set)
-        for doc_id, doc in self.id_doc_pairs.items():
-            name = doc.get("clean_name")
-            if not name:
-                continue
-            sorted_name = " ".join(sorted(name.split()))
-            barcodes = doc.get(keys.BARCODES, [])
-            name_barcode_pairs[sorted_name].update(set(barcodes))
-            name_id_pairs[sorted_name].add(doc_id)
-
-        print("name_barcode_pairs", len(name_barcode_pairs))
-
-        for name, barcodes in name_barcode_pairs.items():
-            if len(barcodes) <= 1:
-                doc_ids = name_id_pairs.get(name)
-                single_doc_ids = [id for id in doc_ids if id not in self.connected_ids]
-                if len(single_doc_ids) > 1:
-                    edges = itertools.combinations(single_doc_ids, 2)
-                    self.sku_graph.add_edges_from(edges)
-                    self.stages.update({**dict.fromkeys(single_doc_ids, "exact_name")})
-                    self.connected_ids.update(single_doc_ids)
-
     def create_graph(self):
         self.init_sku_graph()
 
@@ -79,7 +52,7 @@ class SKUGraphCreator(services.GenericGraph):
         self.barcode_match()
 
         print("exact_name_match..")
-        self.exact_name_match()
+        exact_name_match(self)
 
         print("set match..")
         set_match(self)
@@ -88,3 +61,21 @@ class SKUGraphCreator(services.GenericGraph):
         promoted_match(self)
 
         return self.sku_graph, self.stages
+
+    def single_doc_generator(self):
+        unmatched_ids = set(self.id_doc_pairs.keys()).difference(self.connected_ids)
+        for doc_id in unmatched_ids:
+            if "clone" not in doc_id:
+                doc = self.id_doc_pairs.get(doc_id, {})
+                yield doc_id, doc
+
+    def get_connected_groups(self):
+        id_groups = self.create_connected_component_groups(self.sku_graph)
+
+        # filter out single item groups
+        id_groups = [
+            id_group
+            for id_group in id_groups
+            if all(id in self.connected_ids for id in id_group)
+        ]
+        return id_groups

@@ -7,63 +7,7 @@ from typing import Set, Union
 
 import services
 import constants as keys
-
-
-def prep(self, id_groups):
-    """
-    add group_info and inverted_index to the self
-
-    group_info : {
-        (member ids, ..) : {
-            tokens : set()
-            common_tokens: set()
-            DIGIT_UNIT_TUPLES: [ (75, "ml"), .. ]
-        }
-    }
-
-
-    inverted_index : {
-        token : set( (member_ids.. ), ..)
-    }
-    """
-    logging.info("creating group_info and inverted index..")
-
-    self.group_info = collections.defaultdict(dict)
-    self.inverted_index = collections.defaultdict(set)
-    self.size_index = collections.defaultdict(set)
-
-    for id_group in tqdm(id_groups):
-        group = dict()
-        docs = [self.id_doc_pairs.get(doc_id, {}) for doc_id in id_group if "clone" not in doc_id]
-
-        names = [
-            doc.get(keys.CLEAN_NAME)
-            for doc in docs
-        ]
-        names = [n for n in names if n]
-
-        token_sets = [set(name.split()) for name in names]
-
-        # update common_tokens
-        commons = set.intersection(*token_sets)
-        if commons:
-            group["common_tokens"] = commons
-
-        # update group_tokens
-        all_tokens = set.union(*token_sets)
-        if all_tokens:
-            group["tokens"] = all_tokens
-
-        # update inverted_index
-        for token in all_tokens:
-            self.inverted_index[token].add(tuple(id_group))
-
-        size_tuples = [doc.get(keys.DIGIT_UNIT_TUPLES)
-                       for doc in docs]
-        size_tuples = set(services.flatten(size_tuples))
-        group[keys.DIGIT_UNIT_TUPLES] = size_tuples
-
-        self.group_info[tuple(id_group)] = group
+from .index_groups import index_groups
 
 
 def search_groups_to_connect(self, name: str, sizes_in_name: set) -> Union[Set[tuple], None]:
@@ -115,10 +59,24 @@ def select_a_match(matches):
     return match
 
 
-def add_edges_by_set_match(self):
+def set_match(self):
+    """
+    1. tokenize item names
+    2. tokenize already grouped skus
+    3. for every group
+        create a common set, tokens common to all names in a group
+        create a diff set
+    4. if a single name covers the common the set of a group
+        and the group covers all tokens in this name, it's a match!
+
+    note: passing self to a function is normal and practical here,
+    as many examples in python standard libraries
+    """
+    id_groups = self.get_connected_groups(self)
+    index_groups(self, id_groups)
     logging.info("matching singles..")
     # this could be parallel but there are problems with multiprocessing code with class instances
-    for doc_id, doc in tqdm(single_doc_generator(self)):
+    for doc_id, doc in tqdm(self.single_doc_generator(self)):
         clean_name = doc.get(keys.CLEAN_NAME)
         if not clean_name:
             continue
@@ -139,38 +97,3 @@ def add_edges_by_set_match(self):
             self.sku_graph.add_edges_from(nodes_to_connect)
             self.connected_ids.add(doc_id)
             self.stages[doc_id] = "set_match"
-
-
-def single_doc_generator(self):
-    unmatched_ids = set(self.id_doc_pairs.keys()).difference(self.connected_ids)
-    for doc_id in unmatched_ids:
-        if "clone" not in doc_id:
-            doc = self.id_doc_pairs.get(doc_id, {})
-            yield doc_id, doc
-
-
-def set_match(self):
-    """
-    1. tokenize item names
-    2. tokenize already grouped skus
-    3. for every group
-        create a common set, tokens common to all names in a group
-        create a diff set
-    4. if a single name covers the common the set of a group
-        and the group covers all tokens in this name, it's a match!
-
-    note: passing self to a function is normal and practical here,
-    as many examples in python standard libraries
-    """
-
-    id_groups = self.create_connected_component_groups(self.sku_graph)
-
-    # filter without barcode
-    id_groups = [
-        id_group
-        for id_group in id_groups
-        if all(id in self.connected_ids for id in id_group)
-    ]
-    #
-    prep(self, id_groups)
-    add_edges_by_set_match(self)
