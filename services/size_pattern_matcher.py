@@ -79,7 +79,10 @@ size_finder = SizeFinder()
 def test_remove_all_size_matches():
     case = " 750 gr faf 35 gr 56ml 2li "
     res = size_finder.get_name_without_size_and_all_matched_size_patterns(case)
-    assert res == ('faf', [('56ml', 'ml'), ('750 gr', 'gr'), ('35 gr', 'gr'), ('2li', 'adet')])
+    assert res == (
+        "faf",
+        [("56ml", "ml"), ("750 gr", "gr"), ("35 gr", "gr"), ("2li", "adet")],
+    )
 
 
 if __name__ == "__main__":

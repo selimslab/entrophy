@@ -11,9 +11,9 @@ from freq import get_subcat_freq
 
 
 def add_subcat(
-        products: List[dict],
-        subcat_original_to_clean: Dict[str, str],
-        possible_subcats_by_brand: Dict[str, list],
+    products: List[dict],
+    subcat_original_to_clean: Dict[str, str],
+    possible_subcats_by_brand: Dict[str, list],
 ):
     subcat_freq: dict = get_subcat_freq(products, subcat_original_to_clean)
 
@@ -54,7 +54,7 @@ def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
 
 
 def get_possible_subcats_by_brand(
-        products, brand_original_to_clean, subcat_original_to_clean
+    products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
@@ -76,12 +76,14 @@ def get_possible_subcats_by_brand(
         for clean_brand in clean_brands:
             possible_subcats_by_brand[clean_brand].update(set(clean_subcats))
 
-    possible_subcats_by_brand = {k: list(v) for k, v in possible_subcats_by_brand.items()}
+    possible_subcats_by_brand = {
+        k: list(v) for k, v in possible_subcats_by_brand.items()
+    }
     return possible_subcats_by_brand
 
 
 def get_possible_subcats_for_this_product(
-        product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
+    product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
 ) -> list:
     brand_candidates = product.get(keys.BRAND_CANDIDATES)
     possible_subcats = [
@@ -109,7 +111,7 @@ def get_possible_subcats_for_this_product(
 
 
 def get_subcat_candidates(
-        product: dict, possible_subcats_for_this_product: list
+    product: dict, possible_subcats_for_this_product: list
 ) -> set:
     clean_names = product.get(keys.CLEAN_NAMES, [])
 

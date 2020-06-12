@@ -30,14 +30,13 @@ def bar():
     print(d, l)
 
 
-
 d = {3: {2: 4}, 4: {}}
+
 
 def x():
     for k, v in d.items():
         v.update({2: 7})
     print(d)
-
 
 
 if __name__ == "__main__":

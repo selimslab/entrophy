@@ -184,7 +184,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         digits_units=list(set(digit_unit_tuples)),
         categories=cats,
         brands=brands,
-        variant_name=get_variant_name(docs)
+        variant_name=get_variant_name(docs),
     )
 
     sku = asdict(sku)

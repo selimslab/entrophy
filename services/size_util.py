@@ -56,8 +56,7 @@ def create_size_patterns():
     for (unit_pattern, clean_unit) in units:
         # "30ml"
         pats = [
-            "".join((digit_pattern, unit_pattern))
-            for digit_pattern in digit_patterns
+            "".join((digit_pattern, unit_pattern)) for digit_pattern in digit_patterns
         ]
         patterns.append(("|".join(pats), clean_unit))
 

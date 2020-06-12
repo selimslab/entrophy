@@ -24,8 +24,10 @@ def get_most_frequent_key(d: dict):
 def get_most_common_item(itr: Iterable):
     return Counter(itr).most_common(1)[0][0]
 
+
 def test_get_most_common_item():
-    assert get_most_common_item([(2,3), (2,3), 4, 5 , "a"]) == (2,3)
+    assert get_most_common_item([(2, 3), (2, 3), 4, 5, "a"]) == (2, 3)
+
 
 def remove_nulls_from_list_values_of_a_dict(d: dict) -> dict:
     for k, v in d.items():

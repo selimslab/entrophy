@@ -18,7 +18,7 @@ def get_brand_original_to_clean(products: List[dict]):
     return brand_original_to_clean
 
 
-def get_subcat_original_to_clean(products: List[dict])->dict:
+def get_subcat_original_to_clean(products: List[dict]) -> dict:
     logging.info("cleaning subcats..")
     subcat_original_to_clean = {}
     for product in products:
