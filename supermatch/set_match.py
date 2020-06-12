@@ -86,8 +86,7 @@ def set_match(self):
         and the group covers all tokens in this name, it's a match!
 
 
-    note: don't be surprised,
-    passing self to a function is normal and practical here,
+    note: passing self to a function is normal and practical here,
     as many examples in python standard libraries
     """
 
