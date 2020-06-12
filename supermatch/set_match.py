@@ -3,17 +3,19 @@ import operator
 import itertools
 import collections
 from tqdm import tqdm
+from typing import List
 
 import services
 import constants as keys
 
 
-def get_matches(self, name):
-    token_set = name.split()
+def get_matches(self, name: str) -> List[tuple]:
+    token_set = set(name.split())
+    # eligible groups include all tokens of the name
     candidate_groups = [self.inverted_index.get(token, []) for token in token_set]
     candidate_groups = set(itertools.chain(*candidate_groups))
     if not candidate_groups:
-        return
+        return []
 
     matches = set()
 
