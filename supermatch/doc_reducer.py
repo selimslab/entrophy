@@ -1,5 +1,6 @@
 import collections
 from dataclasses import asdict
+from collections import Counter
 
 import services
 import constants as keys
@@ -106,27 +107,6 @@ def get_variant_name(docs):
         return variant_names[0]
 
 
-def select_size(docs, sku_name):
-    digits = unit = size = None
-    variant_name = get_variant_name(docs)
-    if variant_name:
-        size = variant_name
-
-    candidates = [(doc.get(keys.DIGITS), doc.get(keys.UNIT)) for doc in docs]
-    for candidate_digits, unit in candidates:
-        if str(candidate_digits) in sku_name:
-            digits = candidate_digits
-            break
-
-    if candidates and not digits:
-        digits, unit = collections.Counter(candidates).most_common(1)[0][0]
-
-    if not size and digits and unit:
-        size = " ".join([str(digits), unit])
-
-    return digits, unit, size, candidates
-
-
 def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     if not docs:
         return ()
@@ -135,10 +115,6 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         prices = get_prices(docs)
     except MatchingException:
         return ()
-
-    markets = list(set(prices.keys()))
-    market_count = len(markets)
-    best_price = min(list(prices.values()))
 
     sku_ids = (doc.get(keys.SKU_ID) for doc in docs)
     sku_ids = (p for p in sku_ids if p)
@@ -154,7 +130,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     sku_src = get_image(docs)
 
     barcodes = [doc.get(keys.BARCODES) for doc in docs]
-    barcodes = services.collections_util.flatten(barcodes)
+    barcodes = services.flatten(barcodes)
     barcodes = list(set(barcodes))
 
     clean_names = list(doc.get("clean_name") for doc in docs)
@@ -163,12 +139,17 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     most_common_tokens = sorted(services.get_n_most_common_list_elements(tokens, 3))
     tags = " ".join(sorted(list(set(tokens))))
 
-    links = [doc.get(keys.LINK) for doc in docs]
-    links = list(set(links))
+    markets = list(set(prices.keys()))
+    best_price = min(list(prices.values()))
 
-    digits, unit, size, all_digits_units = select_size(docs, sku_name)
-    all_digits_units = list(set(tuple(c) for c in all_digits_units))
-    unit_price = None
+    digits = unit = size = unit_price = None
+    digit_unit_tuples = [doc.get(keys.DIGIT_UNIT_TUPLES) for doc in docs]
+    digit_unit_tuples = services.flatten(digit_unit_tuples)
+
+    if digit_unit_tuples:
+        digits, unit = services.get_most_common_item(digit_unit_tuples)
+        size = services.join_digits_units(digits, unit)
+
     if digits:
         unit_price = round(best_price / digits, 2)
 
@@ -186,11 +167,11 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         src=sku_src,
         prices=prices,
         markets=markets,
-        market_count=market_count,
+        market_count=len(markets),
         best_price=best_price,
         barcodes=barcodes,
         tags=tags,
-        links=links,
+        links=list(set(doc.get(keys.LINK) for doc in docs)),
         most_common_tokens=most_common_tokens,
         names=doc_names,
         clean_names=clean_names,
@@ -198,9 +179,10 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         unit=unit,
         size=size,
         unit_price=unit_price,
-        digits_units=all_digits_units,
+        digits_units=list(set(digit_unit_tuples)),
         categories=cats,
         brands=brands,
+        variant_name=get_variant_name(docs)
     )
 
     sku = asdict(sku)

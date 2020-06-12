@@ -2,6 +2,8 @@ import re
 
 
 def join_digits_units(digits, unit):
+    if not (digits and unit):
+        return
     return " ".join([str(digits), unit])
 
 

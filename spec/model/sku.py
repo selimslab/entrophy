@@ -7,7 +7,7 @@ class BasicSKU:
     doc_ids: list = field(default_factory=list)
     sku_id: str = None
     product_id: str = None
-    objectID: str = None
+    objectID: str = None  # for backward compatibility
 
     brand: str = None
     category: str = None
@@ -34,6 +34,8 @@ class BasicSKU:
 
     color: str = None
     reviews: list = None
+
+    variant_name: str = None
 
 
 @dataclass
