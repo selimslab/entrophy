@@ -11,37 +11,30 @@ def name_to_clean(doc_id, name):
     """
     clean
     remove all sizes
+    remove barcodes
     """
     if not name:
         return
     clean_name = services.clean_string(name)
     size_unit_tuples = size_finder.get_size_unit_tuples(clean_name)
     size_patterns_to_remove = [pattern for pattern, unit in size_unit_tuples]
-    clean_name_no_size = services.remove_patterns_from_string(clean_name, size_patterns_to_remove)
+    clean_name = services.remove_patterns_from_string(clean_name, size_patterns_to_remove)
+    tokens = clean_name.split()
+    tokens = services.remove_stopwords(tokens)
+    tokens = [t for t in tokens
+              if not services.is_single_letter(t) and not services.is_barcode(t)
+              ]
+    clean_name = " ".join(tokens)
+    clean_name = services.remove_non_alpha_numeric_chars(clean_name)
+    clean_name = services.remove_whitespace(clean_name)
 
     digit_unit_tuples = [
-        size_finder.size_pattern_to_digit_unit(pattern, unit)
+        services.size_pattern_to_digit_unit(pattern, unit)
         for pattern, unit in size_unit_tuples
     ]
 
     digit_unit_tuples = [d for d in digit_unit_tuples if d]
-    return doc_id, clean_name_no_size, digit_unit_tuples
-
-
-def remove_stopwords(tokens: list) -> list:
-    stopwords = {"ml", "gr", "kg", "adet", "ve", "and", "ile", "for", "icin"}
-    return [t for t in tokens if t not in stopwords]
-
-
-def filter_tokens(s):
-    try:
-        tokens = s.split()
-        tokens = remove_stopwords(tokens)
-        tokens = set(t for t in set(tokens) if len(t) > 1 or t.isdigit())  # single digits may stay but not letters
-        return tokens
-    except AttributeError as e:
-        logging.error(e)
-        return set()
+    return doc_id, clean_name, digit_unit_tuples
 
 
 def add_clean_name(id_doc_pairs):
