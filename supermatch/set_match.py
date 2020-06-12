@@ -43,17 +43,7 @@ def get_matches(self, name):
             len(group_tokens.difference(token_set)),
         )
         # first common, if commons same, difference
-        matches.add(
-            (
-                common_set_size,
-                diff_size,
-                id_group,
-                tuple(group_common),
-                tuple(group_tokens.difference(token_set)),
-                name,
-                tuple(self.group_names.get(id_group)),
-            )
-        )
+        matches.add((common_set_size, id_group))
 
     return matches
 
@@ -71,7 +61,7 @@ def select_a_match(matches):
     return match
 
 
-def match_singles(self, doc_id, name):
+def get_a_group_to_match(self, name):
     """ connect single name to a group """
 
     # a single name could be matched to multiple groups
@@ -81,24 +71,9 @@ def match_singles(self, doc_id, name):
         return
 
     match = select_a_match(matches)
-    (
-        common_set_size,
-        diff_size,
-        id_group,
-        common_set,
-        diff_set,
-        name,
-        group_names,
-    ) = match
+    _, id_group = match
 
-    # connect to single doc to the first element of id group,
-    # since the group is all connected, any member will do
-    nodes_to_connect = [(doc_id, id_group[0])]
-    self.sku_graph.add_edges_from(nodes_to_connect)
-    self.connected_ids.add(doc_id)
-    self.stages[doc_id] = "set_match"
-
-    return name, group_names, common_set, diff_set
+    return id_group
 
 
 def prep(self, id_groups):
@@ -179,4 +154,11 @@ def set_match(self):
     # this could be parallel but there are problems with multiprocessing code with class instances
     for doc_id, clean_name in tqdm(single_names):
         if clean_name:
-            match_singles(self, doc_id, clean_name)
+            id_group = get_a_group_to_match(self, clean_name)
+            if id_group:
+                # connect to single doc to the first element of id group,
+                # since the group is all connected, any member will do
+                nodes_to_connect = [(doc_id, id_group[0])]
+                self.sku_graph.add_edges_from(nodes_to_connect)
+                self.connected_ids.add(doc_id)
+                self.stages[doc_id] = "set_match"
