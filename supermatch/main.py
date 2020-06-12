@@ -4,10 +4,10 @@ from tqdm import tqdm
 
 import constants as keys
 
-from supermatch.clean_name import add_clean_name
-from supermatch.sku_matching import SKUGraphCreator
-from supermatch.doc_reducer import reduce_docs_to_sku
-from supermatch import product_matching
+from supermatch.prep.clean_name import add_clean_name
+from supermatch.docs_to_sku.sku_matching import SKUGraphCreator
+from supermatch.docs_to_sku.doc_reducer import reduce_docs_to_sku
+from supermatch import skus_to_product
 
 import data_services
 import services
@@ -81,7 +81,7 @@ def create_matching(id_doc_pairs: dict) -> dict:
     logging.info(f"skus # {len(skus)}")
 
     logging.info("grouping skus into products..")
-    groups_of_sku_ids = product_matching.group_skus(skus, variants, links_of_products)
+    groups_of_sku_ids = skus_to_product.group_skus(skus, variants, links_of_products)
     skus = add_product_info(groups_of_sku_ids, skus)
 
     skus = {

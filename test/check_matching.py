@@ -8,7 +8,7 @@ import data_services
 import services
 
 from supermatch.main import create_matching
-from supermatch import preprocess
+from supermatch.prep import preprocess
 
 cwd = pathlib.Path.cwd()
 input_dir = cwd / "in"

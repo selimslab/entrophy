@@ -2,7 +2,7 @@ import random
 import logging
 import services
 
-from .set_match import set_match
+from supermatch.docs_to_sku.set_match import set_match
 
 
 def get_expected_neighbours(self, id_groups):
