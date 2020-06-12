@@ -7,25 +7,12 @@ from tqdm import tqdm
 import services
 import constants as keys
 
-from .clean_name import remove_stopwords
-
 
 # TODO these 2 functions could be refactored to 4-5 functions and simplified
 
 
-def filter_tokens(s):
-    try:
-        tokens = s.split()
-        tokens = remove_stopwords(tokens)
-        tokens = set(t for t in set(tokens) if len(t) > 1 or t.isdigit())
-        return tokens
-    except AttributeError as e:
-        logging.error(e)
-        return set()
-
-
 def get_matches(self, name):
-    token_set = filter_tokens(name)
+    token_set = name.split()
     candidate_groups = [self.inverted_index.get(token, []) for token in token_set]
     candidate_groups = set(itertools.chain(*candidate_groups))
     if not candidate_groups:
@@ -37,10 +24,14 @@ def get_matches(self, name):
         group_common = self.common_tokens.get(id_group, set())
         if not group_common:
             continue
+
+        # single name must cover all common tokens of the group
         if not token_set.issuperset(group_common):
             continue
 
         group_all = self.group_tokens.get(id_group, set())
+
+        # the group  must cover all tokens of the single name
 
         if not group_all.issuperset(token_set):
             continue

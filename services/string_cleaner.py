@@ -1,7 +1,14 @@
 import re
 import unicodedata
-from typing import List
+from typing import List, Iterable
 import services
+
+
+def remove_patterns_from_string(s: str, to_remove: Iterable) -> str:
+    for bad in to_remove:
+        s = s.replace(bad, "")
+    s = remove_whitespace(s)
+    return s
 
 
 def remove_whitespace(s: str):
@@ -13,7 +20,7 @@ def test_remove_whitespace():
     assert remove_whitespace("a  b   c") == "a b c"
 
 
-def normalize(s:str):
+def normalize(s: str):
     return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
 
 
@@ -28,7 +35,8 @@ def dot_iff_size(s):
 
     return " ".join(tokens)
 
-def replace_chars(s:str):
+
+def replace_chars(s: str):
     return (
         s.lower()
             .replace("ı", "i")
@@ -52,7 +60,7 @@ def clean_string(name: str) -> str:
     # replace accented chars with their base forms
     name = replace_chars(name)
     name = normalize(name)
-    allowed_chars = re.compile("[^a-zA-Z0-9,.* ]")
+    allowed_chars = re.compile("[^a-zA-Z0-9,. ]")
     name = allowed_chars.sub("", name)
     name = remove_whitespace(name)
     return name

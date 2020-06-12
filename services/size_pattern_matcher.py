@@ -54,13 +54,13 @@ class SizeFinder:
             digits, unit = convert_to_standard(digits, unit)
             return digits, unit
 
-    def get_size_unit_tuples_and_name_without_size(self, s: str) -> tuple:
+    def get_size_unit_tuples(self, s: str) -> list:
         """
         in "faf 750 gr 35 gr 56ml 2li "
         out ('faf', [('56ml', 'ml'), ('750 gr', 'gr'), ('35 gr', 'gr'), ('2li', 'adet')])
 
         """
-        all_matches = []
+        size_unit_tuples = []
         s += " "
         for (pattern, unit) in self.patterns:
             matched_size_patterns = re.findall(pattern, s)
@@ -68,9 +68,8 @@ class SizeFinder:
                 for size_pattern in matched_size_patterns:
                     size_pattern = size_pattern.strip()
                     s = s.replace(size_pattern, "")
-                    all_matches.append((size_pattern, unit))
-        s = remove_whitespace(s)
-        return s, all_matches
+                    size_unit_tuples.append((size_pattern, unit))
+        return size_unit_tuples
 
 
 size_finder = SizeFinder()
@@ -78,7 +77,7 @@ size_finder = SizeFinder()
 
 def test_remove_all_size_matches():
     case = " 750 gr faf 35 gr 56ml 2li "
-    res = size_finder.get_size_unit_tuples_and_name_without_size(case)
+    res = size_finder.get_size_unit_tuples(case)
     assert res == (
         "faf",
         [("56ml", "ml"), ("750 gr", "gr"), ("35 gr", "gr"), ("2li", "adet")],

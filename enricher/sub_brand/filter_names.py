@@ -145,7 +145,6 @@ def filter_out_knownword_groups_from_a_name(product, clean_colors):
 
     filtered_names = []
     for name in clean_names:
-        name, _ = size_finder.get_size_unit_tuples_and_name_without_size(name)
         name = remove_a_list_of_strings(name, sorted_brands)
         name = remove_a_list_of_strings(name, sorted_subcats)
         name = remove_a_list_of_strings(name, clean_colors)
