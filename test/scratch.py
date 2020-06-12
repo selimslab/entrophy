@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import itertools
 
 
 @dataclass
@@ -29,8 +30,16 @@ def bar():
     print(d, l)
 
 
-if __name__ == "__main__":
-    d = {3: {2: 4}, 4: {}}
+
+d = {3: {2: 4}, 4: {}}
+
+def x():
     for k, v in d.items():
         v.update({2: 7})
     print(d)
+
+
+
+if __name__ == "__main__":
+    res = itertools.islice(d.items(), 1)
+    print(dict(res))
