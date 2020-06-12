@@ -147,8 +147,10 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     digit_unit_tuples = services.flatten(digit_unit_tuples)
 
     if digit_unit_tuples:
-        digits, unit = services.get_most_common_item(digit_unit_tuples)
-        size = services.join_digits_units(digits, unit)
+        res = services.get_most_common_item(digit_unit_tuples)
+        if res:
+            digits, unit = res
+            size = services.join_digits_units(digits, unit)
 
     if digits:
         unit_price = round(best_price / digits, 2)
