@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 import services
 import constants as keys
-from .docs_to_sku.index_groups import Indexer
+from .docs_to_sku.indexer import Indexer
 
 
 def get_gratis_link_id_tuples(skus: dict, gratis_product_links: set) -> List[tuple]:
@@ -82,24 +82,18 @@ def group_link_id_tuples(link_id_tuples: List[tuple]) -> List[list]:
     return groups
 
 
-def set_match_generator_for_skus(skus):
-    eligible = {sku_id: sku for sku_id, sku in skus.items()
-                if keys.VARIANT_NAME not in sku and keys.COLOR not in sku
-                }
+def set_match_generator_for_skus(skus: dict) -> tuple:
+    eligible = {
+        sku_id: sku for sku_id, sku in skus.items()
+        if keys.VARIANT_NAME not in sku and keys.COLOR not in sku
+    }
     indexer = Indexer()
     logging.info("creating group_info and inverted index..")
-    for sku_id, sku in tqdm(eligible):
-        indexer.index([sku], sku_id)
+    for sku_id, sku in tqdm(eligible.items()):
+        indexer.index_skus(sku, sku_id)
 
-    for sku_id, sku in tqdm(eligible):
-
-        clean_name = sku.get(keys.CLEAN_NAME)
-        if not clean_name:
-            continue
-        sizes_in_name = sku.get(keys.DIGIT_UNIT_TUPLES, [])
-
-        matches = indexer.search_groups_to_connect(clean_name, set(sizes_in_name))
-
+    for sku_id, sku in tqdm(eligible.items()):
+        matches = indexer.search_skus_to_connect(sku, sku_id)
         if matches:
             other_sku_id_to_connect = services.get_most_frequent_key(matches)
             # connect to single doc to the first element of id group,
@@ -113,9 +107,12 @@ def group_skus(skus: dict, variants, links_of_products) -> list:
     gratis_link_id_tuples = get_gratis_link_id_tuples(skus, links_of_products)
     gratis_groups = group_link_id_tuples(gratis_link_id_tuples)
 
-    groups_from_names = set_match_generator_for_skus(skus)
+    logging.info("creating edges_from_sku_names")
+    edges_from_sku_names = set_match_generator_for_skus(skus)
+    edges_from_sku_names = list(edges_from_sku_names)
+    print(len(edges_from_sku_names), "connections from product set match")
 
-    sku_groups = itertools.chain(google_groups, gratis_groups, groups_from_names)
+    sku_groups = itertools.chain(google_groups, gratis_groups, edges_from_sku_names)
 
     graph_of_skus = services.GenericGraph.create_graph_from_neighbor_pairs(sku_groups)
     groups_of_sku_ids = services.GenericGraph.create_connected_component_groups(
