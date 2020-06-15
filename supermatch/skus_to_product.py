@@ -84,7 +84,8 @@ def group_link_id_tuples(link_id_tuples: List[tuple]) -> List[list]:
 
 def set_match_generator_for_skus(skus: dict) -> tuple:
     eligible = {
-        sku_id: sku for sku_id, sku in skus.items()
+        sku_id: sku
+        for sku_id, sku in skus.items()
         if keys.VARIANT_NAME not in sku and keys.COLOR not in sku
     }
     indexer = Indexer()

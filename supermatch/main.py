@@ -41,6 +41,7 @@ def reduce_docs(groups_of_doc_ids: list, id_doc_pairs: dict) -> dict:
 
     # this could be parallel
     for doc_ids in tqdm(groups_of_doc_ids):
+
         if len(doc_ids) == 1 and "clone" in doc_ids[0]:
             continue
 

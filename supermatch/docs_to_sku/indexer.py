@@ -93,9 +93,13 @@ class Indexer:
         sku_index = self.group_info.get(sku_id, {})
         token_set = sku_index.get("tokens")
 
-        all_sku_ids_for_this_tokens = [self.inverted_index.get(token, []) for token in token_set]
+        all_sku_ids_for_this_tokens = [
+            self.inverted_index.get(token, []) for token in token_set
+        ]
         # for every token, what are the set of ids?
-        candidate_sku_ids = [set(itertools.chain(group)) for group in all_sku_ids_for_this_tokens]
+        candidate_sku_ids = [
+            set(itertools.chain(group)) for group in all_sku_ids_for_this_tokens
+        ]
         # which groups has all tokens of the name,
         # a group  must cover all tokens of the single name
         candidate_sku_ids = set.intersection(*candidate_sku_ids)
@@ -119,9 +123,7 @@ class Indexer:
 
         return matches
 
-    def search_doc_groups_to_connect(
-            self, name: str, sizes_in_name: set
-    ) -> dict:
+    def search_doc_groups_to_connect(self, name: str, sizes_in_name: set) -> dict:
         token_set = set(name.split())
         # eligible groups include all tokens of the name
         # which groups has the tokens of this name

@@ -121,7 +121,6 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     sku_ids_count = dict(collections.Counter(sku_ids))
     sku_id = select_unique_id(sku_ids_count, doc_ids, used_ids)
 
-
     names = {
         doc.get(keys.MARKET): doc.get(keys.NAME) for doc in docs if doc.get(keys.NAME)
     }

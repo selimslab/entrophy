@@ -39,9 +39,7 @@ def cat_to_subcats(cat: Union[list, str]) -> List[str]:
 
 
 def test_cat_to_subcats():
-    cases = [
-        ("Şeker, Tuz & Baharat / un ", ['Şeker', 'Tuz', 'Baharat', 'un'])
-    ]
+    cases = [("Şeker, Tuz & Baharat / un ", ["Şeker", "Tuz", "Baharat", "un"])]
     services.check(cat_to_subcats, cases)
 
 

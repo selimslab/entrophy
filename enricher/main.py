@@ -65,11 +65,12 @@ def color_to_clean():
 
     stopwords = {"nocolor", "no color"}
 
+    color_original_to_clean = {c: services.clean_string(c) for c in colors}
     color_original_to_clean = {
-        c: services.clean_string(c) for c in colors
+        k: c
+        for k, c in color_original_to_clean.items()
+        if c and not c.isdigit() and not any(sw in c for sw in stopwords)
     }
-    color_original_to_clean = {k: c for k, c in color_original_to_clean.items()
-                               if c and not c.isdigit() and not any(sw in c for sw in stopwords)}
 
     services.save_json(paths.clean_colors, color_original_to_clean)
 
