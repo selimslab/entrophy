@@ -35,11 +35,14 @@ def cat_to_subcats(cat: Union[list, str]) -> List[str]:
         cat = cat[-1]
     # "Şeker, Tuz & Baharat / un " ->  [Şeker, Tuz, Baharat, un]
     subcats = re.split("/ |, |&", cat)
-    return [s.trim() for s in subcats]
+    return [s.strip() for s in subcats]
 
 
 def test_cat_to_subcats():
-    print(cat_to_subcats("Şeker, Tuz & Baharat / un "))
+    cases = [
+        ("Şeker, Tuz & Baharat / un ", ['Şeker', 'Tuz', 'Baharat', 'un'])
+    ]
+    services.check(cat_to_subcats, cases)
 
 
 def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
