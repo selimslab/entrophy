@@ -11,7 +11,7 @@ from .index_groups import index_groups
 
 
 def search_groups_to_connect(
-    self, name: str, sizes_in_name: set
+        self, name: str, sizes_in_name: set
 ) -> Union[Set[tuple], None]:
     token_set = set(name.split())
     # eligible groups include all tokens of the name
@@ -74,11 +74,11 @@ def set_match(self):
     note: passing self to a function is normal and practical here,
     as many examples in python standard libraries
     """
-    id_groups = self.get_connected_groups(self)
+    id_groups: list = self.get_connected_groups()
     index_groups(self, id_groups)
     logging.info("matching singles..")
     # this could be parallel but there are problems with multiprocessing code with class instances
-    for doc_id, doc in tqdm(self.single_doc_generator(self)):
+    for doc_id, doc in tqdm(self.single_doc_generator()):
         clean_name = doc.get(keys.CLEAN_NAME)
         if not clean_name:
             continue
