@@ -2,6 +2,8 @@ import itertools
 import operator
 import services
 
+import constants as keys
+
 
 def get_gratis_link_id_tuples(skus: dict, gratis_product_links: set) -> list:
     gratis_links_with_sku = (
@@ -59,7 +61,10 @@ def group_link_id_tuples(link_id_tuples):
     return groups
 
 
-def sku_names_to_products(skus:dict):
+def sku_names_to_products(skus: dict):
+    eligible = {sku_id: sku for sku_id, sku in skus.items()
+                if keys.VARIANT_NAME not in sku and keys.COLOR not in sku
+                }
 
     return []
 

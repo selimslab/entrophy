@@ -48,6 +48,22 @@ def barz():
     bar()
     return x
 
+def clo():
+    d = []
+
+    def add(s):
+        d.append(s)
+
+    return add
+
+adder = clo()
+adder(3)
+
+adder(5)
+
+
+
+
 
 if __name__ == "__main__":
     res = itertools.islice(d.items(), 1)
