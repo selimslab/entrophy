@@ -7,11 +7,15 @@ from typing import Set, Union, List
 
 import services
 import constants as keys
-from .index_groups import Indexer
+from .indexer import Indexer
 
 
 def set_match_generator_for_docs(self):
-    """build inverted_index and group_info for doc pairs"""
+    """Generate (id,id) pairs to add as edges in the SKU graph
+
+    build inverted_index and group_info for doc pairs
+
+    """
     id_groups: list = self.get_connected_groups()
     indexer = Indexer()
     logging.info("creating group_info and inverted index..")
@@ -23,23 +27,26 @@ def set_match_generator_for_docs(self):
         ]
 
         group_key = tuple(id_group)
-        indexer.index(docs, group_key)
+        indexer.index_docs(docs, group_key)
 
     logging.info("matching singles..")
-    # this could be parallel but there are problems with multiprocessing code with class instances
+
     for doc_id, doc in tqdm(self.single_doc_generator()):
         clean_name = doc.get(keys.CLEAN_NAME)
         if not clean_name:
             continue
         sizes_in_name = doc.get(keys.DIGIT_UNIT_TUPLES, [])
         # a single name could be matched to multiple groups
-        matches: dict = indexer.search_groups_to_connect(clean_name, set(sizes_in_name))
+        matches: dict = indexer.search_doc_groups_to_connect(clean_name, set(sizes_in_name))
 
         if matches:
-            key_to_connect = services.get_most_frequent_key(matches)
+            group_to_connect = services.get_most_frequent_key(matches)
             # connect to single doc to the first element of id group,
+            # group_to_connect is like
+            # 5ddbe4e92e31dadc8863226c ('5db82e6c6748a9cfba56abcd', '5dd8daf2653db525062870aa')
+            # it is enough to just add an edge with any member of the matched group
             # since the group is all connected, any member will do
-            yield doc_id, key_to_connect
+            yield doc_id, group_to_connect[0]
 
 
 def set_match(self):
@@ -56,7 +63,7 @@ def set_match(self):
     as many examples in python standard libraries
 
     """
-    for doc_id, key_to_connect  in set_match_generator_for_docs(self):
+    for doc_id, key_to_connect in set_match_generator_for_docs(self):
         self.sku_graph.add_edges_from([(doc_id, key_to_connect)])
         self.connected_ids.add(doc_id)
         self.stages[doc_id] = "set_match"
