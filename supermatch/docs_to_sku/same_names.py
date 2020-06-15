@@ -43,12 +43,12 @@ def exact_name_match(self):
             continue
 
         edges = itertools.combinations(single_doc_ids, 2)
-        # chec edges for size
+        # check edges for size
         for edge in edges:
             size1, size2 = id_size_pairs.get(edge[0]), id_size_pairs.get(edge[1])
             if size1 and size2 and not set(size1).intersection(size2):
                 continue
 
-            self.sku_graph.add_edges_from(edges)
-            self.stages.update({**dict.fromkeys(single_doc_ids, "exact_name")})
-            self.connected_ids.update(single_doc_ids)
+            self.sku_graph.add_edges_from([edge])
+            self.stages.update({**dict.fromkeys(edge, "exact_name")})
+            self.connected_ids.update(edge)
