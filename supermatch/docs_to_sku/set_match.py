@@ -15,18 +15,19 @@ def search_groups_to_connect(
 ) -> Union[Set[tuple], None]:
     token_set = set(name.split())
     # eligible groups include all tokens of the name
-    candidate_groups = [self.inverted_index.get(token, []) for token in token_set]
-    candidate_groups = set(itertools.chain(*candidate_groups))
-    if not candidate_groups:
-        return
 
+    # which groups has the tokens of this name
+    candidate_groups = [self.inverted_index.get(token, []) for token in token_set]
+
+    # for every token, what are the set of ids?
+    candidate_groups = [set(itertools.chain(group)) for group in candidate_groups]
+    # which groups has all tokens of the name,
+    # a group  must cover all tokens of the single name
+    candidate_groups = set.intersection(*candidate_groups)
     matches = set()
 
     for id_group in candidate_groups:
-        # TODO iff same sizes
-
         group = self.group_info.get(id_group, {})
-        group_tokens: set = group.get("group_tokens", set())
         group_common: set = group.get("common_tokens", set())
         group_sizes: set = group.get(keys.DIGIT_UNIT_TUPLES, set)
 
@@ -36,10 +37,6 @@ def search_groups_to_connect(
 
         # single name must cover all common tokens of the group
         if not token_set.issuperset(group_common):
-            continue
-
-        # the group  must cover all tokens of the single name
-        if not group_tokens.issuperset(token_set):
             continue
 
         # first common, if commons same, difference
