@@ -33,12 +33,20 @@ def name_to_clean(doc_id, name):
     clean_name = services.remove_whitespace(clean_name)
 
     digit_unit_tuples = [
-        services.size_pattern_to_digit_unit(pattern, unit)
+        services.size_pattern_to_digit_and_standard_unit(pattern, unit)
         for pattern, unit in size_unit_tuples
     ]
 
     digit_unit_tuples = [d for d in digit_unit_tuples if d]
     return doc_id, clean_name, digit_unit_tuples
+
+
+def test_name_to_clean():
+    cases = ["asfs 750ml 2 adet",
+             "SUTAS YOGURT 1000 GR KAYMAKSIZ",
+             ]
+    for case in cases:
+        print(name_to_clean(0, case))
 
 
 def add_clean_name(id_doc_pairs):
