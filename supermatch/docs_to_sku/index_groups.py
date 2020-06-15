@@ -7,43 +7,32 @@ import services
 import constants as keys
 
 
-def index_groups(self, id_groups: List[list]):
-    """
-    add group_info and inverted_index to the self
-
-    group_info : {
-        (member ids, ..) : {
-            tokens : set()
-            common_tokens: set()
-            DIGIT_UNIT_TUPLES: [ (75, "ml"), .. ],
-            BARCODES: [..]
+class Indexer:
+    def __init__(self):
+        """
+        group_info : {
+            (member ids, ..) : {
+                tokens : set()
+                common_tokens: set()
+                DIGIT_UNIT_TUPLES: [ (75, "ml"), .. ],
+            }
         }
-    }
 
 
-    inverted_index : {
-        token : set( (member_ids.. ), ..)
-    }
-    """
-    logging.info("creating group_info and inverted index..")
+        inverted_index : {
+            token : set( (member_ids.. ), ..)
+        }
+        """
+        self.group_info = collections.defaultdict(dict)
+        self.inverted_index = collections.defaultdict(set)
 
-    self.group_info = collections.defaultdict(dict)
-    self.inverted_index = collections.defaultdict(set)
-
-    for id_group in tqdm(id_groups):
+    def index(self, docs: List[dict], group_key: tuple):
         group = dict()
-        docs = [
-            self.id_doc_pairs.get(doc_id, {})
-            for doc_id in id_group
-            if "clone" not in doc_id
-        ]
-
-        group_key = tuple(id_group)
 
         names = [doc.get(keys.CLEAN_NAME) for doc in docs]
         names = [n for n in names if n]
         if not names:
-            continue
+            return
 
         token_sets = [set(name.split()) for name in names]
 
