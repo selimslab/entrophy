@@ -9,6 +9,7 @@ import services
 
 from supermatch.main import create_matching
 from supermatch.prep import preprocess
+from enricher.main import prepare_input, enrich_product_data
 
 cwd = pathlib.Path.cwd()
 input_dir = cwd / "in"
@@ -49,10 +50,18 @@ def create_new_matching_from_existing_pairs(start: int = None, end: int = None):
     if end is None:
         end = len(pairs)
     slice = itertools.islice(pairs.items(), start, end)
-    match_and_save(dict(slice))
+    slice = dict(slice)
+    match_and_save(slice)
+
+    skus: dict = create_matching(id_doc_pairs=dict(slice))
+    products = prepare_input(skus)
+    products_with_brand_and_subcat = enrich_product_data(products)
+
+    services.save_json(pairs_path, pairs)
 
 
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    create_new_matching_from_existing_pairs(105000, 110000)
+    # create_new_matching_from_existing_pairs(80000, 100000)
+    create_new_matching_from_existing_pairs()

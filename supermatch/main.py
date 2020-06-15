@@ -24,6 +24,7 @@ def get_sku_groups(id_doc_pairs):
     for doc_id, stage in stages.items():
         id_doc_pairs[doc_id]["stage"] = stage
 
+    logging.info("stage report")
     for stage in set(stages.values()):
         res = sum(v == stage for v in stages.values())
         print(res, stage)

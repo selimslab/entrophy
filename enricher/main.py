@@ -46,20 +46,24 @@ def enrich_product_data(products: List[dict]):
     return products
 
 
-def prepare_input():
-    skus: list = services.read_json(paths.skus).values()
-    filtered_skus = filter_docs(skus)
+def prepare_input(skus:dict):
+    filtered_skus = filter_docs(list(skus.values()))
     products = group_products(filtered_skus)
     return products
 
 
-if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.DEBUG)
-    products = prepare_input()
+def go():
+    products = prepare_input(skus)
     products_with_brand_and_subcat = enrich_product_data(products)
     services.save_json(
         paths.products_with_brand_and_subcat, products_with_brand_and_subcat
     )
+
+
+if __name__ == "__main__":
+    logging.getLogger().setLevel(logging.DEBUG)
+    skus: dict = services.read_json(paths.skus)
+
 
     print("done!")
     """

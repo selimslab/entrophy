@@ -59,13 +59,20 @@ def group_link_id_tuples(link_id_tuples):
     return groups
 
 
+def sku_names_to_products(skus:dict):
+
+    return []
+
+
 def group_skus(skus: dict, variants, links_of_products) -> list:
     google_groups = get_google_groups(skus, variants)
 
     gratis_link_id_tuples = get_gratis_link_id_tuples(skus, links_of_products)
     gratis_groups = group_link_id_tuples(gratis_link_id_tuples)
 
-    sku_groups = itertools.chain(google_groups, gratis_groups)
+    name_set_groups = sku_names_to_products(skus)
+
+    sku_groups = itertools.chain(google_groups, gratis_groups, name_set_groups)
 
     graph_of_skus = services.GenericGraph.create_graph_from_neighbor_pairs(sku_groups)
     groups_of_sku_ids = services.GenericGraph.create_connected_component_groups(
