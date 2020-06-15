@@ -1,12 +1,22 @@
 import itertools
 import operator
+import logging
+from typing import List
+
+from tqdm import tqdm
+
 import services
-
 import constants as keys
+from .docs_to_sku.index_groups import Indexer
 
 
-def get_gratis_link_id_tuples(skus: dict, gratis_product_links: set) -> list:
-    gratis_links_with_sku = (
+def get_gratis_link_id_tuples(skus: dict, gratis_product_links: set) -> List[tuple]:
+    """Create tuples to be grouped later
+    Returns:
+        gratis_link_id_tuples: [(link,id), (link,id) .. ]
+    """
+    # relevant ones include ?sku
+    filtered_gratis_product_links = (
         (link, sku_id)
         for sku_id, sku in skus.items()
         for link in sku.get("links", [])
@@ -14,16 +24,21 @@ def get_gratis_link_id_tuples(skus: dict, gratis_product_links: set) -> list:
     )
     gratis_link_id_tuples = [
         (link.split("?")[0], sku_id)
-        for (link, sku_id) in gratis_links_with_sku
+        for (link, sku_id) in filtered_gratis_product_links
         if link.split("?")[0] in gratis_product_links
     ]
 
     return gratis_link_id_tuples
 
 
-def get_google_groups(skus, variants):
-    """
-    variants: [{'250 ml': '/shopping/product/17523461779494271950'}, {} ... ]
+def get_google_groups(skus: dict, variants: List[dict]) -> List[list]:
+    """Products groups from google shopping
+
+    Args:
+        variants: [{'250 ml': '/shopping/product/17523461779494271950'}, {} ... ]
+
+    Returns:
+        google_groups: [[ids..], [ids..]]
     """
     variant_id_pairs = dict()
 
@@ -53,20 +68,43 @@ def get_google_groups(skus, variants):
     return google_groups
 
 
-def group_link_id_tuples(link_id_tuples):
+def group_link_id_tuples(link_id_tuples: List[tuple]) -> List[list]:
+    """ group tuples by index 1
+    Example:
+    in: [(link1,id3), (link1,id4) .. ]
+    out: [ [id3, id4] , .. ]
+    """
     sorted_link_id_tuples = sorted(link_id_tuples, key=operator.itemgetter(0))
     raw_groups = itertools.groupby(sorted_link_id_tuples, operator.itemgetter(0))
+    # let only ids remain, itemgetter(1) gets the id from (link, id) tuple
     groups = (list(map(operator.itemgetter(1), group)) for key, group in raw_groups)
     groups = [list(set(group)) for group in groups]
     return groups
 
 
-def sku_names_to_products(skus: dict):
+def set_match_generator_for_skus(skus):
     eligible = {sku_id: sku for sku_id, sku in skus.items()
                 if keys.VARIANT_NAME not in sku and keys.COLOR not in sku
                 }
+    indexer = Indexer()
+    logging.info("creating group_info and inverted index..")
+    for sku_id, sku in tqdm(eligible):
+        indexer.index([sku], sku_id)
 
-    return []
+    for sku_id, sku in tqdm(eligible):
+
+        clean_name = sku.get(keys.CLEAN_NAME)
+        if not clean_name:
+            continue
+        sizes_in_name = sku.get(keys.DIGIT_UNIT_TUPLES, [])
+
+        matches = indexer.search_groups_to_connect(clean_name, set(sizes_in_name))
+
+        if matches:
+            other_sku_id_to_connect = services.get_most_frequent_key(matches)
+            # connect to single doc to the first element of id group,
+            # since the group is all connected, any member will do
+            yield sku_id, other_sku_id_to_connect
 
 
 def group_skus(skus: dict, variants, links_of_products) -> list:
@@ -75,9 +113,9 @@ def group_skus(skus: dict, variants, links_of_products) -> list:
     gratis_link_id_tuples = get_gratis_link_id_tuples(skus, links_of_products)
     gratis_groups = group_link_id_tuples(gratis_link_id_tuples)
 
-    name_set_groups = sku_names_to_products(skus)
+    groups_from_names = set_match_generator_for_skus(skus)
 
-    sku_groups = itertools.chain(google_groups, gratis_groups, name_set_groups)
+    sku_groups = itertools.chain(google_groups, gratis_groups, groups_from_names)
 
     graph_of_skus = services.GenericGraph.create_graph_from_neighbor_pairs(sku_groups)
     groups_of_sku_ids = services.GenericGraph.create_connected_component_groups(
