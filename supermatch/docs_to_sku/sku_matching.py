@@ -8,7 +8,7 @@ import constants as keys
 import services
 from supermatch.docs_to_sku.promoted import promoted_match
 from supermatch.docs_to_sku.set_match import set_match
-from supermatch.docs_to_sku.sku_exact_name_match import exact_name_match
+from supermatch.docs_to_sku.same_names import exact_name_match
 
 
 class SKUGraphCreator(services.GenericGraph):
@@ -69,7 +69,7 @@ class SKUGraphCreator(services.GenericGraph):
                 doc = self.id_doc_pairs.get(doc_id, {})
                 yield doc_id, doc
 
-    def get_connected_groups(self):
+    def get_connected_groups(self)->list:
         id_groups = self.create_connected_component_groups(self.sku_graph)
 
         # filter out single item groups
