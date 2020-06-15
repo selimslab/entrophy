@@ -2,7 +2,7 @@
 useful functions for lists, dicts, tuples, ..
 """
 from collections import Counter, defaultdict, ChainMap
-from typing import Iterable, List
+from typing import Iterable, List, Callable
 
 
 ######### Dict util
@@ -27,6 +27,10 @@ def get_most_common_item(itr: Iterable):
 
 def test_get_most_common_item():
     assert get_most_common_item([(2, 3), (2, 3), 4, 5, "a"]) == (2, 3)
+
+
+def filter_dict(d: dict, filter_func: Callable):
+    return {k: v for k, v in d.items() if filter_func(k, v)}
 
 
 def remove_nulls_from_list_values_of_a_dict(d: dict) -> dict:
