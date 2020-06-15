@@ -39,7 +39,7 @@ def cat_to_subcats(cat: Union[list, str]) -> List[str]:
 
 
 def test_cat_to_subcats():
-    ...
+    print(cat_to_subcats("Şeker, Tuz & Baharat / un "))
 
 
 def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
