@@ -46,7 +46,7 @@ def enrich_product_data(products: List[dict]):
     return products
 
 
-def prepare_input(skus:dict):
+def prepare_input(skus: dict):
     filtered_skus = filter_docs(list(skus.values()))
     products = group_products(filtered_skus)
     return products
@@ -60,11 +60,26 @@ def go():
     )
 
 
+def is_valid_color(c: str):
+    return c and not c.isdigit() and "nocolor" not in c
+
+
+def color_to_clean():
+    colors = services.read_json(paths.colors)
+
+    color_original_to_clean = {
+        c: services.clean_string(c) for c in colors
+    }
+    color_original_to_clean = {k: clean_color for k, clean_color in color_original_to_clean.items()
+                               if is_valid_color(clean_color)}
+
+    services.save_json(paths.clean_colors, color_original_to_clean)
+
+
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
-    skus: dict = services.read_json(paths.skus)
-
-
+    # skus: dict = services.read_json(paths.skus)
+    color_to_clean()
     print("done!")
     """
     remove sub tokens of a string, too
