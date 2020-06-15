@@ -1,10 +1,13 @@
 import logging
 import collections
+import itertools
+from typing import List, Union,Set
+
 from tqdm import tqdm
-from typing import List
 
 import services
 import constants as keys
+
 
 
 class Indexer:
@@ -26,7 +29,7 @@ class Indexer:
         self.group_info = collections.defaultdict(dict)
         self.inverted_index = collections.defaultdict(set)
 
-    def index(self, docs: List[dict], group_key: tuple):
+    def index(self, docs: List[dict], group_key: Union[tuple, str, int]):
         group = dict()
 
         names = [doc.get(keys.CLEAN_NAME) for doc in docs]
@@ -55,3 +58,37 @@ class Indexer:
         group[keys.DIGIT_UNIT_TUPLES] = size_tuples
 
         self.group_info[group_key] = group
+
+    def search_groups_to_connect(
+            self, name: str, sizes_in_name: set
+    ) -> dict:
+        token_set = set(name.split())
+        # eligible groups include all tokens of the name
+        # which groups has the tokens of this name
+        candidate_keys = [self.inverted_index.get(token, []) for token in token_set]
+
+        # for every token, what are the set of ids?
+        candidate_keys = [set(itertools.chain(group)) for group in candidate_keys]
+        # which groups has all tokens of the name,
+        # a group  must cover all tokens of the single name
+        candidate_keys = set.intersection(*candidate_keys)
+        # could be replaced with a dict key: count
+        matches = dict()
+
+        for key in candidate_keys:
+            group = self.group_info.get(key, {})
+            group_common: set = group.get("common_tokens", set())
+            group_sizes: set = group.get(keys.DIGIT_UNIT_TUPLES, set)
+
+            # they should be same size
+            if sizes_in_name and (not group_sizes.intersection(sizes_in_name)):
+                continue
+
+            # single name must cover all common tokens of the group
+            if not token_set.issuperset(group_common):
+                continue
+
+            # first common, if commons same, difference
+            matches[key] = len(group_common)
+
+        return matches
