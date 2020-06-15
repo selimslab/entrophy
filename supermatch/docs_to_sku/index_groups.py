@@ -1,12 +1,13 @@
 import logging
 import collections
 from tqdm import tqdm
+from typing import List
 
 import services
 import constants as keys
 
 
-def index_groups(self, id_groups):
+def index_groups(self, id_groups: List[list]):
     """
     add group_info and inverted_index to the self
 
@@ -14,7 +15,8 @@ def index_groups(self, id_groups):
         (member ids, ..) : {
             tokens : set()
             common_tokens: set()
-            DIGIT_UNIT_TUPLES: [ (75, "ml"), .. ]
+            DIGIT_UNIT_TUPLES: [ (75, "ml"), .. ],
+            BARCODES: [..]
         }
     }
 
@@ -27,7 +29,6 @@ def index_groups(self, id_groups):
 
     self.group_info = collections.defaultdict(dict)
     self.inverted_index = collections.defaultdict(set)
-    self.size_index = collections.defaultdict(set)
 
     for id_group in tqdm(id_groups):
         group = dict()
@@ -37,8 +38,12 @@ def index_groups(self, id_groups):
             if "clone" not in doc_id
         ]
 
+        group_key = tuple(id_group)
+
         names = [doc.get(keys.CLEAN_NAME) for doc in docs]
         names = [n for n in names if n]
+        if not names:
+            continue
 
         token_sets = [set(name.split()) for name in names]
 
@@ -54,10 +59,10 @@ def index_groups(self, id_groups):
 
         # update inverted_index
         for token in all_tokens:
-            self.inverted_index[token].add(tuple(id_group))
+            self.inverted_index[token].add(group_key)
 
         size_tuples = [doc.get(keys.DIGIT_UNIT_TUPLES) for doc in docs]
         size_tuples = set(services.flatten(size_tuples))
         group[keys.DIGIT_UNIT_TUPLES] = size_tuples
 
-        self.group_info[tuple(id_group)] = group
+        self.group_info[group_key] = group
