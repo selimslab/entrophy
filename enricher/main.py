@@ -52,7 +52,7 @@ def prepare_input(skus: dict):
     return products
 
 
-def go():
+def go(skus):
     products = prepare_input(skus)
     products_with_brand_and_subcat = enrich_product_data(products)
     services.save_json(
@@ -60,26 +60,25 @@ def go():
     )
 
 
-def is_valid_color(c: str):
-    return c and not c.isdigit() and "nocolor" not in c
-
-
 def color_to_clean():
     colors = services.read_json(paths.colors)
+
+    stopwords = {"nocolor", "no color"}
 
     color_original_to_clean = {
         c: services.clean_string(c) for c in colors
     }
-    color_original_to_clean = {k: clean_color for k, clean_color in color_original_to_clean.items()
-                               if is_valid_color(clean_color)}
+    color_original_to_clean = {k: c for k, c in color_original_to_clean.items()
+                               if c and not c.isdigit() and not any(sw in c for sw in stopwords)}
 
     services.save_json(paths.clean_colors, color_original_to_clean)
 
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
-    # skus: dict = services.read_json(paths.skus)
-    color_to_clean()
+    skus: dict = services.read_json(paths.skus)
+    go(skus)
+    # color_to_clean()
     print("done!")
     """
     remove sub tokens of a string, too

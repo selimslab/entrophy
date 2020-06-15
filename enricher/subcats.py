@@ -34,8 +34,8 @@ def cat_to_subcats(cat: Union[list, str]) -> List[str]:
     if isinstance(cat, list):
         cat = cat[-1]
     # "Şeker, Tuz & Baharat / un " ->  [Şeker, Tuz, Baharat, un]
-    subcat = re.split("/ |, |&", cat)
-    return subcat
+    subcats = re.split("/ |, |&", cat)
+    return [s.trim() for s in subcats]
 
 
 def test_cat_to_subcats():
