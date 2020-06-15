@@ -64,7 +64,7 @@ def remove_stopwords(tokens: list) -> list:
 
 
 def is_single_letter(s: str) -> bool:
-    return len(s) > 1 or s.isdigit()
+    return len(s) == 1 and not s.isdigit()
 
 
 def is_barcode(s: str) -> bool:
