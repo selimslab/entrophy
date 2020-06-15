@@ -2,7 +2,11 @@ import re
 
 
 def remove_non_alpha_numeric_chars(s: str) -> str:
-    return re.sub("[^\w]", " ", s)
+    return re.sub("[^\w]", " ", s).strip()
+
+
+def test_remove_non_alpha_numeric_chars():
+    assert remove_non_alpha_numeric_chars("? abc .*-=!  '^^+%&/()") == "abc"
 
 
 def remove_whitespace(s: str):

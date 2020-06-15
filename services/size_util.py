@@ -118,7 +118,7 @@ max_digits = {
 }
 
 
-def size_pattern_to_digit_unit(size_pattern: str, unit: str) -> tuple:
+def size_pattern_to_digit_and_standard_unit(size_pattern: str, unit: str) -> tuple:
     """
     find digits
     convert unit to standard unit
