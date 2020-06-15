@@ -208,7 +208,7 @@ any one them in your code ?
 
  ## next steps 
 
-a few bits of unsolicited advice :) 
+a few bits of advice :) 
 
 + think about data structures and their relationships
  

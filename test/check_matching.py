@@ -55,4 +55,4 @@ def create_new_matching_from_existing_pairs(start: int = None, end: int = None):
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    create_new_matching_from_existing_pairs(10000, 110000)
+    create_new_matching_from_existing_pairs(105000, 110000)

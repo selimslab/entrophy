@@ -69,7 +69,7 @@ class SKUGraphCreator(services.GenericGraph):
                 doc = self.id_doc_pairs.get(doc_id, {})
                 yield doc_id, doc
 
-    def get_connected_groups(self)->list:
+    def get_connected_groups(self) -> list:
         id_groups = self.create_connected_component_groups(self.sku_graph)
 
         # filter out single item groups

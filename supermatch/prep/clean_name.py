@@ -42,9 +42,10 @@ def name_to_clean(doc_id, name):
 
 
 def test_name_to_clean():
-    cases = ["asfs 750ml 2 adet",
-             "SUTAS YOGURT 1000 GR KAYMAKSIZ",
-             ]
+    cases = [
+        "asfs 750ml 2 adet",
+        "SUTAS YOGURT 1000 GR KAYMAKSIZ",
+    ]
     for case in cases:
         print(name_to_clean(0, case))
 

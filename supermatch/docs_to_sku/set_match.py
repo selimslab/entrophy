@@ -11,7 +11,7 @@ from .index_groups import index_groups
 
 
 def search_groups_to_connect(
-        self, name: str, sizes_in_name: set
+    self, name: str, sizes_in_name: set
 ) -> Union[Set[tuple], None]:
     token_set = set(name.split())
     # eligible groups include all tokens of the name
