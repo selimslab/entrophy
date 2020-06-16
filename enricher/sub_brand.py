@@ -8,31 +8,16 @@ from paths import output_dir
 import constants as keys
 
 
-def get_all_contigious_substrings_of_a_string(s: str):
-    tokens = s.split()
-    n = len(tokens)
-    substrings = []
-    for start in range(n):
-        for end in range(1, n + 1):
-            word_group = " ".join(tokens[start:end])
-            substrings.append(word_group)
-    return substrings
-
-
-def get_name_freq(s: str):
-    substrings = get_all_contigious_substrings_of_a_string(s)
-    return Counter(substrings)
-
-
 def get_doc_freq(names: list):
     doc_freq = Counter()
     for name in names:
-        name_freq = get_name_freq(name)
+        substrings = services.get_all_contigious_substrings_of_a_string(name)
+        name_freq = Counter(substrings)
         doc_freq.update(name_freq)
     return doc_freq
 
 
-def get_word_group_frequency_by_product(filtered_names_tree:dict):
+def get_word_group_frequency_by_product(filtered_names_tree: dict):
     """
     sliding window frequency
     """
@@ -43,7 +28,6 @@ def get_word_group_frequency_by_product(filtered_names_tree:dict):
                 names = [[name] * count for name, count in group.items()]
                 names = services.flatten(names)
                 doc_freq = get_doc_freq(names)
-                del doc_freq[""]
                 freqs.append(doc_freq)
             filtered_names_tree[subcat][brand] = freqs
     return filtered_names_tree
@@ -69,7 +53,7 @@ def get_possible_sub_brands_by_subcat(possible_sub_brands_by_brand):
         word_groups = services.flatten(word_groups)
         freq_by_subcat = Counter(word_groups)
 
-        # a word_group should be in a single brand only, to be a sub-brand
+        # a word_group should be in a single brand of this subcat only, to be a sub-brand
         possible_sub_brands_for_this_subcat = (
             word_group for word_group, count in freq_by_subcat.items() if count == 1
         )
@@ -81,16 +65,16 @@ def get_possible_sub_brands_by_subcat(possible_sub_brands_by_brand):
 
 
 def filter_possible_sub_brands(
-    possible_sub_brands_by_brand, possible_sub_brands_by_subcat
+        possible_sub_brands_by_brand, possible_sub_brands_by_subcat
 ):
     for subcat, brands in possible_sub_brands_by_brand.items():
         possible_sub_brands_for_this_subcat = possible_sub_brands_by_subcat[subcat]
         for brand, freq_by_brand in brands.items():
-            # a word_group should be in at least 3 products, to be a sub-brand
+            # a word_group should be in at least 2 products, to be a sub-brand
             filtered_freq_by_brand = {
                 word_group: count
                 for word_group, count in freq_by_brand.items()
-                if (word_group in possible_sub_brands_for_this_subcat and count > 2)
+                if (word_group in possible_sub_brands_for_this_subcat and count > 1)
             }
 
             possible_sub_brands_by_brand[subcat][brand] = OrderedDict(
@@ -115,7 +99,7 @@ def decrease_sub_token_count(sub_brand_freqs):
     return sub_brand_freqs
 
 
-def test_decrease_sub_token_count():
+def pre_test_decrease_sub_token_count():
     case = {"x": {"y": {"a": 2, "b": 3, "a b": 1}}}
     res = decrease_sub_token_count(case)
 
@@ -132,10 +116,6 @@ def create_possible_sub_brands(filtered_names_tree):
     possible_sub_brands_by_subcat = get_possible_sub_brands_by_subcat(
         possible_sub_brands_by_brand
     )
-
-    possible_sub_brands_by_brand = decrease_sub_token_count(
-        possible_sub_brands_by_brand
-    )
     possible_sub_brands_by_brand = filter_possible_sub_brands(
         possible_sub_brands_by_brand, possible_sub_brands_by_subcat
     )
@@ -144,10 +124,6 @@ def create_possible_sub_brands(filtered_names_tree):
     services.save_json(
         output_dir / "word_group_frequency_by_product.json",
         word_group_frequency_by_product,
-    )
-
-    services.save_json(
-        output_dir / "possible_sub_brands_by_subcat.json", possible_sub_brands_by_subcat
     )
 
     services.save_json(
@@ -181,12 +157,10 @@ def create_filtered_names_tree_by_subcat_and_brand(products_filtered):
     return tree
 
 
-def go():
+if __name__ == "__main__":
     products = services.read_json(output_dir / "products_filtered.json")
     filtered_names_tree = create_filtered_names_tree_by_subcat_and_brand(products)
     services.save_json(output_dir / "filtered_names_tree.json", filtered_names_tree)
+    logging.info("creating possible_sub_brands..")
     create_possible_sub_brands(filtered_names_tree)
 
-
-if __name__ == "__main__":
-    go()
