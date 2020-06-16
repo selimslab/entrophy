@@ -23,7 +23,7 @@ class SKUGraphCreator(services.GenericGraph):
 
     def init_sku_graph(self):
         # add all items as nodes
-        print("init sku graph..")
+        logging.info("init sku graph..")
         for doc_id in self.id_doc_pairs.keys():
             self.sku_graph.add_node(doc_id)
 
@@ -48,16 +48,16 @@ class SKUGraphCreator(services.GenericGraph):
     def create_graph(self):
         self.init_sku_graph()
 
-        print("barcode match..")
+        logging.info("barcode match..")
         self.barcode_match()
 
-        print("exact_name_match..")
+        logging.info("exact_name_match..")
         exact_name_match(self)
 
-        print("set match..")
+        logging.info("set match..")
         set_match(self)
 
-        print("promoted match..")
+        logging.info("promoted match..")
         promoted_match(self)
 
         return self.sku_graph, self.stages
