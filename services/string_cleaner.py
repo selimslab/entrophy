@@ -32,24 +32,25 @@ def dot_iff_size(s):
 def replace_chars(s: str):
     return (
         s.lower()
-        .replace("ı", "i")
-        .replace("&", " ")
-        .replace("-", " ")
-        .replace("/", " ")
-        .replace(",", ".")
-        .replace("*", " * ")
+            .replace("ı", "i")
+            .replace("&", " ")
+            .replace("-", " ")
+            .replace("/", " ")
+            .replace(",", ".")
+            .replace("*", " * ")
     )
 
 
 def plural_to_singular(s: str):
-    first_part, last_4 = s[:-4], s[-4:]
-    plural = ["ler", "lar"]
+    n = 4
+    first_part, ending = s[:-n], s[-n:]
+    plural = ["leri", "lari", "ler", "lar"]
 
     for p in plural:
-        if p in last_4:
-            last_4 = last_4.replace(p, "")
+        if p in ending:
+            ending = ending.replace(p, "")
 
-    return first_part + last_4
+    return first_part + ending
 
 
 def test_plural_to_singular():
