@@ -15,6 +15,9 @@ def add_subcat(
     subcat_original_to_clean: Dict[str, str],
     possible_subcats_by_brand: Dict[str, list],
 ):
+    """
+
+    """
     subcat_freq: dict = get_subcat_freq(products, subcat_original_to_clean)
 
     for product in tqdm(products):
@@ -44,6 +47,7 @@ def test_cat_to_subcats():
 
 
 def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
+    """ Select the most frequent globally """
     if subcat_candidates:
         subcat_candidates_with_freq = {
             sub: subcat_freq.get(sub, 0) for sub in subcat_candidates
@@ -121,7 +125,7 @@ def get_subcat_candidates(
         for name in clean_names:
             tokens = name.split()
             # a name should include all tokens of a subcat
-            if sub in name and set(tokens).issuperset(sub.split()):
+            if sub in name and set(tokens).issuperset(set(sub.split())):
                 sub_cat_candidates.add(sub)
 
     if not sub_cat_candidates:

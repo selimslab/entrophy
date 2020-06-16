@@ -1,5 +1,6 @@
 from collections import defaultdict
 from typing import List
+from pprint import pprint
 
 import services
 import constants as keys
@@ -39,7 +40,8 @@ def group_products(filtered_skus: List[dict]) -> List[dict]:
         # merge info from multiple skus
         product = {keys.PRODUCT_ID: pid}
         for key in keys_to_merge:
-            product[key] = services.flatten([doc.get(key, []) for doc in docs])
+            vals = [doc.get(key, []) for doc in docs]
+            product[key] = services.flatten(vals)
 
         products.append(product)
 
