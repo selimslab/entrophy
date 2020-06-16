@@ -133,7 +133,9 @@ class Indexer:
 
         return matches
 
-    def search_doc_groups_to_connect(self, name: str, sizes_in_name: set, doc_id: str) -> dict:
+    def search_doc_groups_to_connect(
+        self, name: str, sizes_in_name: set, doc_id: str
+    ) -> dict:
         """
         1. name -> tokens
         2. if a group includes all tokens

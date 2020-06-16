@@ -111,7 +111,10 @@ def group_skus(skus: dict, variants, links_of_products) -> list:
     logging.info("creating edges_from_sku_names")
     edges_from_sku_names = set_match_generator_for_skus(skus)
     edges_from_sku_names = list(edges_from_sku_names)
-    print(len(set(itertools.chain.from_iterable(edges_from_sku_names))), "connections from product set match")
+    print(
+        len(set(itertools.chain.from_iterable(edges_from_sku_names))),
+        "connections from product set match",
+    )
 
     sku_groups = itertools.chain(google_groups, gratis_groups, edges_from_sku_names)
 
