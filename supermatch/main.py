@@ -84,6 +84,7 @@ def create_matching(id_doc_pairs: dict) -> dict:
 
     logging.info("grouping skus into products..")
     groups_of_sku_ids = skus_to_product.group_skus(skus, variants, links_of_products)
+    logging.info(f"products # {len(groups_of_sku_ids)}")
     skus = add_product_info(groups_of_sku_ids, skus)
 
     skus = {

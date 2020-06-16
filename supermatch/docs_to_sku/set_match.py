@@ -38,7 +38,7 @@ def set_match_generator_for_docs(self):
         sizes_in_name = doc.get(keys.DIGIT_UNIT_TUPLES, [])
         # a single name could be matched to multiple groups
         matches: dict = indexer.search_doc_groups_to_connect(
-            clean_name, set(sizes_in_name)
+            clean_name, set(sizes_in_name), doc_id
         )
 
         if matches:
