@@ -69,6 +69,7 @@ def add_color(products):
         clean_names = product.get(keys.CLEAN_NAMES, [])
         colors = product.get(keys.COLOR, []) + product.get(keys.VARIANT_NAME, [])
         clean_colors = [color_original_to_clean.get(color) for color in colors]
+        clean_colors = [c for c in clean_colors if c]
         product[keys.CLEAN_COLORS] = clean_colors
         color = select_color(clean_names, clean_colors)
         if color:
