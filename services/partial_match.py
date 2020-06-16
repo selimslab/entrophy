@@ -39,7 +39,7 @@ def compare_tokensets(window_tokens: list, needle_tokens: list) -> bool:
     return True
 
 
-def partial_string_search(haystack: str, needle: str) -> bool:
+def partial_string_search(haystack: str, needle: str) -> Union[str, None]:
     """
     as long as there is a substring with
     1. the same number of tokens,
@@ -47,12 +47,15 @@ def partial_string_search(haystack: str, needle: str) -> bool:
     3. they are in the same order
     4. they have at least 1 common token with len>4
     """
+    if needle in haystack:
+        return needle
+
     needle_tokens = needle.split()
 
     #  Aranacak olan subcat, brand vs. 2 ve daha fazla kelimeli olmalı.
     #  Örnek: Loreal Paris, Tuvalet Kağıdı
     if len(needle_tokens) < 2:
-        return False
+        return
 
     haystack_tokens = haystack.split()
 
@@ -62,17 +65,13 @@ def partial_string_search(haystack: str, needle: str) -> bool:
         # Aranacak olan token, aranan yerde aynı sıralama ile geçmeli.
         # this windowing strategy ensures the order
         window_tokens = haystack_tokens[start : start + n]
-        # found
-        if window_tokens == needle_tokens:
-            return True
-
         if is_eligible_tokensets(window_tokens, needle_tokens):
             is_found = compare_tokensets(window_tokens, needle_tokens)
             # print(window_tokens, needle_tokens, is_found)
             if is_found:
-                return True
+                # return the similar window
+                return " ".join(window_tokens)
 
-    return False
 
 
 def pre_test_match_partially():
