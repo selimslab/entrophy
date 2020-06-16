@@ -7,6 +7,7 @@ from tqdm import tqdm
 from paths import output_dir
 import services
 import constants as keys
+import paths as paths
 
 men = {"erkek", "men", "bay", "man"}
 woman = {"kadin", "women", "bayan", "woman"}
@@ -15,22 +16,22 @@ unisex = {"unisex"}
 
 gender = set(itertools.chain.from_iterable([men, woman, child, unisex]))
 
-color = {
-    "mavi",
-    "blue",
-    "beyaz",
-    "white",
-    "siyah",
-    "black",
-    "kirmizi",
-    "red",
-    "altin",
-    "gold",
-    "yellow",
-    "sari",
-    "green",
-    "yesil",
-}
+color_pairs = [
+    ("blue", "mavi"),
+    ("beyaz", "white"),
+    ("siyah", "black"),
+    ("kirmizi", "red"),
+    ("altin", "gold"),
+    ("yellow", "sari"),
+    ("green", "yesil"),
+
+]
+
+color_dict = {}
+
+for pair in color_pairs:
+    color_dict[pair[0]] = pair[1]
+    color_dict[pair[1]] = pair[0]
 
 stopwords = {
     "ve",
@@ -54,6 +55,19 @@ def remove_a_list_of_strings(s: str, to_remove: list):
         #  a string should include all tokens of the removal string
         if bad in s and set(s.split()).issuperset(bad.split()):
             s = s.replace(bad, "")
+            print(s, bad)
+    return s
+
+
+def remove_color(s,clean_colors):
+
+    for color in clean_colors:
+        #  a string should include all tokens of the removal string
+        if color in s and set(s.split()).issuperset(color.split()):
+            s = s.replace(color, "")
+            if color in color_dict:
+                ...
+            print(s, color)
     return s
 
 
@@ -69,7 +83,7 @@ def filter_tokens(name: str):
     return " ".join(filtered_tokens)
 
 
-def filter_out_knownword_groups_from_a_name(product, clean_colors):
+def filter_out_known_word_groups_from_a_name(product):
     """
     remove brand candidates, subcat_candidates, color, gender, plural_to_singular
 
@@ -92,18 +106,25 @@ def filter_out_knownword_groups_from_a_name(product, clean_colors):
     remove colors
 
     """
-    clean_names = product.get(keys.CLEAN_NAMES)
-    brand_candidates = product.get(keys.BRAND_CANDIDATES)
-    subcat_candidates = product.get(keys.SUBCAT_CANDIDATES)
 
-    sorted_brands = sorted(brand_candidates.keys(), key=len, reverse=True)
-    sorted_subcats = sorted(subcat_candidates.keys(), key=len, reverse=True)
+    clean_colors = services.read_json(paths.clean_colors).values()
+    clean_colors = sorted(list(clean_colors), key=len, reverse=True)
+
+    clean_names = product.get(keys.CLEAN_NAMES,[])
+    brand_candidates = product.get(keys.BRAND_CANDIDATES, [])
+    subcat_candidates = product.get(keys.SUBCAT_CANDIDATES, [])
+
+    colors = product.get(keys.COLOR,[])
+
+
+    sorted_brands = sorted(list(set(brand_candidates)), key=len, reverse=True)
+    sorted_subcats = sorted(list(set(subcat_candidates)), key=len, reverse=True)
 
     filtered_names = []
     for name in clean_names:
         name = remove_a_list_of_strings(name, sorted_brands)
         name = remove_a_list_of_strings(name, sorted_subcats)
-        name = remove_a_list_of_strings(name, clean_colors)
+        name = remove_color(name, clean_colors)
         name = filter_tokens(name)
         if name:
             filtered_names.append(name)
@@ -111,20 +132,31 @@ def filter_out_knownword_groups_from_a_name(product, clean_colors):
     return filtered_names
 
 
-def filter_all_products():
-    products = services.read_json(output_dir / "products_with_brand_and_sub_cat.json")
+def color_to_clean():
+    colors = services.read_json(paths.colors)
 
-    clean_colors = services.read_json(output_dir / "clean_colors.json")
-    clean_colors = sorted(list(clean_colors), key=len, reverse=True)
+    stopwords = {"nocolor", "no color", "cok renkli", "renkli"}
+
+    color_original_to_clean = {c: services.clean_string(c) for c in colors}
+    color_original_to_clean = {
+        k: c
+        for k, c in color_original_to_clean.items()
+        if c and not c.isdigit() and not any(sw in c for sw in stopwords)
+    }
+    services.save_json(paths.clean_colors, color_original_to_clean)
+
+
+def filter_all_products():
 
     for product in tqdm(products):
-        filtered_names = filter_out_knownword_groups_from_a_name(product, clean_colors)
+        filtered_names = filter_out_known_word_groups_from_a_name(product)
         filtered_names = Counter(filtered_names)
-        print(filtered_names)
         product["filtered_names"] = filtered_names
 
-    services.save_json(output_dir / "products_filtered.json", products)
+    return products
 
 
 if __name__ == "__main__":
-    filter_all_products()
+    products = services.read_json(paths.products_with_brand_and_subcat)
+    products_filtered = filter_all_products()
+    services.save_json(paths.products_filtered, products_filtered)
