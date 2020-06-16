@@ -12,5 +12,8 @@ brand_pool = output_dir / "brand_pool.json"
 products_with_brand_and_subcat = output_dir / "products_with_brand_and_subcat.json"
 products_filtered = output_dir / "products_filtered.json"
 
-colors = input_dir / "colors.json"
-clean_colors = input_dir / "clean_colors.json"
+color_original_to_clean = output_dir / "color_original_to_clean.json"
+
+brand_original_to_clean = output_dir / "brand_original_to_clean.json"
+
+subcat_original_to_clean = output_dir / "subcat_original_to_clean.json"
