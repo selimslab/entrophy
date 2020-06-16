@@ -3,9 +3,10 @@ Reduce complexity, create simplicity
 
 ## what it does? 
 
-+ creates product groups with rich metadata from a raw mess of online products 
++ creates product groups with rich metadata 
+from a raw mess of online products 
 
-it's a medium size project with around 8k lines of python3 by June 2020, and it can be made even smaller
++ this is a medium size project with around 10k lines of Python3 by June 2020
 
 # directory walkthrough 
  
@@ -222,7 +223,7 @@ a few bits of advice :)
 
 + If it is hard to explain, it's a bad idea.
 
-+ define what is most important and focus 
++ define what is most important and focus on this 
 
 ride now, ride and fear no darkness..
 
