@@ -57,7 +57,6 @@ def remove_a_list_of_strings(s: str, to_remove: list):
             s = s.replace(word, "")
             for token in word.split():
                 s = s.replace(token, "")
-            print(s, word)
     return s
 
 
@@ -65,13 +64,17 @@ def remove_color(s, clean_colors):
     for color in clean_colors:
         #  a string should include all tokens of the removal string
         if color in s and set(s.split()).issuperset(color.split()):
-            s = s.replace(color, "")
-            for token in color.split():
-                s = s.replace(token, "")
-                if token in color_dict:
-                    s = s.replace(color_dict.get(token), "")
+            print(s)
+            print(color)
+            print()
+            s = s.replace(color, "").strip()
 
-            print(s, color)
+            for token in color.split():
+                if s and token in s:
+                    s = s.replace(token, "").strip()
+
+                if s and token in color_dict:
+                    s = s.replace(color_dict.get(token), "")
     return s
 
 
@@ -134,15 +137,7 @@ def filter_out_known_word_groups_from_a_name(product):
     return filtered_names
 
 
-color_original_to_clean = {}
-
-
 def color_to_clean(colors):
-    """
-    colors = services.read_json(paths.colors)
-    services.save_json(paths.clean_colors, color_original_to_clean)
-    """
-
     stopwords = {"nocolor", "no color", "cok renkli", "renkli"}
 
     original_to_clean = {c: services.clean_string(c) for c in colors}
@@ -167,6 +162,10 @@ def filter_all_products():
 
 
 if __name__ == "__main__":
+    color_original_to_clean = {}
+
     products = services.read_json(paths.products_with_brand_and_subcat)
     products_filtered = filter_all_products()
     services.save_json(paths.products_filtered, products_filtered)
+
+    services.save_json(paths.clean_colors, color_original_to_clean)
