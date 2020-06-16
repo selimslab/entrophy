@@ -29,3 +29,19 @@ def get_subcat_original_to_clean(products: List[dict]) -> dict:
                 clean_sub = services.plural_to_singular(clean_sub)
                 subcat_original_to_clean[sub] = clean_sub
     return subcat_original_to_clean
+
+
+def get_color_original_to_clean(products: List[dict]) -> dict:
+    logging.info("cleaning colors..")
+    color_original_to_clean = {}
+    stopwords = {"nocolor", "no color", "cok renkli", "renkli"}
+
+    for product in products:
+        colors = product.get(keys.COLOR, []) + product.get(keys.VARIANT_NAME, [])
+        for color in colors:
+            if color not in color_original_to_clean:
+                clean_color = services.clean_string(clean_color)
+                if not clean_color or clean_color.isdigit() or any(sw in clean_color for sw in stopwords):
+                    continue
+                color_original_to_clean[color] = clean_color
+    return color_original_to_clean
