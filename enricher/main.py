@@ -33,10 +33,10 @@ def add_brand_and_subcat(products: List[dict]):
     """
     # Dr O'etker : dr oetker
     brand_original_to_clean: dict = get_brand_original_to_clean(products)
-    services.save_json("out/brand_original_to_clean.json", brand_original_to_clean)
+    services.save_json(paths.brand_original_to_clean, brand_original_to_clean)
 
     subcat_original_to_clean: dict = get_subcat_original_to_clean(products)
-    services.save_json("out/subcat_original_to_clean.json", subcat_original_to_clean)
+    services.save_json(paths.subcat_original_to_clean, subcat_original_to_clean)
 
     possible_subcats_by_brand: dict = get_possible_subcats_by_brand(
         products, brand_original_to_clean, subcat_original_to_clean
@@ -63,7 +63,7 @@ def select_color(clean_names, clean_colors):
 
 def add_color(products):
     color_original_to_clean = get_color_original_to_clean(products)
-    services.save_json(paths.clean_colors, color_original_to_clean)
+    services.save_json(paths.color_original_to_clean, color_original_to_clean)
 
     for product in products:
         clean_names = product.get(keys.CLEAN_NAMES, [])
