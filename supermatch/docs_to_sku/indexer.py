@@ -88,10 +88,18 @@ class Indexer:
 
         self.group_info[group_key] = group
 
-    def search_skus_to_connect(self, sku, sku_id):
+    def search_skus_to_connect(self, sku: dict, sku_id: str) -> dict:
+        """
+        1. if a sku have all tokens of another sku
+        2. if their common sets common each other
+        they are members of the same product
+        """
+        matches = {}
 
         sku_index = self.group_info.get(sku_id, {})
         token_set = sku_index.get("tokens")
+        if not token_set:
+            return {}
 
         all_sku_ids_for_this_tokens = [
             self.inverted_index.get(token, []) for token in token_set
@@ -100,18 +108,20 @@ class Indexer:
         candidate_sku_ids = [
             set(itertools.chain(group)) for group in all_sku_ids_for_this_tokens
         ]
-        # which groups has all tokens of the name,
-        # a group  must cover all tokens of the single name
+        # which skus has all tokens of this sku
         candidate_sku_ids = set.intersection(*candidate_sku_ids)
 
-        matches = dict()
+        # remove yourself
+        if sku_id in candidate_sku_ids:
+            candidate_sku_ids.remove(sku_id)
+
         sizes_in_name = sku.get(keys.DIGIT_UNIT_TUPLES, set())
         for sid in candidate_sku_ids:
             group = self.group_info.get(sid, {})
             group_common: set = group.get("common_tokens", set())
             group_sizes: set = group.get(keys.DIGIT_UNIT_TUPLES, set())
 
-            # they should be same size
+            # they should include at least 1 common size
             if sizes_in_name and (not group_sizes.intersection(sizes_in_name)):
                 continue
 
@@ -123,7 +133,13 @@ class Indexer:
 
         return matches
 
-    def search_doc_groups_to_connect(self, name: str, sizes_in_name: set) -> dict:
+    def search_doc_groups_to_connect(self, name: str, sizes_in_name: set, doc_id: str) -> dict:
+        """
+        1. name -> tokens
+        2. if a group includes all tokens
+        3. and if name covers the common token-set of the group
+        they are a match!
+        """
         token_set = set(name.split())
         # eligible groups include all tokens of the name
         # which groups has the tokens of this name
@@ -134,7 +150,10 @@ class Indexer:
         # which groups has all tokens of the name,
         # a group  must cover all tokens of the single name
         candidate_keys = set.intersection(*candidate_keys)
-        # could be replaced with a dict key: count
+        # remove yourself
+        if doc_id in candidate_keys:
+            candidate_keys.remove(doc_id)
+
         matches = dict()
 
         for key in candidate_keys:
