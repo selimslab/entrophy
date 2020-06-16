@@ -10,3 +10,4 @@ from .partial_match import *
 from .sliding_window import *
 from .size_util import *
 from .regex_util import *
+from .string_util import *
