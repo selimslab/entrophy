@@ -24,7 +24,7 @@ color_pairs = [
     ("altin", "gold"),
     ("yellow", "sari"),
     ("green", "yesil"),
-
+    ("dark", "koyu"),
 ]
 
 color_dict = {}
@@ -51,34 +51,37 @@ stopwords = {
 
 
 def remove_a_list_of_strings(s: str, to_remove: list):
-    for bad in to_remove:
+    for word in to_remove:
         #  a string should include all tokens of the removal string
-        if bad in s and set(s.split()).issuperset(bad.split()):
-            s = s.replace(bad, "")
-            print(s, bad)
+        if word in s and set(s.split()).issuperset(word.split()):
+            s = s.replace(word, "")
+            for token in word.split():
+                s = s.replace(token, "")
+            print(s, word)
     return s
 
 
-def remove_color(s,clean_colors):
-
+def remove_color(s, clean_colors):
     for color in clean_colors:
         #  a string should include all tokens of the removal string
         if color in s and set(s.split()).issuperset(color.split()):
             s = s.replace(color, "")
-            if color in color_dict:
-                ...
+            for token in color.split():
+                s = s.replace(token, "")
+                if token in color_dict:
+                    s = s.replace(color_dict.get(token), "")
+
             print(s, color)
     return s
 
 
 def is_known_token(s: str):
-    return services.is_barcode(s) or s in gender or s in color or s in stopwords
+    return services.is_barcode(s) or s in gender or s in stopwords
 
 
 def filter_tokens(name: str):
     tokens = name.split()
     filtered_tokens = [t.strip() for t in tokens if not is_known_token(t)]
-    filtered_tokens = [services.plural_to_singular(t) for t in filtered_tokens]
     filtered_tokens = [t for t in filtered_tokens if len(t) > 1 and t.isalnum()]
     return " ".join(filtered_tokens)
 
@@ -107,15 +110,14 @@ def filter_out_known_word_groups_from_a_name(product):
 
     """
 
-    clean_colors = services.read_json(paths.clean_colors).values()
-    clean_colors = sorted(list(clean_colors), key=len, reverse=True)
+    # clean_colors = services.read_json(paths.clean_colors).values()
 
-    clean_names = product.get(keys.CLEAN_NAMES,[])
+    clean_names = product.get(keys.CLEAN_NAMES, [])
     brand_candidates = product.get(keys.BRAND_CANDIDATES, [])
     subcat_candidates = product.get(keys.SUBCAT_CANDIDATES, [])
 
-    colors = product.get(keys.COLOR,[])
-
+    colors = product.get(keys.COLOR, []) + product.get(keys.VARIANT_NAME, [])
+    clean_colors = color_to_clean(colors)
 
     sorted_brands = sorted(list(set(brand_candidates)), key=len, reverse=True)
     sorted_subcats = sorted(list(set(subcat_candidates)), key=len, reverse=True)
@@ -132,22 +134,30 @@ def filter_out_known_word_groups_from_a_name(product):
     return filtered_names
 
 
-def color_to_clean():
+color_original_to_clean = {}
+
+
+def color_to_clean(colors):
+    """
     colors = services.read_json(paths.colors)
+    services.save_json(paths.clean_colors, color_original_to_clean)
+    """
 
     stopwords = {"nocolor", "no color", "cok renkli", "renkli"}
 
-    color_original_to_clean = {c: services.clean_string(c) for c in colors}
-    color_original_to_clean = {
+    original_to_clean = {c: services.clean_string(c) for c in colors}
+    original_to_clean = {
         k: c
-        for k, c in color_original_to_clean.items()
+        for k, c in original_to_clean.items()
         if c and not c.isdigit() and not any(sw in c for sw in stopwords)
     }
-    services.save_json(paths.clean_colors, color_original_to_clean)
+    color_original_to_clean.update(original_to_clean)
+    clean_colors = list(original_to_clean.values())
+    clean_colors = sorted(clean_colors, key=len, reverse=True)
+    return clean_colors
 
 
 def filter_all_products():
-
     for product in tqdm(products):
         filtered_names = filter_out_known_word_groups_from_a_name(product)
         filtered_names = Counter(filtered_names)
