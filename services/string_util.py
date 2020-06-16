@@ -1,5 +1,6 @@
 from services.tester import check
 
+
 def get_all_contigious_substrings_of_a_string(s: str):
     tokens = s.split()
     n = len(tokens)
@@ -13,8 +14,6 @@ def get_all_contigious_substrings_of_a_string(s: str):
 
 
 def test_get_all_contigious_substrings_of_a_string():
-    cases = [
-        ("a b c", ['a', 'a b', 'a b c', 'b', 'b c', 'c'])
-    ]
+    cases = [("a b c", ["a", "a b", "a b c", "b", "b c", "c"])]
 
     check(get_all_contigious_substrings_of_a_string, cases)

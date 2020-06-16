@@ -65,7 +65,7 @@ def get_possible_sub_brands_by_subcat(possible_sub_brands_by_brand):
 
 
 def filter_possible_sub_brands(
-        possible_sub_brands_by_brand, possible_sub_brands_by_subcat
+    possible_sub_brands_by_brand, possible_sub_brands_by_subcat
 ):
     for subcat, brands in possible_sub_brands_by_brand.items():
         possible_sub_brands_for_this_subcat = possible_sub_brands_by_subcat[subcat]
@@ -163,4 +163,3 @@ if __name__ == "__main__":
     services.save_json(output_dir / "filtered_names_tree.json", filtered_names_tree)
     logging.info("creating possible_sub_brands..")
     create_possible_sub_brands(filtered_names_tree)
-

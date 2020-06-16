@@ -73,7 +73,6 @@ def partial_string_search(haystack: str, needle: str) -> Union[str, None]:
                 return " ".join(window_tokens)
 
 
-
 def pre_test_match_partially():
     test_cases = [
         ("Garnier Micellar M Tem Suyu", "Makyaj Temizleme Suyu", True),

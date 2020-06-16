@@ -18,8 +18,8 @@ def normalize(s: str):
 
 
 def dots_to_separate_digits_only(s: str) -> str:
-    # 1.2 ok 
-    # 3123 ml. fail 
+    # 1.2 ok
+    # 3123 ml. fail
     tokens = []
     for t in s.split():
         if not t.replace(".", "").isdigit():
@@ -31,23 +31,19 @@ def dots_to_separate_digits_only(s: str) -> str:
 
 
 def test_dots_to_separate_digits_only():
-    cases = [
-        ("1.2", "1.2"),
-        ("34 ml.", "34 ml "),
-        ("a 1.3.5 b", "a 1.3.5 b")
-    ]
+    cases = [("1.2", "1.2"), ("34 ml.", "34 ml "), ("a 1.3.5 b", "a 1.3.5 b")]
     services.check(dots_to_separate_digits_only, cases)
 
 
 def replace_chars(s: str):
     return (
         s.lower()
-            .replace("ı", "i")
-            .replace("&", " ")
-            .replace("-", " ")
-            .replace("/", " ")
-            .replace(",", ".")
-            .replace("*", " * ")
+        .replace("ı", "i")
+        .replace("&", " ")
+        .replace("-", " ")
+        .replace("/", " ")
+        .replace(",", ".")
+        .replace("*", " * ")
     )
 
 

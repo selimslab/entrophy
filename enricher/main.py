@@ -6,7 +6,11 @@ import constants as keys
 import paths as paths
 
 from preprocess import filter_docs, group_products
-from original_to_clean import get_brand_original_to_clean, get_subcat_original_to_clean, get_color_original_to_clean
+from original_to_clean import (
+    get_brand_original_to_clean,
+    get_subcat_original_to_clean,
+    get_color_original_to_clean,
+)
 from branding import get_brand_pool, add_brand
 from subcats import get_possible_subcats_by_brand, cat_to_subcats, add_subcat
 from enricher.test.inspect_results import inspect_results
