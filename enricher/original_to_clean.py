@@ -40,7 +40,7 @@ def get_color_original_to_clean(products: List[dict]) -> dict:
         colors = product.get(keys.COLOR, []) + product.get(keys.VARIANT_NAME, [])
         for color in colors:
             if color not in color_original_to_clean:
-                clean_color = services.clean_string(clean_color)
+                clean_color = services.clean_string(color)
                 if not clean_color or clean_color.isdigit() or any(sw in clean_color for sw in stopwords):
                     continue
                 color_original_to_clean[color] = clean_color
