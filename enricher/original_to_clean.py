@@ -25,5 +25,7 @@ def get_subcat_original_to_clean(products: List[dict]) -> dict:
         subcats = product.get(keys.SUB_CATEGORIES, [])
         for sub in subcats:
             if sub not in subcat_original_to_clean:
-                subcat_original_to_clean[sub] = services.clean_string(sub)
+                clean_sub = services.clean_string(sub)
+                clean_sub = services.plural_to_singular(clean_sub)
+                subcat_original_to_clean[sub] = clean_sub
     return subcat_original_to_clean
