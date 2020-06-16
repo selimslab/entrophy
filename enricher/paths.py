@@ -4,7 +4,7 @@ cwd = pathlib.Path.cwd()
 input_dir = cwd / "in"
 output_dir = cwd / "out"
 
-skus = input_dir / "skus.json"
+skus = cwd.parent / "test" / "out" / "skus.json"
 
 brand_subcats_pairs = output_dir / "brand_subcats_pairs.json"
 brand_pool = output_dir / "brand_pool.json"
