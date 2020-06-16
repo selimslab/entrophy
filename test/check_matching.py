@@ -9,7 +9,6 @@ import services
 
 from supermatch.main import create_matching
 from supermatch.prep import preprocess
-from enricher.main import prepare_input, enrich_product_data
 
 cwd = pathlib.Path.cwd()
 input_dir = cwd / "in"
