@@ -65,5 +65,5 @@ def end_to_end_test():
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
-    create_new_matching_from_existing_pairs(80000, 100000)
-    # create_new_matching_from_existing_pairs()
+    # create_new_matching_from_existing_pairs(80000, 100000)
+    create_new_matching_from_existing_pairs()
