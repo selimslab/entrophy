@@ -9,9 +9,19 @@ from preprocess import filter_docs, group_products
 from original_to_clean import get_brand_original_to_clean, get_subcat_original_to_clean
 from branding import get_brand_pool, add_brand
 from subcats import get_possible_subcats_by_brand, cat_to_subcats, add_subcat
+from enricher.test.inspect_results import inspect_results
 
 
-def enrich_product_data(products: List[dict]):
+def add_raw_subcats(products: List[dict]):
+    # derive_subcats_from_product_cats
+    for product in products:
+        cats = product.get(keys.CATEGORIES, [])
+        subcat_lists = [cat_to_subcats(cat) for cat in cats]
+        product[keys.SUB_CATEGORIES] = services.flatten(subcat_lists)
+    return products
+
+
+def add_brand_and_subcat(products: List[dict]):
     """
     run the data enrichment from scratch
 
@@ -20,16 +30,13 @@ def enrich_product_data(products: List[dict]):
         products = pool.map(add_raw_sub_categories, tqdm(products))
 
     """
-
-    # derive_subcats_from_product_cats
-    for product in products:
-        cats = product.get(keys.CATEGORIES, [])
-        subcat_lists = [cat_to_subcats(cat) for cat in cats]
-        product[keys.SUB_CATEGORIES] = services.flatten(subcat_lists)
-
     # Dr O'etker : dr oetker
     brand_original_to_clean: dict = get_brand_original_to_clean(products)
+    services.save_json("out/brand_original_to_clean.json", brand_original_to_clean)
+
     subcat_original_to_clean: dict = get_subcat_original_to_clean(products)
+    services.save_json("out/subcat_original_to_clean.json", subcat_original_to_clean)
+
     possible_subcats_by_brand: dict = get_possible_subcats_by_brand(
         products, brand_original_to_clean, subcat_original_to_clean
     )
@@ -46,45 +53,20 @@ def enrich_product_data(products: List[dict]):
     return products
 
 
-def prepare_input(skus: dict):
+def enrich_product_data(skus: dict):
     filtered_skus = filter_docs(list(skus.values()))
     products = group_products(filtered_skus)
-    return products
-
-
-def go(skus):
-    products = prepare_input(skus)
-    products_with_brand_and_subcat = enrich_product_data(products)
+    products = add_raw_subcats(products)
+    products_with_brand_and_subcat = add_brand_and_subcat(products)
     services.save_json(
         paths.products_with_brand_and_subcat, products_with_brand_and_subcat
     )
 
-
-def color_to_clean():
-    colors = services.read_json(paths.colors)
-
-    stopwords = {"nocolor", "no color"}
-
-    color_original_to_clean = {c: services.clean_string(c) for c in colors}
-    color_original_to_clean = {
-        k: c
-        for k, c in color_original_to_clean.items()
-        if c and not c.isdigit() and not any(sw in c for sw in stopwords)
-    }
-
-    services.save_json(paths.clean_colors, color_original_to_clean)
+    inspect_results(products_with_brand_and_subcat)
+    print("done!")
 
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     skus: dict = services.read_json(paths.skus)
-    go(skus)
-    # color_to_clean()
-    print("done!")
-    """
-    remove sub tokens of a string, too
-    
-    plural for subcat only 
-    
-    restrict color by brand or subcat 
-    """
+    enrich_product_data(skus)
