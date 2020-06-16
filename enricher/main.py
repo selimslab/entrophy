@@ -6,10 +6,11 @@ import constants as keys
 import paths as paths
 
 from preprocess import filter_docs, group_products
-from original_to_clean import get_brand_original_to_clean, get_subcat_original_to_clean
+from original_to_clean import get_brand_original_to_clean, get_subcat_original_to_clean, get_color_original_to_clean
 from branding import get_brand_pool, add_brand
 from subcats import get_possible_subcats_by_brand, cat_to_subcats, add_subcat
 from enricher.test.inspect_results import inspect_results
+from filter_names import add_filtered_names
 
 
 def add_raw_subcats(products: List[dict]):
@@ -53,20 +54,46 @@ def add_brand_and_subcat(products: List[dict]):
     return products
 
 
+def select_color(clean_names, clean_colors):
+    for name in clean_names:
+        for color in clean_colors:
+            if color in name:
+                return color
+
+
 def add_color(products):
-    ...
+    color_original_to_clean = get_color_original_to_clean(products)
+    services.save_json(paths.clean_colors, color_original_to_clean)
+
+    for product in products:
+        clean_names = product.get(keys.CLEAN_NAMES, [])
+        colors = product.get(keys.COLOR, []) + product.get(keys.VARIANT_NAME, [])
+        clean_colors = [color_original_to_clean.get(color) for color in colors]
+        product[keys.CLEAN_COLORS] = clean_colors
+        color = select_color(clean_names, clean_colors)
+        if color:
+            product[keys.SELECTED_COLOR] = color
+
+    return products
 
 
 def enrich_product_data(skus: dict):
     filtered_skus = filter_docs(list(skus.values()))
     products = group_products(filtered_skus)
     products = add_raw_subcats(products)
+
+    products = add_color(products)
+
     products_with_brand_and_subcat = add_brand_and_subcat(products)
     services.save_json(
         paths.products_with_brand_and_subcat, products_with_brand_and_subcat
     )
 
     inspect_results(products_with_brand_and_subcat)
+
+    products_filtered = add_filtered_names(products_with_brand_and_subcat)
+    services.save_json(paths.products_filtered, products_filtered)
+
     print("done!")
 
 
