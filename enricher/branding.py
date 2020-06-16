@@ -98,7 +98,8 @@ def get_brand_candidates(
                 to_partial_search.add(s)
 
     if not brand_candidates and to_partial_search:
-        brand_candidates = check_partial(brand_pool_sorted, to_partial_search)
+        # brand_candidates = check_partial(brand_pool_sorted, to_partial_search)
+        ...
 
     return brand_candidates
 
