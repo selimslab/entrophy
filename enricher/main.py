@@ -57,7 +57,6 @@ def add_color(products):
     ...
 
 
-
 def enrich_product_data(skus: dict):
     filtered_skus = filter_docs(list(skus.values()))
     products = group_products(filtered_skus)

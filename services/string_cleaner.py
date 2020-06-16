@@ -32,12 +32,12 @@ def dot_iff_size(s):
 def replace_chars(s: str):
     return (
         s.lower()
-            .replace("ı", "i")
-            .replace("&", " ")
-            .replace("-", " ")
-            .replace("/", " ")
-            .replace(",", ".")
-            .replace("*", " * ")
+        .replace("ı", "i")
+        .replace("&", " ")
+        .replace("-", " ")
+        .replace("/", " ")
+        .replace(",", ".")
+        .replace("*", " * ")
     )
 
 

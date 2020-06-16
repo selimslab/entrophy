@@ -11,7 +11,6 @@ keys_to_merge = {
     keys.CLEAN_NAMES,
     keys.COLOR,
     keys.VARIANT_NAME,
-
 }
 
 relevant_keys = {
