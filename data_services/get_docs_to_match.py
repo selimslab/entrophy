@@ -13,8 +13,8 @@ def get_docs_to_match(query: dict):
         keys.OUT_OF_STOCK: 1,
         keys.BARCODES: 1,
         keys.PROMOTED: 1,
-        keys.VARIANTS: 1,
-        keys.VARIANT_NAME: 1,
+        keys.VARIANTS: 1,  # google promoted links
+        keys.VARIANT_NAME: 1,  # gratis variant name
         keys.SKU_ID: 1,
         keys.BRAND: 1,
         keys.COLOR: 1,
