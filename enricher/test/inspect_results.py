@@ -48,7 +48,7 @@ def inspect_results(docs):
     with_sub = services.count_fields(docs, keys.SUBCAT)
 
     print(
-        "total",
+        "products",
         len(docs),
         "\n",
         "with_brand",
