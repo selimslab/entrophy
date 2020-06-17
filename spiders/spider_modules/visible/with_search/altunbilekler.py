@@ -1,7 +1,7 @@
 import scrapy
 
 import constants as keys
-from services.convert_price import convert_price
+from services.string.convert_price import convert_price
 from services.get_soup import get_soup
 from spiders.spider_modules.base import BaseSpider
 from spiders.test_spider import debug_spider

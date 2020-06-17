@@ -4,11 +4,9 @@ import requests
 import scrapy
 
 import constants as keys
-from services.barcode_cleaner import BarcodeCleaner
+from services.string.barcode_cleaner import BarcodeCleaner
 from spiders.spider_modules.base import BaseSpider
 from spiders.test_spider import debug_spider
-
-import pprint
 
 
 class GratisHelper:

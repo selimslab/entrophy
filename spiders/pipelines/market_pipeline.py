@@ -1,6 +1,6 @@
 import constants as keys
 import data_services
-from services.barcode_cleaner import BarcodeCleaner
+from services.string.barcode_cleaner import BarcodeCleaner
 from .base_pipeline import BasePipeline
 from datetime import datetime
 from .instant_update import instant_price_update

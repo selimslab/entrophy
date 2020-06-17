@@ -1,5 +1,5 @@
 import constants as keys
-from services.convert_price import convert_price
+from services.string.convert_price import convert_price
 from services.get_soup import get_soup
 
 
