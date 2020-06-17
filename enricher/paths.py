@@ -17,3 +17,5 @@ color_original_to_clean = output_dir / "color_original_to_clean.json"
 brand_original_to_clean = output_dir / "brand_original_to_clean.json"
 
 subcat_original_to_clean = output_dir / "subcat_original_to_clean.json"
+
+filtered_names_tree = output_dir / "filtered_names_tree.json"
