@@ -1,5 +1,5 @@
 import constants as keys
-from services.string.barcode_cleaner import BarcodeCleaner
+from services.barcode.barcode_cleaner import BarcodeCleaner
 from spiders.pipelines.base_pipeline import BasePipeline
 
 

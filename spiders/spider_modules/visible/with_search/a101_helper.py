@@ -3,7 +3,7 @@ import json
 import requests
 
 import constants as keys
-from services.string.convert_price import convert_price
+from services.price.convert_price import convert_price
 
 
 class A101Helper:

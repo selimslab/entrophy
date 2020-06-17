@@ -1,6 +1,6 @@
 import constants as keys
 import services.collections_util
-from services.string.convert_price import convert_price
+from services.price.convert_price import convert_price
 from services.get_soup import get_soup
 
 

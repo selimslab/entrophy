@@ -3,7 +3,7 @@ import logging
 
 import constants as keys
 import services
-from services.string.size_pattern_matcher import size_finder
+from services.sizing.size_pattern_matcher import size_finder
 import multiprocessing
 
 
