@@ -2,7 +2,7 @@ from tqdm import tqdm
 import logging
 from collections import defaultdict
 import services
-from paths import output_dir, input_dir
+import paths as paths
 
 from services.files import excel
 import constants as keys
@@ -31,14 +31,14 @@ def filter_pairs(pairs):
 
 def add_sku_id_and_product_id_to_pairs():
     # raw docs
-    pairs = services.read_json(input_dir / "pairs.json")
+    pairs = services.read_json(paths.pairs)
     pairs = filter_pairs(pairs)
 
-    skus = services.read_json(input_dir / "skus.json")
+    skus = services.read_json(paths.skus)
     pid_tree = get_pid_tree(skus)
 
     products_with_brand_and_sub_cat = services.read_json(
-        output_dir / "products_with_brand_and_sub_cat.json"
+        paths.products_with_brand_and_subcat
     )
 
     def add_brand_and_subcat_to_doc(sku_id):
@@ -76,10 +76,10 @@ def add_sku_id_and_product_id_to_pairs():
 
 def to_excel():
     pairs = add_sku_id_and_product_id_to_pairs()
-    services.save_json(output_dir / "pairs_matched.json", pairs)
+    # services.save_json(output_dir / "pairs_matched.json", pairs)
     rows = list(pairs.values())
     rows = [row for row in rows if keys.SKU_ID in row]
-    excel.create_excel(rows, "derived/jun10.xlsx")
+    excel.create_excel(rows, "out/jun17.xlsx")
 
 
 if __name__ == "__main__":
