@@ -1,3 +1,12 @@
+
+## with cat
+
+myo, wat, gratis, c4, ross, ty, migros, joker, civil
+
+## with brand
+
+myo, wat, gratis, c4, ross, ty
+
 ## Steps 
 
 * read full skus 
