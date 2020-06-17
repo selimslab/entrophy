@@ -126,30 +126,34 @@ def get_counts_by_subcat(counts_by_brand):
     return counts_by_subcat
 
 
+def get_word_group_count_by_brand(word_counts_by_product: dict) -> dict:
+    # how many times the word_group seen in all of products of this brand
+    """
+    wg is short for word group
+
+    word_counts_by_product = [
+        { wg1: 3, wg2: 5 },
+        { wg1: 3, wg3: 1 }
+    ] -> brand_count = {
+        wg1: 6,
+        wg2: 5,
+        wg3: 1
+    }
+    """
+    brand_count = Counter()
+    for word_group_counts_for_this_product in word_counts_by_product:
+        brand_count.update(Counter(word_group_counts_for_this_product))
+    return brand_count
+
+
 def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat):
     """ get_possible_sub_brands by subcat and brand """
+
     for subcat, brands in counts_by_brand.items():
         possible_sub_brands_for_this_subcat = counts_by_subcat[subcat]
         for brand, word_counts in brands.items():
-
-            # how many times the word_group in all of products of this brand
-            """
-            wg is short for word group 
-            
-            word_counts_by_product = [
-                { wg1: 3, wg2: 5 },
-                { wg1: 3, wg3: 1 }
-            ] -> brand_count = {
-                wg1: 6,
-                wg2: 5,
-                wg3: 1
-            }
-            """
-            brand_count = Counter()
             word_counts_by_product = counts_by_product[subcat][brand]
-            for word_group_counts_for_this_product in word_counts_by_product:
-                brand_count.update(Counter(word_group_counts_for_this_product))
-
+            brand_count = get_word_group_count_by_brand(word_counts_by_product)
             filtered_count = {
                 word_group: brand_count.get(word_group)
                 for word_group, count in word_counts.items()
@@ -192,10 +196,10 @@ def create_possible_sub_brands():
         paths.output_dir / "counts_by_subcat.json", counts_by_subcat
     )
 
-    possible_sub_brands = get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat)
+    possible_word_groups_for_sub_brand = get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat)
 
     services.save_json(
-        paths.output_dir / "possible_sub_brands.json", possible_sub_brands
+        paths.output_dir / "possible_word_groups_for_sub_brand.json", possible_word_groups_for_sub_brand
     )
 
 
