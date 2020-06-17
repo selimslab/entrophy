@@ -1,5 +1,5 @@
 from collections import Counter
-
+import logging
 import itertools
 
 from tqdm import tqdm
@@ -130,10 +130,13 @@ def filter_out_known_word_groups_from_a_name(product):
     return filtered_names
 
 
+
+
+
 def add_filtered_names(products):
+    logging.info("add_filtered_names..")
     for product in tqdm(products):
         filtered_names = filter_out_known_word_groups_from_a_name(product)
-        filtered_names = Counter(filtered_names)
         product["filtered_names"] = filtered_names
 
     return products
