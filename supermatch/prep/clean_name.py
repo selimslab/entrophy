@@ -3,7 +3,7 @@ import logging
 
 import constants as keys
 import services
-from services.size_pattern_matcher import size_finder
+from services.string.size_pattern_matcher import size_finder
 import multiprocessing
 
 
@@ -33,7 +33,6 @@ def name_to_clean(doc_id, name):
         if not services.is_single_letter(t) and not services.is_barcode(t)
     ]
     clean_name = " ".join(tokens)
-
 
     clean_name = services.remove_non_alpha_numeric_chars(clean_name)
     clean_name = services.remove_whitespace(clean_name)

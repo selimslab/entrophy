@@ -1,6 +1,6 @@
 import os
 
-from services import json_util
+from services.files import json_util
 
 dir_name = os.path.dirname(__file__)
 json_name = "cred.json"

@@ -1,18 +1,12 @@
 from collections import OrderedDict, Counter, defaultdict
-from operator import itemgetter
 import itertools
 from pprint import pprint
 from tqdm import tqdm
-import re
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import KMeans
-import pandas as pd
 
-from paths import input_dir, output_dir
+from paths import output_dir
 import services
-from services.size_pattern_matcher import size_finder
-import constants as keys
 
 
 def go():
