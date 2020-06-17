@@ -49,25 +49,29 @@ stopwords = {
 
 
 def remove_a_list_of_strings(s: str, to_remove: list):
+    tokens = s.split()
     for word in to_remove:
         #  a string should include all tokens of the removal string
-        if word in s and set(s.split()).issuperset(word.split()):
+        if word in s and set(tokens).issuperset(word.split()):
             s = s.replace(word, "")
-            for token in word.split():
-                if s and token in s:
-                    s = s.replace(token, "")
+        # remove tokens
+        for token_to_remove in word.split():
+            if s and token_to_remove in tokens:
+                s = s.replace(token_to_remove, "")
     return s
 
 
 def remove_color(s, clean_colors):
     for color in clean_colors:
+        #
         if color in s and set(s.split()).issuperset(color.split()):
             s = s.replace(color, "").strip()
-            for token in color.split():
-                if s and token in s:
-                    s = s.replace(token, "").strip()
-                if s and token in color_dict:
-                    s = s.replace(color_dict.get(token), "")
+        # remove sub tokens
+        for token in color.split():
+            if s and token in s:
+                s = s.replace(token, "").strip()
+            if s and token in color_dict:
+                s = s.replace(color_dict.get(token), "")
     return s
 
 
@@ -128,8 +132,6 @@ def filter_out_known_word_groups_from_a_name(product):
             filtered_names.append(name)
 
     return filtered_names
-
-
 
 
 
