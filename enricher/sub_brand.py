@@ -124,12 +124,12 @@ def create_possible_sub_brands(filtered_names_tree):
 
     # OrderedDict(filtered_freq_by_brand.most_common())
     services.save_json(
-        output_dir / "word_group_frequency_by_product.json",
+        paths.output_dir / "word_group_frequency_by_product.json",
         word_group_frequency_by_product,
     )
 
     services.save_json(
-        output_dir / "possible_sub_brands_by_brand.json", possible_sub_brands_by_brand
+        paths.output_dir / "possible_sub_brands_by_brand.json", possible_sub_brands_by_brand
     )
 
 
@@ -168,13 +168,14 @@ def filter():
 
 
 def count():
-    products = services.read_json(paths.products_filtered)
-    filtered_names_tree = create_filtered_names_tree_by_subcat_and_brand(products)
+    products_filtered = services.read_json(paths.products_filtered)
+    filtered_names_tree = create_filtered_names_tree_by_subcat_and_brand(products_filtered)
     services.save_json(paths.filtered_names_tree, filtered_names_tree)
     logging.info("creating possible_sub_brands..")
     create_possible_sub_brands(filtered_names_tree)
 
 
 if __name__ == "__main__":
+    logging.getLogger().setLevel(logging.DEBUG)
     # filter()
     count()
