@@ -82,25 +82,31 @@ def get_counts_by_product(filtered_names_tree):
 
 
 def get_counts_by_brand(counts_by_product):
-    """ word_group_frequency_by_brand """
+    """ word_group_frequency_by_brand
+
+    in this brand, how many products have this token
+    """
     counts_by_brand = defaultdict(dict)
     for subcat, brands in counts_by_product.items():
         for brand, filtered_name_groups in brands.items():
             word_groups = [list(group.keys()) for group in filtered_name_groups]
             word_groups = services.flatten(word_groups)
-            freq_by_brand = Counter(word_groups)
+            counts = Counter(word_groups)
             # a word_group should be in at least 2 products, to be a sub-brand
-            freq_by_brand = {
+            counts = {
                 word_group: count
-                for word_group, count in freq_by_brand.items()
+                for word_group, count in counts.items()
                 if count > 1
             }
-            counts_by_brand[subcat][brand] = freq_by_brand
+            counts_by_brand[subcat][brand] = counts
     return counts_by_brand
 
 
 def get_counts_by_subcat(counts_by_brand):
-    """ get_possible_sub_brands_by_subcat """
+    """ get_possible_sub_brands_by_subcat
+
+    in this subcat, how many brands have this token
+    """
     counts_by_subcat = {}
     for subcat, brands in counts_by_brand.items():
         word_groups = [
@@ -120,28 +126,38 @@ def get_counts_by_subcat(counts_by_brand):
     return counts_by_subcat
 
 
-def prepare():
-    products_with_brand_and_subcat = services.read_json(
-        paths.products_with_brand_and_subcat
-    )
-    products_filtered = add_filtered_names(products_with_brand_and_subcat)
-    services.save_json(paths.products_filtered, products_filtered)
-
-
-def get_possible_sub_brands(counts_by_brand, counts_by_subcat):
-    """ get_possible_sub_brands by subcat and brand"""
+def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat):
+    """ get_possible_sub_brands by subcat and brand """
     for subcat, brands in counts_by_brand.items():
         possible_sub_brands_for_this_subcat = counts_by_subcat[subcat]
-        for brand, freq_by_brand in brands.items():
-            # a word_group should be in at least 2 products, to be a sub-brand
-            filtered_freq_by_brand = {
-                word_group: count
-                for word_group, count in freq_by_brand.items()
-                if (word_group in possible_sub_brands_for_this_subcat and count > 1)
+        for brand, word_counts in brands.items():
+
+            # how many times the word_group in all of products of this brand
+            """
+            wg is short for word group 
+            
+            word_counts_by_product = [
+                { wg1: 3, wg2: 5 },
+                { wg1: 3, wg3: 1 }
+            ] -> brand_count = {
+                wg1: 6,
+                wg2: 5,
+                wg3: 1
+            }
+            """
+            brand_count = Counter()
+            word_counts_by_product = counts_by_product[subcat][brand]
+            for word_group_counts_for_this_product in word_counts_by_product:
+                brand_count.update(Counter(word_group_counts_for_this_product))
+
+            filtered_count = {
+                word_group: brand_count.get(word_group)
+                for word_group, count in word_counts.items()
+                if word_group in possible_sub_brands_for_this_subcat
             }
 
             counts_by_brand[subcat][brand] = OrderedDict(
-                Counter(filtered_freq_by_brand).most_common()
+                Counter(filtered_count).most_common()
             )
     return counts_by_brand
 
@@ -164,15 +180,31 @@ def create_possible_sub_brands():
     counts_by_product = get_counts_by_product(filtered_names_tree)
     services.save_json(paths.output_dir / "counts_by_product.json", counts_by_product)
 
+    # in this brand, how many products have this token
     counts_by_brand = get_counts_by_brand(counts_by_product)
+    services.save_json(
+        paths.output_dir / "counts_by_brand.json", counts_by_brand
+    )
 
+    # in this subcat, how many brands have this token
     counts_by_subcat = get_counts_by_subcat(counts_by_brand)
+    services.save_json(
+        paths.output_dir / "counts_by_subcat.json", counts_by_subcat
+    )
 
-    possible_sub_brands = get_possible_sub_brands(counts_by_brand, counts_by_subcat)
+    possible_sub_brands = get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat)
 
     services.save_json(
         paths.output_dir / "possible_sub_brands.json", possible_sub_brands
     )
+
+
+def prepare():
+    products_with_brand_and_subcat = services.read_json(
+        paths.products_with_brand_and_subcat
+    )
+    products_filtered = add_filtered_names(products_with_brand_and_subcat)
+    services.save_json(paths.products_filtered, products_filtered)
 
 
 if __name__ == "__main__":
