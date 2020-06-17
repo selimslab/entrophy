@@ -1,4 +1,4 @@
-from .tester import check
+from services.tester import check
 
 
 def string_sliding_windows(s: str):

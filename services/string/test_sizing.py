@@ -1,5 +1,5 @@
 import services
-from services.size_pattern_matcher import size_finder
+from services.string.size_pattern_matcher import size_finder
 
 
 def test_sizing():

@@ -41,6 +41,9 @@ def compare_tokensets(window_tokens: list, needle_tokens: list) -> bool:
 
 def partial_string_search(haystack: str, needle: str) -> Union[str, None]:
     """
+    needle is a full string,
+    haystack might contain a corrupted version of it
+
     as long as there is a substring with
     1. the same number of tokens,
     2. all tokens starting with the same letter
@@ -64,7 +67,7 @@ def partial_string_search(haystack: str, needle: str) -> Union[str, None]:
     for start in range(len(haystack_tokens) - n + 1):
         # Aranacak olan token, aranan yerde aynı sıralama ile geçmeli.
         # this windowing strategy ensures the order
-        window_tokens = haystack_tokens[start : start + n]
+        window_tokens = haystack_tokens[start: start + n]
         if is_eligible_tokensets(window_tokens, needle_tokens):
             is_found = compare_tokensets(window_tokens, needle_tokens)
             # print(window_tokens, needle_tokens, is_found)
@@ -75,22 +78,20 @@ def partial_string_search(haystack: str, needle: str) -> Union[str, None]:
 
 def pre_test_match_partially():
     test_cases = [
-        ("Garnier Micellar M Tem Suyu", "Makyaj Temizleme Suyu", True),
-        ("dadad L Paris asfasfas", "Loreal Pari", False),
-        ("fasfsa T kağıdı aasda", "Tuvalet Kağıdı", True),
-        ("423 Tuv Kağıdı 545745", "Tuvalet Kağıdı", True),
-        (" Sıvı Bulaşık Deterjanı ", "Sıvı B Deterjan", True),
+        ("Garnier Micellar M Tem Suyu", "Makyaj Temizleme Suyu", "M Tem Suyu"),
+        ("dadad L Paris asfasfas", "Loreal Paris", "L Paris"),
+        ("fasfsa T kağıdı aasda", "Tuvalet Kağıdı", "T kagidi"),
+        ("423 Tuv Kağıdı 545745", "Tuvalet Kağıdı", "tuv kagidi"),
+        ("Sıvı B Deterjan","Sıvı Bulaşık Deterjanı ", "sivi b deterjan"),
     ]
     for (haystack, needle, expected) in test_cases:
+        res =   partial_string_search(
+                        services.clean_string(haystack), services.clean_string(needle)
+                    )
         try:
-            assert (
-                partial_string_search(
-                    services.clean_string(haystack), services.clean_string(needle)
-                )
-                == expected
-            )
-        except AssertionError as e:
-            print(e)
+            assert res == expected.lower()
+        except AssertionError:
+            print(haystack, needle, expected, res)
 
 
 if __name__ == "__main__":

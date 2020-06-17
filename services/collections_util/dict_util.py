@@ -1,11 +1,7 @@
-"""
-useful functions for lists, dicts, tuples, ..
-"""
+
 from collections import Counter, defaultdict, ChainMap
 from typing import Iterable, List, Callable
 
-
-######### Dict util
 
 
 def tree():
@@ -87,34 +83,3 @@ def convert_dict_set_values_to_list(d: dict) -> dict:
 
 def count_fields(docs: List[dict], target_key: str):
     return sum(1 if target_key in doc else 0 for doc in docs)
-
-
-######### List util
-
-
-def sort_from_long_to_short(it: Iterable) -> list:
-    return sorted(list(it), key=len, reverse=True)
-
-
-def get_n_most_common_list_elements(l: list, n: int) -> list:
-    return [pair[0] for pair in Counter(l).most_common(n)]
-
-
-def remove_none_from_list(l: list) -> list:
-    return [x for x in l if x is not None]
-
-
-def dedup_denull(l: list) -> list:
-    return list(set(i for i in l if i))
-
-
-def flatten(l: list) -> list:
-    if not l:
-        return []
-    flat_list = []
-    for i in l:
-        if not isinstance(i, list):
-            flat_list.append(i)
-        else:
-            flat_list += flatten(i)
-    return flat_list
