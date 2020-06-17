@@ -88,8 +88,6 @@ def filter_possible_sub_brands(
     return possible_sub_brands_by_brand
 
 
-
-
 def create_filtered_names_tree_by_subcat_and_brand(products_filtered):
     """cat: { sub_cat : { type: {brand: {sub_brand : [products] } }"""
 
@@ -115,8 +113,8 @@ def create_filtered_names_tree_by_subcat_and_brand(products_filtered):
         window_counts = Counter()
         for name in filtered_names:
             counts = sliding_window_frequency(name)
-            adjust_frequencies(counts)
-            window_counts.update(counts)
+            adjusted_frequencies = adjust_frequencies(counts)
+            window_counts.update(adjusted_frequencies)
 
         tree[subcat][brand].append(window_counts)
 
