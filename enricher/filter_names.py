@@ -4,10 +4,8 @@ import itertools
 
 from tqdm import tqdm
 
-from paths import output_dir
 import services
 import constants as keys
-import paths as paths
 
 men = {"erkek", "men", "bay", "man"}
 woman = {"kadin", "women", "bayan", "woman"}
@@ -115,14 +113,16 @@ def filter_out_known_word_groups_from_a_name(product):
     subcat_candidates = product.get(keys.SUBCAT_CANDIDATES, [])
     clean_colors = product.get(keys.CLEAN_COLORS, [])
 
-    sorted_brands = sorted(list(set(brand_candidates)), key=len, reverse=True)
-    sorted_subcats = sorted(list(set(subcat_candidates)), key=len, reverse=True)
+    # sorted by length to remove longest ones first
+    sorted_brands = services.sort_from_long_to_short(set(brand_candidates))
+    sorted_subcats = services.sort_from_long_to_short(set(subcat_candidates))
+    sorted_colors = services.sort_from_long_to_short(set(clean_colors))
 
     filtered_names = []
     for name in clean_names:
         name = remove_a_list_of_strings(name, sorted_brands)
         name = remove_a_list_of_strings(name, sorted_subcats)
-        name = remove_color(name, clean_colors)
+        name = remove_color(name, sorted_colors)
         name = filter_tokens(name)
         if name:
             filtered_names.append(name)
