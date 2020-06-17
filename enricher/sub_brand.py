@@ -76,7 +76,7 @@ def filter_possible_sub_brands(
             filtered_freq_by_brand = {
                 word_group: count
                 for word_group, count in freq_by_brand.items()
-                if (word_group in possible_sub_brands_for_this_subcat ) # and count > 1
+                if (word_group in possible_sub_brands_for_this_subcat)  # and count > 1
             }
 
             possible_sub_brands_by_brand[subcat][brand] = OrderedDict(
@@ -158,10 +158,14 @@ def create_filtered_names_tree_by_subcat_and_brand(products_filtered):
 
     return tree
 
+
 def filter():
-    products_with_brand_and_subcat = services.read_json(paths.products_with_brand_and_subcat)
+    products_with_brand_and_subcat = services.read_json(
+        paths.products_with_brand_and_subcat
+    )
     products_filtered = add_filtered_names(products_with_brand_and_subcat)
     services.save_json(paths.products_filtered, products_filtered)
+
 
 def count():
     products = services.read_json(paths.products_filtered)
@@ -174,4 +178,3 @@ def count():
 if __name__ == "__main__":
     # filter()
     count()
-

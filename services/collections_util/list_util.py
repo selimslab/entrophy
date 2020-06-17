@@ -2,7 +2,6 @@ from collections import Counter
 from typing import Iterable
 
 
-
 def sort_from_long_to_short(it: Iterable) -> list:
     return sorted(list(it), key=len, reverse=True)
 
