@@ -123,11 +123,13 @@ def get_subcat_candidates(
     sub_cat_candidates = set()
     for sub in possible_subcats_for_this_product:
         for i, name in enumerate(clean_names):
+
             tokens = name.split()
             # a name should include all tokens of a subcat
             if sub in name and set(tokens).issuperset(set(sub.split())):
                 sub_cat_candidates.add(sub)
-            else:
+            # der hij -> derinlemesine hijyen
+            elif len(sub.split()) > 1:
                 partial_match = services.partial_string_search(name, sub)
                 if partial_match:
                     sub_cat_candidates.add(sub)

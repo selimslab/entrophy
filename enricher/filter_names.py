@@ -134,7 +134,6 @@ def filter_out_known_word_groups_from_a_name(product):
     return filtered_names
 
 
-
 def add_filtered_names(products):
     logging.info("add_filtered_names..")
     for product in tqdm(products):

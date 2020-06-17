@@ -94,9 +94,7 @@ def get_counts_by_brand(counts_by_product):
             counts = Counter(word_groups)
             # a word_group should be in at least 2 products, to be a sub-brand
             counts = {
-                word_group: count
-                for word_group, count in counts.items()
-                if count > 1
+                word_group: count for word_group, count in counts.items() if count > 1
             }
             counts_by_brand[subcat][brand] = counts
     return counts_by_brand
@@ -119,9 +117,7 @@ def get_counts_by_subcat(counts_by_brand):
         possible_sub_brands_for_this_subcat = (
             word_group for word_group, count in freq_by_subcat.items() if count < 2
         )
-        counts_by_subcat[subcat] = list(
-            set(possible_sub_brands_for_this_subcat)
-        )
+        counts_by_subcat[subcat] = list(set(possible_sub_brands_for_this_subcat))
 
     return counts_by_subcat
 
@@ -186,20 +182,19 @@ def create_possible_sub_brands():
 
     # in this brand, how many products have this token
     counts_by_brand = get_counts_by_brand(counts_by_product)
-    services.save_json(
-        paths.output_dir / "counts_by_brand.json", counts_by_brand
-    )
+    services.save_json(paths.output_dir / "counts_by_brand.json", counts_by_brand)
 
     # in this subcat, how many brands have this token
     counts_by_subcat = get_counts_by_subcat(counts_by_brand)
-    services.save_json(
-        paths.output_dir / "counts_by_subcat.json", counts_by_subcat
+    services.save_json(paths.output_dir / "counts_by_subcat.json", counts_by_subcat)
+
+    possible_word_groups_for_sub_brand = get_possible_sub_brands(
+        counts_by_product, counts_by_brand, counts_by_subcat
     )
 
-    possible_word_groups_for_sub_brand = get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat)
-
     services.save_json(
-        paths.output_dir / "possible_word_groups_for_sub_brand.json", possible_word_groups_for_sub_brand
+        paths.output_dir / "possible_word_groups_for_sub_brand.json",
+        possible_word_groups_for_sub_brand,
     )
 
 
@@ -213,5 +208,5 @@ def prepare():
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
-    # prepare()
+    prepare()
     create_possible_sub_brands()
