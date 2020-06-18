@@ -80,9 +80,8 @@ def is_known_token(s: str):
 
 
 def filter_tokens(name: str):
-    tokens = name.split()
-    filtered_tokens = [t.strip() for t in tokens if not is_known_token(t)]
-    filtered_tokens = [t for t in filtered_tokens if len(t) > 1 and t.isalnum()]
+    filtered_tokens = [t.strip() for t in name.split() if not is_known_token(t)]
+    # filtered_tokens = [t for t in filtered_tokens if len(t) > 1 and t.isalnum()]
     return " ".join(filtered_tokens)
 
 
