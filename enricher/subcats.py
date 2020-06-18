@@ -1,6 +1,6 @@
 import re
 from typing import List, Dict, Union, Iterable
-from collections import defaultdict, Counter
+from collections import defaultdict, Counter, OrderedDict
 import logging
 from tqdm import tqdm
 
@@ -11,9 +11,9 @@ from freq import get_subcat_freq
 
 
 def add_subcat(
-    products: List[dict],
-    subcat_original_to_clean: Dict[str, str],
-    possible_subcats_by_brand: Dict[str, list],
+        products: List[dict],
+        subcat_original_to_clean: Dict[str, str],
+        possible_subcats_by_brand: Dict[str, list],
 ):
     """
     1. find out possible subcats for a product
@@ -22,11 +22,11 @@ def add_subcat(
         [a,a,b] select a
         [a,b] select the globally most frequent one
     """
-    subcat_freq: dict = get_subcat_freq(products, subcat_original_to_clean)
-    services.save_json("out/subcat_freq.json", subcat_freq)
+    subcat_freq: Counter = get_subcat_freq(products, subcat_original_to_clean)
+    services.save_json("out/subcat_freq.json", OrderedDict(subcat_freq.most_common()))
 
     subcat_selected = 0
-    subcat_imposed = 0
+    subcat_imposed = []
     for product in tqdm(products):
         possible_subcats_for_this_product: list = get_possible_subcats_for_this_product(
             product, possible_subcats_by_brand, subcat_original_to_clean
@@ -41,6 +41,8 @@ def add_subcat(
         else:
             # vendor-given categories turned to subcats through splitting by / & , and cleaning
             clean_subcats = get_clean_sub_categories(product, subcat_original_to_clean)
+            # filter out overly broad cats 
+            clean_subcats = [s for s in clean_subcats if s not in {"kozmetik", "supermarket"}]
             if clean_subcats:
                 counts = Counter(clean_subcats)
                 # if all counts are the same, select the globally most frequent one
@@ -50,13 +52,17 @@ def add_subcat(
                 else:
                     selected = services.get_most_frequent_key(counts)
 
-                print(product.get(keys.CLEAN_NAMES)[:3])
-                print(clean_subcats, selected)
-                print()
                 product[keys.SUBCAT] = selected
-                subcat_imposed += 1
+                subcat_imposed.append(
+                    {
+                        "names": product.get(keys.CLEAN_NAMES)[:3],
+                        "vendor_subcats": clean_subcats,
+                        "selected": selected
+                    }
+                )
 
-    print(f"{subcat_selected} subcat_selected, {subcat_imposed} subcat_imposed")
+    services.save_json("out/subcat_imposed.json", subcat_imposed)
+    print(f"{subcat_selected} subcat_selected, {len(subcat_imposed)} subcat_imposed")
 
     return products
 
@@ -85,7 +91,7 @@ def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
 
 
 def get_possible_subcats_by_brand(
-    products, brand_original_to_clean, subcat_original_to_clean
+        products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
@@ -122,7 +128,7 @@ def get_clean_sub_categories(product, subcat_original_to_clean):
 
 
 def get_possible_subcats_for_this_product(
-    product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
+        product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
 ) -> list:
     """
     the result is a long list, every possible subcat for this brand and parts of this brand
@@ -131,7 +137,7 @@ def get_possible_subcats_for_this_product(
         include all possible subcats for both loreal and loreal paris
 
     """
-    brand_candidates = product.get(keys.BRAND_CANDIDATES)
+    brand_candidates = product.get(keys.BRAND_CANDIDATES, [])
     possible_subcats = [
         possible_subcats_by_brand.get(brand, []) for brand in brand_candidates
     ]
@@ -159,7 +165,7 @@ def get_possible_subcats_for_this_product(
 
 
 def get_subcat_candidates(
-    product: dict, possible_subcats_for_this_product: list
+        product: dict, possible_subcats_for_this_product: list
 ) -> set:
     clean_names = product.get(keys.CLEAN_NAMES, [])
 
