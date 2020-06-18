@@ -27,10 +27,11 @@ def name_to_clean(doc_id, name):
     # filter tokens
     tokens = clean_name.split()
     tokens = services.remove_stopwords(tokens)
+    barcode_tokens = [t for t in tokens if services.is_barcode(t)]
     tokens = [
         t
         for t in tokens
-        if not services.is_single_letter(t) and not services.is_barcode(t)
+        if not services.is_single_letter(t) and t not in set(barcode_tokens)
     ]
     clean_name = " ".join(tokens)
 
@@ -43,7 +44,7 @@ def name_to_clean(doc_id, name):
     ]
 
     digit_unit_tuples = [d for d in digit_unit_tuples if d]
-    return doc_id, clean_name, digit_unit_tuples
+    return doc_id, clean_name, digit_unit_tuples, barcode_tokens
 
 
 def test_name_to_clean():
@@ -68,11 +69,14 @@ def add_clean_name(id_doc_pairs):
         results = pool.starmap(name_to_clean, tqdm(to_clean))
 
     results = (r for r in results if r)
-    for doc_id, clean_name, digit_unit_tuples in results:
+    for doc_id, clean_name, digit_unit_tuples, barcode_tokens in results:
         info = {
             keys.CLEAN_NAME: clean_name,
             keys.DIGIT_UNIT_TUPLES: digit_unit_tuples,
         }
-        id_doc_pairs[doc_id].update(info)
-
+        doc = id_doc_pairs[doc_id]
+        doc.update(info)
+        if barcode_tokens:
+            doc[keys.BARCODES] = doc.get(keys.BARCODES, []) + barcode_tokens
+        id_doc_pairs[doc_id] = doc
     return id_doc_pairs
