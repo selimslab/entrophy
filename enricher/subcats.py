@@ -11,15 +11,19 @@ from freq import get_subcat_freq
 
 
 def add_subcat(
-    products: List[dict],
-    subcat_original_to_clean: Dict[str, str],
-    possible_subcats_by_brand: Dict[str, list],
+        products: List[dict],
+        subcat_original_to_clean: Dict[str, str],
+        possible_subcats_by_brand: Dict[str, list],
 ):
     """
+    1. find out possible subcats for a product
 
     """
     subcat_freq: dict = get_subcat_freq(products, subcat_original_to_clean)
+    services.save_json("out/subcat_freq.json", subcat_freq)
 
+    subcat_selected = 0
+    subcat_imposed = 0
     for product in tqdm(products):
         possible_subcats_for_this_product: list = get_possible_subcats_for_this_product(
             product, possible_subcats_by_brand, subcat_original_to_clean
@@ -30,19 +34,41 @@ def add_subcat(
         if subcat_candidates:
             product[keys.SUBCAT_CANDIDATES] = list(subcat_candidates)
             product[keys.SUBCAT] = select_subcat(subcat_candidates, subcat_freq)
+            subcat_selected += 1
+        else:
+            # vendor-given categories turned to subcats through splitting by / & , and cleaning
+            clean_subcats = get_clean_sub_categories(product, subcat_original_to_clean)
+            if clean_subcats:
+                counts = Counter(clean_subcats)
+                # if all counts are the same
+                if len(set(counts.values())) == 1:
+                    global_freqs = {
+                        sub: subcat_freq.get(sub)
+                        for sub in counts
+                    }
+                    selected = services.get_most_frequent_key(global_freqs)
+                else:
+                    selected = services.get_most_frequent_key(counts)
+
+                print(product.get(keys.CLEAN_NAMES)[:3])
+                print(clean_subcats, selected)
+                print()
+                product[keys.SUBCAT] = selected
+                subcat_imposed += 1
+
+    print(f"{subcat_selected} subcat_selected, {subcat_imposed} subcat_imposed")
+
     return products
 
 
 def cat_to_subcats(cat: Union[list, str]) -> List[str]:
-    if isinstance(cat, list):
-        cat = cat[-1]
     # "Şeker, Tuz & Baharat / un " ->  [Şeker, Tuz, Baharat, un]
-    subcats = re.split("/ |, |&", cat)
+    subcats = re.split("/|,|&", cat)
     return [s.strip() for s in subcats]
 
 
 def test_cat_to_subcats():
-    cases = [("Şeker, Tuz & Baharat / un ", ["Şeker", "Tuz", "Baharat", "un"])]
+    cases = [("Şeker,Tuz &Baharat / un ", ["Şeker", "Tuz", "Baharat", "un"])]
     services.check(cat_to_subcats, cases)
 
 
@@ -59,7 +85,7 @@ def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
 
 
 def get_possible_subcats_by_brand(
-    products, brand_original_to_clean, subcat_original_to_clean
+        products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
@@ -87,9 +113,24 @@ def get_possible_subcats_by_brand(
     return possible_subcats_by_brand
 
 
+def get_clean_sub_categories(product, subcat_original_to_clean):
+    """ vendor-given categories turned to subcats through splitting by / & , and cleaning """
+    return [
+        subcat_original_to_clean.get(sub)
+        for sub in product.get(keys.SUB_CATEGORIES, [])
+    ]
+
+
 def get_possible_subcats_for_this_product(
-    product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
+        product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
 ) -> list:
+    """
+    the result is a long list, every possible subcat for this brand and parts of this brand
+    example:
+        for brand loreal paris,
+        include all possible subcats for both loreal and loreal paris
+
+    """
     brand_candidates = product.get(keys.BRAND_CANDIDATES)
     possible_subcats = [
         possible_subcats_by_brand.get(brand, []) for brand in brand_candidates
@@ -104,19 +145,23 @@ def get_possible_subcats_for_this_product(
             possible_parent_brand = " ".join(brand_tokens[0:i])
             possible_subcats += possible_subcats_by_brand.get(possible_parent_brand, [])
 
-    clean_subcats = [
-        subcat_original_to_clean.get(sub)
-        for sub in product.get(keys.SUB_CATEGORIES, [])
-    ]
+    clean_subcats = get_clean_sub_categories(product, subcat_original_to_clean)
     possible_subcats += clean_subcats
 
-    possible_subcats = list(set(services.flatten(possible_subcats)))
+    possible_subcats = list(services.flatten(possible_subcats))
+
+    # dedup, remove very long sub_cats, they are mostly wrong
+    possible_subcats = [
+        s
+        for s in possible_subcats
+        if s and 1 < len(s) < 30 and "indirim" not in s
+    ]
 
     return possible_subcats
 
 
 def get_subcat_candidates(
-    product: dict, possible_subcats_for_this_product: list
+        product: dict, possible_subcats_for_this_product: list
 ) -> set:
     clean_names = product.get(keys.CLEAN_NAMES, [])
 
@@ -142,14 +187,3 @@ def get_subcat_candidates(
         product[keys.CLEAN_NAMES] = clean_names
 
     return sub_cat_candidates
-
-
-def filter_sub_cat_candidates(sub_cat_candidates, brand_pool):
-    # dedup, remove very long sub_cats, they are mostly wrong, remove if it's also a brand
-    return list(
-        set(
-            s
-            for s in sub_cat_candidates
-            if s and 1 < len(s) < 30 and "indirim" not in s and s not in brand_pool
-        )
-    )
