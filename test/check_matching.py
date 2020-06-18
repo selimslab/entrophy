@@ -56,8 +56,6 @@ def create_new_matching_from_existing_pairs(start: int = None, end: int = None):
 def end_to_end_test():
     pairs = services.read_json(pairs_path)
     skus: dict = create_matching(id_doc_pairs=pairs)
-    products = prepare_input(skus)
-    products_with_brand_and_subcat = enrich_product_data(products)
     services.save_json(pairs_path, pairs)
 
 
