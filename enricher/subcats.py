@@ -168,6 +168,10 @@ def get_possible_subcats_for_this_product(
     return possible_subcats
 
 
+def subcats_from_partial_match():
+    ...
+
+
 def get_subcat_candidates(
     product: dict, possible_subcats_for_this_product: list
 ) -> set:
@@ -180,8 +184,11 @@ def get_subcat_candidates(
             # a name should include all tokens of a subcat
             if sub in name and set(tokens).issuperset(set(sub.split())):
                 sub_cat_candidates.add(sub)
-            # der hij -> derinlemesine hijyen
-            elif len(sub.split()) > 1:
+
+    if not sub_cat_candidates:
+        for sub in possible_subcats_for_this_product:
+            for i, name in enumerate(clean_names):
+                # der hij -> derinlemesine hijyen
                 partial_match = services.partial_string_search(name, sub)
                 if partial_match:
                     sub_cat_candidates.add(sub)
