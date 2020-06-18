@@ -21,6 +21,7 @@ def add_raw_subcats(products: List[dict]):
     # derive_subcats_from_product_cats
     for product in products:
         cats = product.get(keys.CATEGORIES, [])
+        cats = services.flatten(cats)
         subcat_lists = [cat_to_subcats(cat) for cat in cats]
         product[keys.SUB_CATEGORIES] = services.flatten(subcat_lists)
     return products
@@ -45,8 +46,9 @@ def add_brand_and_subcat(products: List[dict]):
     possible_subcats_by_brand: dict = get_possible_subcats_by_brand(
         products, brand_original_to_clean, subcat_original_to_clean
     )
+    services.save_json(paths.output_dir / "possible_subcats_by_brand.json", possible_subcats_by_brand)
 
-    brand_pool = get_brand_pool(products, possible_subcats_by_brand)
+    brand_pool:set = get_brand_pool(products, possible_subcats_by_brand)
     services.save_json(paths.brand_pool, sorted(list(brand_pool)))
 
     logging.info("adding brand..")
@@ -93,9 +95,6 @@ def enrich_product_data(skus: dict):
     services.save_json(paths.products_with_brand_and_subcat, products)
 
     inspect_results(products)
-
-    products_filtered = add_filtered_names(products)
-    services.save_json(paths.products_filtered, products_filtered)
 
     print("done!")
 
