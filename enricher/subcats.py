@@ -17,7 +17,10 @@ def add_subcat(
 ):
     """
     1. find out possible subcats for a product
-
+    2. select candidates by searching possible subcats in names
+    3. if no candidate found, select among vendor-given subcats
+        [a,a,b] select a
+        [a,b] select the globally most frequent one
     """
     subcat_freq: dict = get_subcat_freq(products, subcat_original_to_clean)
     services.save_json("out/subcat_freq.json", subcat_freq)
