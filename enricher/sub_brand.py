@@ -226,21 +226,11 @@ def create_possible_sub_brands(filtered_names_tree):
     )
 
 
-def prepare():
-    products_with_brand_and_subcat = services.read_json(
-        paths.products_out
-    )
-    products_filtered = add_filtered_names(products_with_brand_and_subcat)
-    services.save_json(paths.products_filtered, products_filtered)
-
-
 def run():
-    prepare()
-
-    products_filtered = services.read_json(paths.products_filtered)
-    filtered_names_tree = get_filtered_names_tree(products_filtered)
-    services.save_json(paths.filtered_names_tree, filtered_names_tree)
-
+    products = services.read_json(paths.products_out)
+    products = add_filtered_names(products)
+    # filtered_names_tree = services.read_json(paths.filtered_names_tree)
+    filtered_names_tree = get_filtered_names_tree(products)
     create_possible_sub_brands(filtered_names_tree)
 
 

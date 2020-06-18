@@ -185,19 +185,24 @@ def get_subcat_candidates(
             if sub in name and set(tokens).issuperset(set(sub.split())):
                 sub_cat_candidates.add(sub)
 
-    if not sub_cat_candidates:
-        for sub in possible_subcats_for_this_product:
-            for i, name in enumerate(clean_names):
-                # der hij -> derinlemesine hijyen
-                partial_match = services.partial_string_search(name, sub)
-                if partial_match:
-                    sub_cat_candidates.add(sub)
-                    # replace partial_match with found subcat
-                    # der hij -> derinlemesine hijyen
-                    name = name.replace(partial_match, sub)
-                    clean_names[i] = name
+    if sub_cat_candidates:
+        return sub_cat_candidates
 
-        # save replaced names
-        product[keys.CLEAN_NAMES] = clean_names
+    # partial search
+    for sub in possible_subcats_for_this_product:
+        if len(sub.split()) < 2:
+            continue
+        for i, name in enumerate(clean_names):
+            # der hij -> derinlemesine hijyen
+            partial_match = services.partial_string_search(name, sub)
+            if partial_match:
+                sub_cat_candidates.add(sub)
+                # replace partial_match with found subcat
+                # der hij -> derinlemesine hijyen
+                name = name.replace(partial_match, sub)
+                clean_names[i] = name
+
+    # save replaced names
+    product[keys.CLEAN_NAMES] = clean_names
 
     return sub_cat_candidates

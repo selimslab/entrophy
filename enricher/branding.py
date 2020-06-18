@@ -64,7 +64,7 @@ def check_root_brand(brand_freq, selected):
 
 
 def add_brand(
-        products: List[dict], brand_original_to_clean: dict, brand_pool: set
+    products: List[dict], brand_original_to_clean: dict, brand_pool: set
 ) -> List[dict]:
     """
 

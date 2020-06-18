@@ -19,6 +19,4 @@ subcat_original_to_clean = output_dir / "subcat_original_to_clean.json"
 
 filtered_names_tree = output_dir / "filtered_names_tree.json"
 
-products_filtered = output_dir / "products_filtered.json"
-
 products_out = output_dir / "products_out.json"

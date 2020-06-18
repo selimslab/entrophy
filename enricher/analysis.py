@@ -42,7 +42,7 @@ def analyze_brand():
 
 
 def how_many_with_vendor_brand():
-    products_out = services.read_json(paths.products_filtered)
+    products_out = services.read_json(paths.products_out)
     with_vendor_brand = sum(1 if p.get("brands") else 0 for p in products_out)
     print(with_vendor_brand)
 

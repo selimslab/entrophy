@@ -14,6 +14,8 @@ from original_to_clean import (
 from branding import get_brand_pool, add_brand
 from subcats import get_possible_subcats_by_brand, cat_to_subcats, add_subcat
 from enricher.test.inspect_results import inspect_results
+from filter_names import add_filtered_names
+from sub_brand import get_filtered_names_tree
 
 
 def add_raw_subcats(products: List[dict]):
@@ -92,7 +94,12 @@ def enrich_product_data(skus: dict):
     products = add_color(products)
 
     products = add_brand_and_subcat(products)
+    products = add_filtered_names(products)
+
     services.save_json(paths.products_out, products)
+
+    filtered_names_tree = get_filtered_names_tree(products)
+    services.save_json(paths.filtered_names_tree, filtered_names_tree)
 
     inspect_results(products)
 
