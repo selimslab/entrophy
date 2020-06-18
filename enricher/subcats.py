@@ -11,9 +11,9 @@ from freq import get_subcat_freq
 
 
 def add_subcat(
-        products: List[dict],
-        subcat_original_to_clean: Dict[str, str],
-        possible_subcats_by_brand: Dict[str, list],
+    products: List[dict],
+    subcat_original_to_clean: Dict[str, str],
+    possible_subcats_by_brand: Dict[str, list],
 ):
     """
     1. find out possible subcats for a product
@@ -41,8 +41,10 @@ def add_subcat(
         else:
             # vendor-given categories turned to subcats through splitting by / & , and cleaning
             clean_subcats = get_clean_sub_categories(product, subcat_original_to_clean)
-            # filter out overly broad cats 
-            clean_subcats = [s for s in clean_subcats if s not in {"kozmetik", "supermarket"}]
+            # filter out overly broad cats
+            clean_subcats = [
+                s for s in clean_subcats if s not in {"kozmetik", "supermarket"}
+            ]
             if clean_subcats:
                 counts = Counter(clean_subcats)
                 # if all counts are the same, select the globally most frequent one
@@ -57,7 +59,7 @@ def add_subcat(
                     {
                         "names": product.get(keys.CLEAN_NAMES)[:3],
                         "vendor_subcats": clean_subcats,
-                        "selected": selected
+                        "selected": selected,
                     }
                 )
 
@@ -91,7 +93,7 @@ def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
 
 
 def get_possible_subcats_by_brand(
-        products, brand_original_to_clean, subcat_original_to_clean
+    products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
@@ -128,7 +130,7 @@ def get_clean_sub_categories(product, subcat_original_to_clean):
 
 
 def get_possible_subcats_for_this_product(
-        product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
+    product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
 ) -> list:
     """
     the result is a long list, every possible subcat for this brand and parts of this brand
@@ -165,7 +167,7 @@ def get_possible_subcats_for_this_product(
 
 
 def get_subcat_candidates(
-        product: dict, possible_subcats_for_this_product: list
+    product: dict, possible_subcats_for_this_product: list
 ) -> set:
     clean_names = product.get(keys.CLEAN_NAMES, [])
 

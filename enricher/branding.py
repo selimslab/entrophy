@@ -20,7 +20,7 @@ def select_brand(brand_candidates: set, brand_freq: dict) -> str:
 
 
 def add_brand(
-        products: List[dict], brand_original_to_clean: dict, brand_pool: set
+    products: List[dict], brand_original_to_clean: dict, brand_pool: set
 ) -> List[dict]:
     brand_freq: dict = get_brand_freq(products, brand_original_to_clean)
     services.save_json("out/brand_freq.json", services.sorted_counter(brand_freq))
@@ -75,8 +75,10 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
         s for s, count in window_frequencies.items() if count > 42
     }
 
-    services.save_json("out/most_frequent_start_strings.json",
-                       OrderedDict(Counter(most_frequent_start_strings).most_common()))
+    services.save_json(
+        "out/most_frequent_start_strings.json",
+        OrderedDict(Counter(most_frequent_start_strings).most_common()),
+    )
     # OrderedDict(Counter(groups).most_common())
     brand_pool.update(most_frequent_start_strings)
 
