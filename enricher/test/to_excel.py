@@ -75,11 +75,31 @@ def add_sku_id_and_product_id_to_pairs():
 
 
 def to_excel():
+    colnames = [
+        "product_id",
+        "sku_id",
+        "link",
+        "name",
+        # "clean_name",
+        "digits",
+        "unit",
+        # "size",
+        "market",
+        # "price",
+        "barcodes",
+        # keys.OUT_OF_STOCK,
+        # keys.VARIANT_NAME,
+        # "stage",
+        "brand",
+        "our_brand",
+        keys.CATEGORIES,
+        keys.SUBCAT,
+    ]
     pairs = add_sku_id_and_product_id_to_pairs()
     # services.save_json(output_dir / "pairs_matched.json", pairs)
     rows = list(pairs.values())
     rows = [row for row in rows if keys.SKU_ID in row]
-    excel.create_excel(rows, "out/jun17.xlsx")
+    excel.create_excel(rows, "out/jun18.xlsx", colnames)
 
 
 if __name__ == "__main__":
