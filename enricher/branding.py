@@ -12,11 +12,44 @@ from freq import get_brand_freq
 
 
 def select_brand(brand_candidates: set, brand_freq: dict) -> str:
+    """ return the_most_frequent_brand"""
     brand_candidates_with_freq = {
         brand: brand_freq.get(brand, 0) for brand in set(brand_candidates)
     }
     the_most_frequent_brand = services.get_most_frequent_key(brand_candidates_with_freq)
     return the_most_frequent_brand
+
+
+def search_vendor_given_brands(product, brand_original_to_clean):
+    brands_in_name = []
+    clean_names = product.get(keys.CLEAN_NAMES, [])
+
+    vendor_given_brands = product.get(keys.BRANDS_MULTIPLE)
+    vendor_given_brands = {brand_original_to_clean.get(b) for b in vendor_given_brands}
+
+    if vendor_given_brands:
+        # search in the names
+        for name in clean_names:
+            # brand is in first 4 tokens mostly
+            beginning_of_name = " ".join(name.split()[:4])
+            for brand in vendor_given_brands:
+                if brand in beginning_of_name:
+                    brands_in_name.append(brand)
+    return brands_in_name
+
+
+def global_brand_search(clean_names, brand_pool):
+    # no vendor given brand, search global pool
+    # to_partial_search = set()
+    brands_in_name = []
+    for name in clean_names:
+        # a b c -> a, a b, a b c
+        start_strings = services.string_to_extending_windows(name, end=3)
+        for s in start_strings:
+            if s in brand_pool:
+                brands_in_name.append(s)
+
+    return brands_in_name
 
 
 def add_brand(
@@ -29,32 +62,24 @@ def add_brand(
 
     # brand_pool_sorted = services.sort_from_long_to_short(brand_pool)
     for product in tqdm(products):
-        brands_in_name = []
         clean_names = product.get(keys.CLEAN_NAMES, [])
+        brands_in_name = search_vendor_given_brands(product, brand_original_to_clean)
 
-        vendor_given_brands = product.get(keys.BRANDS_MULTIPLE)
-        if vendor_given_brands:
-            # search in the names
-            for name in clean_names:
-                # brand is in first 4 tokens mostly
-                beginning_of_name = " ".join(name.split()[:4])
-                for brand in vendor_given_brands:
-                    if brand in beginning_of_name:
-                        brands_in_name.append(brand)
-        else:
-            # no vendor given brand, search global pool
-            # to_partial_search = set()
-            for name in clean_names:
-                # a b c -> a, a b, a b c
-                start_strings = services.string_to_extending_windows(name, end=3)
-                for s in start_strings:
-                    if s in brand_pool:
-                        brands_in_name.append(s)
+        if not brands_in_name:
+            brands_in_name = global_brand_search(clean_names, brand_pool)
 
         if brands_in_name:
             product[keys.BRAND_CANDIDATES] = list(brands_in_name)
-            the_most_frequent_brand = select_brand(set(brands_in_name), brand_freq)
-            product[keys.BRAND] = the_most_frequent_brand
+            selected = select_brand(set(brands_in_name), brand_freq)
+            if len(selected.split()) > 1:
+                current_freq = brand_freq.get(selected)
+                possible_roots = services.string_to_extending_windows(selected)
+                possible_roots.sort(key=len)
+                for root in possible_roots:
+                    if root in brand_pool and brand_freq.get(root, 0) > current_freq:
+                        selected = root
+                        current_freq = brand_freq.get(root)
+            product[keys.BRAND] = selected
 
     return products
 
@@ -73,7 +98,7 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
             window_frequencies.update(sliding_windows)
 
     most_frequent_start_strings = {
-        s for s, count in window_frequencies.items() if count > 42
+        s: count for s, count in window_frequencies.items() if count > 42
     }
 
     services.save_json(
@@ -81,7 +106,7 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
         services.sorted_counter(most_frequent_start_strings),
     )
     # OrderedDict(Counter(groups).most_common())
-    brand_pool.update(most_frequent_start_strings)
+    brand_pool.update(set(most_frequent_start_strings.keys()))
 
     to_filter_out = {"brn ", "markasiz", "erkek", "kadin", " adet"}
     brand_pool = {
