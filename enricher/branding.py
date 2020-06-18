@@ -52,9 +52,23 @@ def global_brand_search(clean_names, brand_pool):
     return brands_in_name
 
 
+def check_root_brand(brand_freq, selected):
+    current_freq = brand_freq.get(selected, 0)
+    possible_roots = services.string_to_extending_windows(selected)
+    possible_roots.sort(key=len)
+    for root in possible_roots:
+        if brand_freq.get(root, 0) > current_freq:
+            selected = root
+            current_freq = brand_freq.get(root)
+    return selected
+
+
 def add_brand(
         products: List[dict], brand_original_to_clean: dict, brand_pool: set
 ) -> List[dict]:
+    """
+
+    """
     logging.info("adding brand..")
 
     brand_freq: dict = get_brand_freq(products, brand_original_to_clean)
@@ -71,15 +85,11 @@ def add_brand(
         if brands_in_name:
             product[keys.BRAND_CANDIDATES] = list(brands_in_name)
             selected = select_brand(set(brands_in_name), brand_freq)
+
             if len(selected.split()) > 1:
-                current_freq = brand_freq.get(selected)
-                possible_roots = services.string_to_extending_windows(selected)
-                possible_roots.sort(key=len)
-                for root in possible_roots:
-                    if root in brand_pool and brand_freq.get(root, 0) > current_freq:
-                        selected = root
-                        current_freq = brand_freq.get(root)
+                selected = check_root_brand(brand_freq, selected)
             product[keys.BRAND] = selected
+        # TODO partial brand match
 
     return products
 
@@ -98,7 +108,7 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
             window_frequencies.update(sliding_windows)
 
     most_frequent_start_strings = {
-        s: count for s, count in window_frequencies.items() if count > 42
+        s: count for s, count in window_frequencies.items() if count > 30
     }
 
     services.save_json(
