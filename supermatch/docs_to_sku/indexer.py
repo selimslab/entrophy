@@ -37,6 +37,8 @@ class Indexer:
         names = sku.get(keys.CLEAN_NAMES, [])
 
         token_sets = [set(name.split()) for name in names]
+        if not token_sets:
+            return
 
         # update common_tokens
         commons = set.intersection(*token_sets)
