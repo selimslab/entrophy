@@ -1,5 +1,6 @@
 from services.collections_util.list_util import *
 from services.collections_util.dict_util import *
+from services.collections_util.general import *
 
 from services.files.json_util import *
 
@@ -17,6 +18,5 @@ from services.string.sliding_window import *
 from services.string.regex_util import *
 from services.string.string_util import *
 
-from services.collections_util.generic_graph import *
-
-from .get_soup import *
+from services.generic_graph import *
+from services.get_soup import *

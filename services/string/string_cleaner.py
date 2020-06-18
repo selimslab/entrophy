@@ -75,7 +75,7 @@ def is_single_letter(s: str) -> bool:
 
 
 def is_barcode(s: str) -> bool:
-    return s.isdigit() and len(s) in {8, 10, 11, 12, 13}
+    return s.isdigit() and len(s) in {8, 9, 10, 11, 12, 13, 14}
 
 
 def is_mixed_letters_and_words(s: str):
