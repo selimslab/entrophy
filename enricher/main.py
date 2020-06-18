@@ -94,7 +94,7 @@ def enrich_product_data(skus: dict):
     products = add_color(products)
 
     products = add_brand_and_subcat(products)
-    services.save_json(paths.products_with_brand_and_subcat, products)
+    services.save_json(paths.products_out, products)
 
     inspect_results(products)
 

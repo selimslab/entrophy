@@ -1,4 +1,5 @@
 
+
 ## with cat
 
 myo, wat, gratis, c4, ross, ty, migros, joker, civil
@@ -117,7 +118,5 @@ myo, wat, gratis, c4, ross, ty
     * for every subcat, train a different LDA model 
     * a type should be in min. 2 brands, and min. 5 skus 
     
-Devam edeceğim.
-
 
 
