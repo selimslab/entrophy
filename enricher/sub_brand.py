@@ -1,6 +1,6 @@
 from collections import Counter, OrderedDict, defaultdict
 import logging
-
+from pprint import pprint
 from tqdm import tqdm
 
 import services
@@ -57,6 +57,31 @@ def adjust_frequencies(string_counts: Counter):
             string_counts[s] = round(adjusted_count, 2)
 
     return string_counts
+
+
+def filter_out_incomplete_parts(counts: dict) -> dict:
+    """
+    if a longer string has a higher frequency than shorter building blocks, remove the shorter ones
+
+    Example:
+        if any of "a", "b", "c", "b c", or "a b" has a lower count than  "a b c", remove the one with the lower count
+
+    """
+
+    to_remove = set()
+    for long_word in sorted(counts, key=len, reverse=True):
+        long_word_tokens = set(long_word.split())
+        for short_word in sorted(counts, key=len):
+            if (counts[short_word] < counts[long_word]
+                    and short_word in long_word
+                    and long_word_tokens.issuperset(set(short_word.split()))
+            ):
+                to_remove.add(short_word)
+
+    for key in to_remove:
+        del counts[key]
+
+    return counts
 
 
 def count_a_single_product(names: list):
@@ -150,14 +175,21 @@ def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat
         for brand, word_counts in brands.items():
             word_counts_by_product = counts_by_product[subcat][brand]
             brand_count = get_word_group_count_by_brand(word_counts_by_product)
-            filtered_count = {
-                word_group: brand_count.get(word_group)
+            possible_word_groups = {
+                word_group
                 for word_group, count in word_counts.items()
                 if word_group in possible_sub_brands_for_this_subcat
             }
 
+            counts = {
+                word_group: int(brand_count.get(word_group))
+                for word_group in possible_word_groups
+            }
+
+            filtered_counts = filter_out_incomplete_parts(counts)
+
             counts_by_brand[subcat][brand] = OrderedDict(
-                Counter(filtered_count).most_common()
+                Counter(filtered_counts).most_common()
             )
     return counts_by_brand
 
@@ -206,7 +238,11 @@ def prepare():
     services.save_json(paths.products_filtered, products_filtered)
 
 
-if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.DEBUG)
+def run():
     prepare()
     create_possible_sub_brands()
+
+
+if __name__ == "__main__":
+    logging.getLogger().setLevel(logging.DEBUG)
+    run()
