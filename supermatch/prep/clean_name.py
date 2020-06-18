@@ -56,11 +56,7 @@ def test_name_to_clean():
         print(name_to_clean(0, case))
 
 
-def add_clean_name(id_doc_pairs):
-    logging.info("add_clean_name..")
-
-    to_clean = [(doc_id, doc.get(keys.NAME)) for doc_id, doc in id_doc_pairs.items()]
-
+def get_clean_results(to_clean: list):
     # server memory not enough for more than 6 processes
     cpu_count = min(6, multiprocessing.cpu_count())
     logging.info(f"cpu_count {cpu_count}")
@@ -69,6 +65,16 @@ def add_clean_name(id_doc_pairs):
         results = pool.starmap(name_to_clean, tqdm(to_clean))
 
     results = (r for r in results if r)
+    return results
+
+
+def add_clean_name(id_doc_pairs):
+    logging.info("add_clean_name..")
+
+    to_clean = [(doc_id, doc.get(keys.NAME)) for doc_id, doc in id_doc_pairs.items()]
+
+    results = get_clean_results(to_clean)
+
     for doc_id, clean_name, digit_unit_tuples, barcode_tokens in results:
         info = {
             keys.CLEAN_NAME: clean_name,
@@ -79,4 +85,5 @@ def add_clean_name(id_doc_pairs):
         if barcode_tokens:
             doc[keys.BARCODES] = doc.get(keys.BARCODES, []) + barcode_tokens
         id_doc_pairs[doc_id] = doc
+
     return id_doc_pairs
