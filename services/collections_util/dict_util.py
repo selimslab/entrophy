@@ -19,19 +19,15 @@ def filter_dict(d: dict, filter_func: Callable):
     return {k: v for k, v in d.items() if filter_func(k, v)}
 
 
-def remove_nulls_from_list_values_of_a_dict(d: dict) -> dict:
+def remove_empty_list_values_of_a_dict(d: dict) -> dict:
     for k, v in d.items():
         if isinstance(v, list):
-            d[k] = remove_none_from_list(v)
+            d[k] = [i for i in v if i]
     return d
 
 
 def remove_null_dict_values(d) -> dict:
     return {k: v for k, v in d.items() if v is not None}
-
-
-def filter_empty_or_null_dict_values(d):
-    return {k: v for k, v in d.items() if v or v is False}
 
 
 def filter_keys(d: dict, allowed_keys: set) -> dict:
