@@ -15,14 +15,6 @@ def get_most_frequent_key(d: dict):
         return max(d, key=d.get)
 
 
-def get_most_common_item(itr: Iterable):
-    return Counter(itr).most_common(1)[0][0]
-
-
-def test_get_most_common_item():
-    assert get_most_common_item([(2, 3), (2, 3), 4, 5, "a"]) == (2, 3)
-
-
 def filter_dict(d: dict, filter_func: Callable):
     return {k: v for k, v in d.items() if filter_func(k, v)}
 
