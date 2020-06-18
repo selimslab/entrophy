@@ -72,9 +72,10 @@ def filter_out_incomplete_parts(counts: dict) -> dict:
     for long_word in sorted(counts, key=len, reverse=True):
         long_word_tokens = set(long_word.split())
         for short_word in sorted(counts, key=len):
-            if (counts[short_word] < counts[long_word]
-                    and short_word in long_word
-                    and long_word_tokens.issuperset(set(short_word.split()))
+            if (
+                counts[short_word] < counts[long_word]
+                and short_word in long_word
+                and long_word_tokens.issuperset(set(short_word.split()))
             ):
                 to_remove.add(short_word)
 

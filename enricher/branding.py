@@ -12,7 +12,7 @@ from freq import get_brand_freq
 
 
 def add_brand(
-        products: List[dict], brand_original_to_clean: dict, brand_pool: set
+    products: List[dict], brand_original_to_clean: dict, brand_pool: set
 ) -> List[dict]:
     brand_freq: dict = get_brand_freq(products, brand_original_to_clean)
     services.save_json("out/brand_freq.json", brand_freq)
@@ -74,7 +74,7 @@ def check_partial(brand_pool_sorted, to_partial_search):
 
 
 def get_brand_candidates(
-        product: dict, brand_pool: set, brand_pool_sorted: list
+    product: dict, brand_pool: set, brand_pool_sorted: list
 ) -> set:
     """
     find brand first

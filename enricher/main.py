@@ -46,9 +46,11 @@ def add_brand_and_subcat(products: List[dict]):
     possible_subcats_by_brand: dict = get_possible_subcats_by_brand(
         products, brand_original_to_clean, subcat_original_to_clean
     )
-    services.save_json(paths.output_dir / "possible_subcats_by_brand.json", possible_subcats_by_brand)
+    services.save_json(
+        paths.output_dir / "possible_subcats_by_brand.json", possible_subcats_by_brand
+    )
 
-    brand_pool:set = get_brand_pool(products, possible_subcats_by_brand)
+    brand_pool: set = get_brand_pool(products, possible_subcats_by_brand)
     services.save_json(paths.brand_pool, sorted(list(brand_pool)))
 
     logging.info("adding brand..")
