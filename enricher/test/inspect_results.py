@@ -22,7 +22,7 @@ def inspect_results(docs):
     with_subcat_only = [
         doc for doc in docs if keys.BRAND not in doc and keys.SUBCAT in doc
     ]
-    # services.save_json(output_dir / "with_subcat_only.json", with_subcat_only)
+    services.save_json(output_dir / "with_subcat_only.json", with_subcat_only)
 
     with_brand_and_sub = [
         doc for doc in docs if keys.BRAND in doc and keys.SUBCAT in doc

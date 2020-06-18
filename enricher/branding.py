@@ -20,8 +20,10 @@ def select_brand(brand_candidates: set, brand_freq: dict) -> str:
 
 
 def add_brand(
-    products: List[dict], brand_original_to_clean: dict, brand_pool: set
+        products: List[dict], brand_original_to_clean: dict, brand_pool: set
 ) -> List[dict]:
+    logging.info("adding brand..")
+
     brand_freq: dict = get_brand_freq(products, brand_original_to_clean)
     services.save_json("out/brand_freq.json", services.sorted_counter(brand_freq))
 
@@ -44,8 +46,7 @@ def add_brand(
             # to_partial_search = set()
             for name in clean_names:
                 # a b c -> a, a b, a b c
-                beginning_of_name = " ".join(name.split()[:3])
-                start_strings = services.string_to_extending_windows(beginning_of_name)
+                start_strings = services.string_to_extending_windows(name, end=3)
                 for s in start_strings:
                     if s in brand_pool:
                         brands_in_name.append(s)
@@ -64,7 +65,7 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
     brand_pool = set(brands)
 
     window_frequencies = Counter()
-    max_brand_size = 4
+    max_brand_size = 3
     for product in products:
         clean_names = product.get(keys.CLEAN_NAMES, [])
         for name in clean_names:
@@ -77,7 +78,7 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
 
     services.save_json(
         "out/most_frequent_start_strings.json",
-        OrderedDict(Counter(most_frequent_start_strings).most_common()),
+        services.sorted_counter(most_frequent_start_strings),
     )
     # OrderedDict(Counter(groups).most_common())
     brand_pool.update(most_frequent_start_strings)

@@ -195,7 +195,7 @@ def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat
     return counts_by_brand
 
 
-def create_possible_sub_brands():
+def create_possible_sub_brands(filtered_names_tree):
     """
 
     a word_group should be in at least 2 products, to be a sub-brand
@@ -203,11 +203,6 @@ def create_possible_sub_brands():
     a word_group should be in a single brand of this subcat only, to be a sub-brand
 
     """
-    products_filtered = services.read_json(paths.products_filtered)
-
-    filtered_names_tree = get_filtered_names_tree(products_filtered)
-    services.save_json(paths.filtered_names_tree, filtered_names_tree)
-
     logging.info("creating possible_sub_brands..")
 
     counts_by_product = get_counts_by_product(filtered_names_tree)
@@ -233,7 +228,7 @@ def create_possible_sub_brands():
 
 def prepare():
     products_with_brand_and_subcat = services.read_json(
-        paths.products_with_brand_and_subcat
+        paths.products_out
     )
     products_filtered = add_filtered_names(products_with_brand_and_subcat)
     services.save_json(paths.products_filtered, products_filtered)
@@ -241,7 +236,12 @@ def prepare():
 
 def run():
     prepare()
-    create_possible_sub_brands()
+
+    products_filtered = services.read_json(paths.products_filtered)
+    filtered_names_tree = get_filtered_names_tree(products_filtered)
+    services.save_json(paths.filtered_names_tree, filtered_names_tree)
+
+    create_possible_sub_brands(filtered_names_tree)
 
 
 if __name__ == "__main__":

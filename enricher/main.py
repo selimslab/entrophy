@@ -14,7 +14,6 @@ from original_to_clean import (
 from branding import get_brand_pool, add_brand
 from subcats import get_possible_subcats_by_brand, cat_to_subcats, add_subcat
 from enricher.test.inspect_results import inspect_results
-from filter_names import add_filtered_names
 
 
 def add_raw_subcats(products: List[dict]):
@@ -53,10 +52,8 @@ def add_brand_and_subcat(products: List[dict]):
     brand_pool: set = get_brand_pool(products, possible_subcats_by_brand)
     services.save_json(paths.brand_pool, sorted(list(brand_pool)))
 
-    logging.info("adding brand..")
     products = add_brand(products, brand_original_to_clean, brand_pool)
 
-    logging.info("adding subcat..")
     products = add_subcat(products, subcat_original_to_clean, possible_subcats_by_brand)
 
     return products
@@ -89,6 +86,7 @@ def add_color(products):
 def enrich_product_data(skus: dict):
     filtered_skus = filter_docs(list(skus.values()))
     products = group_products(filtered_skus)
+
     products = add_raw_subcats(products)
 
     products = add_color(products)

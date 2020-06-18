@@ -22,6 +22,8 @@ def add_subcat(
         [a,a,b] select a
         [a,b] select the globally most frequent one
     """
+    logging.info("adding subcat..")
+
     subcat_freq: Counter = get_subcat_freq(products, subcat_original_to_clean)
     services.save_json("out/subcat_freq.json", OrderedDict(subcat_freq.most_common()))
 
