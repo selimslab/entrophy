@@ -43,7 +43,7 @@ def add_subcat(
             clean_subcats = get_clean_sub_categories(product, subcat_original_to_clean)
             if clean_subcats:
                 counts = Counter(clean_subcats)
-                # if all counts are the same
+                # if all counts are the same, select the globally most frequent one
                 if len(set(counts.values())) == 1:
                     global_freqs = {sub: subcat_freq.get(sub) for sub in counts}
                     selected = services.get_most_frequent_key(global_freqs)
@@ -63,7 +63,7 @@ def add_subcat(
 
 def cat_to_subcats(cat: Union[list, str]) -> List[str]:
     # "Şeker, Tuz & Baharat / un " ->  [Şeker, Tuz, Baharat, un]
-    subcats = re.split("/|,|&", cat)
+    subcats = re.split("[/,&]", cat)
     return [s.strip() for s in subcats]
 
 
@@ -166,7 +166,6 @@ def get_subcat_candidates(
     sub_cat_candidates = set()
     for sub in possible_subcats_for_this_product:
         for i, name in enumerate(clean_names):
-
             tokens = name.split()
             # a name should include all tokens of a subcat
             if sub in name and set(tokens).issuperset(set(sub.split())):
