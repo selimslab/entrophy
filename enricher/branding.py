@@ -111,14 +111,15 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
             sliding_windows = services.string_to_extending_windows(name, max_brand_size)
             window_frequencies.update(sliding_windows)
 
+    services.save_json(
+        "out/window_frequencies.json",
+        services.sorted_counter(window_frequencies),
+    )
+
     most_frequent_start_strings = {
-        s: count for s, count in window_frequencies.items() if count > 30
+        s: count for s, count in window_frequencies.items() if count > 10
     }
 
-    services.save_json(
-        "out/most_frequent_start_strings.json",
-        services.sorted_counter(most_frequent_start_strings),
-    )
     # OrderedDict(Counter(groups).most_common())
     brand_pool.update(set(most_frequent_start_strings.keys()))
 
