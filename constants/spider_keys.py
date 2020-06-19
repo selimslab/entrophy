@@ -25,7 +25,7 @@ CLEAN_CATS = "clean_cats"
 
 SUB_CATEGORIES = "sub_categories"
 CLEAN_SUBCATS = "clean_subcats"
-SUBCAT_CANDIDATES = "subcat_candidates"
+SUBCATS_IN_NAME = "subcats_in_name"
 
 CATEGORY = "cat"
 SUBCAT = "subcat"
