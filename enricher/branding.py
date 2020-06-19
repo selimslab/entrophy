@@ -56,12 +56,22 @@ def check_root_brand(brand_freq, selected):
     return selected
 
 
+def get_brand(product, brand_freq, brand_pool):
+    clean_names = product.get(keys.CLEAN_NAMES, [])
+    clean_brands = product.get(keys.CLEAN_BRANDS)
+    brands_in_name = search_vendor_given_brands(product, clean_brands)
+
+    if brands_in_name:
+        return brands_in_name[0]
+    else:
+        global_brands = global_brand_search(clean_names, brand_pool)
+        if global_brands:
+            return select_most_frequent_brand(global_brands, brand_freq)
+
+
 def add_brand(
         products: List[dict], brand_original_to_clean: dict, brand_pool: set
 ) -> List[dict]:
-    """
-
-    """
     logging.info("adding brand..")
 
     brand_freq: dict = get_brand_freq(products, brand_original_to_clean)
@@ -69,29 +79,11 @@ def add_brand(
 
     # brand_pool_sorted = services.sort_from_long_to_short(brand_pool)
     for product in tqdm(products):
-        clean_names = product.get(keys.CLEAN_NAMES, [])
-        vendor_given_brands = product.get(keys.BRANDS_MULTIPLE)
-        clean_brands = [brand_original_to_clean.get(b) for b in vendor_given_brands]
-        product[keys.CLEAN_BRANDS] = clean_brands
-
-        brands_in_name = search_vendor_given_brands(product, clean_brands)
-
-        if brands_in_name:
-            selected = brands_in_name[0]
-
-            if len(selected.split()) > 1:
-                selected = check_root_brand(brand_freq, selected)
-
-            product[keys.BRAND] = selected
-        else:
-            global_brands = global_brand_search(clean_names, brand_pool)
-            if global_brands:
-                selected = select_most_frequent_brand(global_brands, brand_freq)
-
-                if len(selected.split()) > 1:
-                    selected = check_root_brand(brand_freq, selected)
-
-                product[keys.BRAND] = selected
+        brand = get_brand(product, brand_freq, brand_pool)
+        if brand:
+            if len(brand.split()) > 1:
+                brand = check_root_brand(brand_freq, brand)
+            product[keys.BRAND] = brand
 
         # TODO partial brand match
 
