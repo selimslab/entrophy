@@ -10,67 +10,6 @@ import constants as keys
 from freq import get_subcat_freq
 
 
-def add_subcat(
-    products: List[dict],
-    subcat_original_to_clean: Dict[str, str],
-    possible_subcats_by_brand: Dict[str, list],
-):
-    """
-    1. find out possible subcats for a product
-    2. select candidates by searching possible subcats in names
-    3. if no candidate found, select among vendor-given subcats
-        [a,a,b] select a
-        [a,b] select the globally most frequent one
-    """
-    logging.info("adding subcat..")
-
-    subcat_freq: Counter = get_subcat_freq(products, subcat_original_to_clean)
-    services.save_json("out/subcat_freq.json", OrderedDict(subcat_freq.most_common()))
-
-    subcat_selected = 0
-    subcat_imposed = []
-    for product in tqdm(products):
-        possible_subcats_for_this_product: list = get_possible_subcats_for_this_product(
-            product, possible_subcats_by_brand, subcat_original_to_clean
-        )
-        subcat_candidates: set = get_subcat_candidates(
-            product, possible_subcats_for_this_product
-        )
-        if subcat_candidates:
-            product[keys.SUBCAT_CANDIDATES] = list(subcat_candidates)
-            product[keys.SUBCAT] = select_subcat(subcat_candidates, subcat_freq)
-            subcat_selected += 1
-        else:
-            # vendor-given categories turned to subcats through splitting by / & , and cleaning
-            clean_subcats = get_clean_sub_categories(product, subcat_original_to_clean)
-            # filter out overly broad cats
-            clean_subcats = [
-                s for s in clean_subcats if s not in {"kozmetik", "supermarket"}
-            ]
-            if clean_subcats:
-                counts = Counter(clean_subcats)
-                # if all counts are the same, select the globally most frequent one
-                if len(set(counts.values())) == 1:
-                    global_freqs = {sub: subcat_freq.get(sub) for sub in counts}
-                    selected = services.get_most_frequent_key(global_freqs)
-                else:
-                    selected = services.get_most_frequent_key(counts)
-
-                product[keys.SUBCAT] = selected
-                subcat_imposed.append(
-                    {
-                        "names": product.get(keys.CLEAN_NAMES)[:3],
-                        "vendor_subcats": clean_subcats,
-                        "selected": selected,
-                    }
-                )
-
-    services.save_json("out/subcat_imposed.json", subcat_imposed)
-    print(f"{subcat_selected} subcat_selected, {len(subcat_imposed)} subcat_imposed")
-
-    return products
-
-
 def cat_to_subcats(cat: Union[list, str]) -> List[str]:
     # "Şeker, Tuz & Baharat / un " ->  [Şeker, Tuz, Baharat, un]
     subcats = re.split("[/,&]", cat)
@@ -80,6 +19,91 @@ def cat_to_subcats(cat: Union[list, str]) -> List[str]:
 def test_cat_to_subcats():
     cases = [("Şeker,Tuz &Baharat / un ", ["Şeker", "Tuz", "Baharat", "un"])]
     services.check(cat_to_subcats, cases)
+
+
+def filter_subcats(subcats):
+    subcats = services.flatten(subcats)
+    bads = {"indirim", "%"}
+    subcats = [c for c in subcats if len(c) < 30 and not any(bad in c.lower() for bad in bads)]
+    subcat_lists = [cat_to_subcats(sub) for sub in subcats]
+    subcats = services.flatten(subcat_lists)
+    return subcats
+
+
+def add_raw_subcats(skus: List[dict]):
+    # derive_subcats_from_product_cats
+    for sku in tqdm(skus):
+        category_dict = sku.get(keys.CATEGORIES, {})
+        subcats = []
+        for market, cats in category_dict.items():
+            if market == "ty":
+                sub = cats[-1]
+            elif isinstance(cats, str) and "/" in cats:
+                sub = cats.split("/")[0]
+            else:
+                sub = cats
+            subcats.append(sub)
+
+        sku[keys.SUB_CATEGORIES] = filter_subcats(subcats)
+    return skus
+
+
+def search_sub_in_names(product, vendor_subcats):
+    clean_names = product.get(keys.CLEAN_NAMES, [])
+
+    for sub in services.sorted_counter(vendor_subcats):
+        for name in clean_names:
+            if sub in name and set(name.split()).issuperset(set(sub.split())):
+                return sub
+
+    partial_subs = []
+    for sub in services.sorted_counter(vendor_subcats):
+        for i, name in enumerate(clean_names):
+            # partial search
+            # der hij -> derinlemesine hijyen
+            partial_match = services.partial_string_search(name, sub)
+            if partial_match:
+                partial_subs.append(sub)
+                # replace partial_match with found subcat
+                # der hij -> derinlemesine hijyen
+                name = name.replace(partial_match, sub)
+                clean_names[i] = name
+
+    # save replaced names
+    product[keys.CLEAN_NAMES] = clean_names
+
+    if partial_subs:
+        return partial_subs[0]
+
+
+def add_subcat(
+        products: List[dict],
+        subcat_original_to_clean: Dict[str, str],
+):
+    logging.info("adding subcat..")
+
+    subcat_freq: Counter = get_subcat_freq(products, subcat_original_to_clean)
+    services.save_json("out/subcat_freq.json", OrderedDict(subcat_freq.most_common()))
+
+    for product in tqdm(products):
+        vendor_subcats = [
+            subcat_original_to_clean.get(sub)
+            for sub in product.get(keys.SUB_CATEGORIES, [])
+        ]
+        sub = search_sub_in_names(product, vendor_subcats)
+        if sub:
+            product[keys.SUBCAT] = sub
+
+        else:
+            # filter out overly broad cats
+            vendor_subcats = [
+                s for s in vendor_subcats if s not in {"kozmetik", "supermarket"}
+            ]
+            if vendor_subcats:
+                counts = Counter(vendor_subcats)
+                product[keys.SUBCAT] = services.get_most_frequent_key(counts)
+
+    return products
 
 
 def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
@@ -95,7 +119,7 @@ def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
 
 
 def get_possible_subcats_by_brand(
-    products, brand_original_to_clean, subcat_original_to_clean
+        products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
@@ -132,7 +156,7 @@ def get_clean_sub_categories(product, subcat_original_to_clean):
 
 
 def get_possible_subcats_for_this_product(
-    product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
+        product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
 ) -> list:
     """
     the result is a long list, every possible subcat for this brand and parts of this brand
@@ -166,43 +190,3 @@ def get_possible_subcats_for_this_product(
     ]
 
     return possible_subcats
-
-
-def subcats_from_partial_match():
-    ...
-
-
-def get_subcat_candidates(
-    product: dict, possible_subcats_for_this_product: list
-) -> set:
-    clean_names = product.get(keys.CLEAN_NAMES, [])
-
-    sub_cat_candidates = set()
-    for sub in possible_subcats_for_this_product:
-        for i, name in enumerate(clean_names):
-            tokens = name.split()
-            # a name should include all tokens of a subcat
-            if sub in name and set(tokens).issuperset(set(sub.split())):
-                sub_cat_candidates.add(sub)
-
-    if sub_cat_candidates:
-        return sub_cat_candidates
-
-    # partial search
-    for sub in possible_subcats_for_this_product:
-        if len(sub.split()) < 2:
-            continue
-        for i, name in enumerate(clean_names):
-            # der hij -> derinlemesine hijyen
-            partial_match = services.partial_string_search(name, sub)
-            if partial_match:
-                sub_cat_candidates.add(sub)
-                # replace partial_match with found subcat
-                # der hij -> derinlemesine hijyen
-                name = name.replace(partial_match, sub)
-                clean_names[i] = name
-
-    # save replaced names
-    product[keys.CLEAN_NAMES] = clean_names
-
-    return sub_cat_candidates
