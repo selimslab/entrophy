@@ -79,13 +79,25 @@ def search_sub_in_names(vendor_subcats, clean_names):
                 return sub
 
 
+def search_in_global(clean_names, vendor_subcat_count):
+    subs = []
+    for name in clean_names:
+        name_permutations = services.string_sliding_windows(name)
+        for perm in name_permutations:
+            if perm in vendor_subcat_count:
+                subs.append(perm)
+    if subs:
+        sub = services.sort_from_long_to_short(subs)[0]
+        return sub
+
+
 def add_subcat(
-    products: List[dict], subcat_original_to_clean: Dict[str, str],
+        products: List[dict], subcat_original_to_clean: Dict[str, str],
 ):
     logging.info("adding subcat..")
 
-    subcat_freq: Counter = get_subcat_freq(products, subcat_original_to_clean)
-    services.save_json("out/subcat_freq.json", OrderedDict(subcat_freq.most_common()))
+    vendor_subcat_count: Counter = get_subcat_freq(products, subcat_original_to_clean)
+    services.save_json("out/vendor_subcat_count.json", OrderedDict(vendor_subcat_count.most_common()))
 
     found_in_name = 0
     from_partial_sub = 0
@@ -98,7 +110,7 @@ def add_subcat(
         if not clean_names:
             continue
 
-        clean_subcats =  product.get(keys.CLEAN_SUBCATS, [])
+        clean_subcats = product.get(keys.CLEAN_SUBCATS, [])
         sub = search_sub_in_names(clean_subcats, clean_names)
         partial_sub = search_and_replace_partial_subcat(
             product, clean_subcats, clean_names
@@ -115,27 +127,21 @@ def add_subcat(
             product[keys.SUBCAT] = sub
             from_vendor_not_in_name += 1
         else:
-            subs = []
-            for name in clean_names:
-                name_permutations = services.string_sliding_windows(name)
-                for perm in name_permutations:
-                    if perm in subcat_freq:
-                        subs.append(perm)
-            if subs:
-                sub = services.sort_from_long_to_short(subs)[0]
+            sub = search_in_global(clean_names, vendor_subcat_count)
+            if sub:
                 product[keys.SUBCAT] = sub
                 from_global_pool_in_name += 1
 
     print(found_in_name, "subcats found_in_name")
-    print(from_partial_sub, "subcats from_partial_sub")
-    print(from_vendor_not_in_name, "subcats from_vendor_not_in_name")
-    print(from_global_pool_in_name, "subcats from_global_pool_in_name")
+    print(from_partial_sub, "subcats from partial (like bul. det.)")
+    print(from_vendor_not_in_name, "no sub found in name, selected the most common from vendor given subs")
+    print(from_global_pool_in_name, "no sub given by vendor, searched in global pool")
 
     return products
 
 
 def get_possible_subcats_by_brand(
-    products, brand_original_to_clean, subcat_original_to_clean
+        products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
@@ -169,5 +175,3 @@ def get_clean_sub_categories(product, subcat_original_to_clean):
         subcat_original_to_clean.get(sub)
         for sub in product.get(keys.SUB_CATEGORIES, [])
     ]
-
-
