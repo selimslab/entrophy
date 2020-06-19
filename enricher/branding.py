@@ -10,13 +10,9 @@ import constants as keys
 from freq import get_brand_freq
 
 
-def search_vendor_given_brands(product, brand_original_to_clean):
+def search_vendor_given_brands(product, clean_brands):
     brands_in_name = []
     clean_names = product.get(keys.CLEAN_NAMES, [])
-
-    vendor_given_brands = product.get(keys.BRANDS_MULTIPLE)
-    clean_brands = [brand_original_to_clean.get(b) for b in vendor_given_brands]
-
     for brand in services.sorted_counter(clean_brands):
         for name in clean_names:
             # brand is in first 4 tokens mostly
@@ -24,6 +20,15 @@ def search_vendor_given_brands(product, brand_original_to_clean):
             if brand in beginning_of_name:
                 brands_in_name.append(brand)
     return brands_in_name
+
+
+def select_most_frequent_brand(brand_candidates: list, brand_freq: dict) -> str:
+    """ return the_most_frequent_brand"""
+    brand_candidates_with_freq = {
+        brand: brand_freq.get(brand, 0) for brand in set(brand_candidates)
+    }
+    the_most_frequent_brand = services.get_most_frequent_key(brand_candidates_with_freq)
+    return the_most_frequent_brand
 
 
 def global_brand_search(clean_names, brand_pool):
@@ -65,18 +70,28 @@ def add_brand(
     # brand_pool_sorted = services.sort_from_long_to_short(brand_pool)
     for product in tqdm(products):
         clean_names = product.get(keys.CLEAN_NAMES, [])
-        brands_in_name = search_vendor_given_brands(product, brand_original_to_clean)
+        vendor_given_brands = product.get(keys.BRANDS_MULTIPLE)
+        clean_brands = [brand_original_to_clean.get(b) for b in vendor_given_brands]
+        product[keys.CLEAN_BRANDS] = clean_brands
 
-        if not brands_in_name:
-            brands_in_name = global_brand_search(clean_names, brand_pool)
+        brands_in_name = search_vendor_given_brands(product, clean_brands)
 
-        product[keys.CLEAN_BRANDS] = list(brands_in_name)
-        selected = brands_in_name[0]
+        if brands_in_name:
+            selected = brands_in_name[0]
 
-        if len(selected.split()) > 1:
-            selected = check_root_brand(brand_freq, selected)
+            if len(selected.split()) > 1:
+                selected = check_root_brand(brand_freq, selected)
 
-        product[keys.BRAND] = selected
+            product[keys.BRAND] = selected
+        else:
+            global_brands = global_brand_search(clean_names, brand_pool)
+            if global_brands:
+                selected = select_most_frequent_brand(global_brands, brand_freq)
+
+                if len(selected.split()) > 1:
+                    selected = check_root_brand(brand_freq, selected)
+
+                product[keys.BRAND] = selected
 
         # TODO partial brand match
 
