@@ -1,7 +1,6 @@
 import collections
 from dataclasses import asdict
 
-
 import services
 import constants as keys
 from spec.model.sku import SKU
@@ -84,7 +83,7 @@ def get_prices(docs):
     return prices
 
 
-def get_variant_name(docs):
+def get_google_variant_name(docs):
     """
     variants: [{'250 ml': '/shopping/product/17523461779494271950'}, {}...]
     if any google_doc in sku_docs, get VARIANT_NAME from this google_doc
@@ -155,7 +154,10 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     if digits:
         unit_price = round(best_price / digits, 2)
 
-    cats = [doc.get(keys.CATEGORIES) for doc in docs]
+    categories = {}
+    for doc in docs:
+        categories[doc.get(keys.MARKET)] = doc.get(keys.CATEGORIES, [])
+
     brands = [doc.get(keys.BRAND) for doc in docs]
 
     # TODO add color
@@ -182,9 +184,9 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         size=size,
         unit_price=unit_price,
         digits_units=list(set(digit_unit_tuples)),
-        categories=cats,
+        categories=categories,
         brands=brands,
-        variant_name=get_variant_name(docs),
+        variant_name=get_google_variant_name(docs),
     )
 
     sku = asdict(sku)
