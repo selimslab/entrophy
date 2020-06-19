@@ -113,7 +113,8 @@ def filter_out_known_word_groups_from_a_name(product):
 
     clean_names = product.get(keys.CLEAN_NAMES, [])
     brand_candidates = product.get(keys.BRAND_CANDIDATES, [])
-    subcat_candidates = product.get(keys.SUBCAT_CANDIDATES, [])
+    # TODO no more subcat_candidates
+    subcat_candidates = product.get(keys.SUBCATS_IN_NAME, [])
     clean_colors = product.get(keys.CLEAN_COLORS, [])
 
     # sorted by length to remove longest ones first
