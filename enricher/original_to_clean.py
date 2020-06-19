@@ -27,13 +27,20 @@ def get_brand_original_to_clean(products: List[dict]):
 def get_subcat_original_to_clean(products: List[dict]) -> dict:
     logging.info("cleaning subcats..")
     subcat_original_to_clean = {}
+    # filter out overly broad cats
+    bads = {"indirim", "%", "kozmetik", "supermarket", "gida"}
     for product in products:
         subcats = product.get(keys.SUB_CATEGORIES, [])
+        clean_subcats = []
         for sub in subcats:
-            if sub not in subcat_original_to_clean:
-                clean_sub = services.clean_string(sub)
-                clean_sub = services.plural_to_singular(clean_sub)
+            clean_sub = services.clean_string(sub)
+            clean_sub = services.plural_to_singular(clean_sub)
+            if len(clean_sub) < 40 and not any(bad in clean_sub for bad in bads):
+                clean_subcats.append(clean_sub)
                 subcat_original_to_clean[sub] = clean_sub
+
+        product[keys.CLEAN_SUBCATS] = clean_subcats
+
     return subcat_original_to_clean
 
 
