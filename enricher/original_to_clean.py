@@ -13,7 +13,10 @@ def get_brand_original_to_clean(products: List[dict]):
         brands = product.get(keys.BRANDS_MULTIPLE, [])
         for brand in brands:
             if brand not in brand_original_to_clean:
-                brand_original_to_clean[brand] = services.clean_string(brand)
+                clean_brand = services.clean_string(brand)
+                if clean_brand == "loreal":
+                    clean_brand = "loreal paris"
+                brand_original_to_clean[brand] = clean_brand
 
     return brand_original_to_clean
 
