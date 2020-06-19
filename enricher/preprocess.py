@@ -7,6 +7,7 @@ import constants as keys
 
 keys_to_merge = {
     keys.CATEGORIES,
+    keys.SUB_CATEGORIES,
     keys.BRANDS_MULTIPLE,
     keys.CLEAN_NAMES,
     keys.COLOR,
@@ -15,7 +16,7 @@ keys_to_merge = {
 
 relevant_keys = {
     keys.SKU_ID,
-    keys.PRODUCT_ID,
+    keys.PRODUCT_ID
 }
 
 relevant_keys.update(keys_to_merge)
