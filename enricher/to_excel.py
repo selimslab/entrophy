@@ -29,6 +29,26 @@ def filter_pairs(pairs):
     }
 
 
+def add_brand_and_subcat_to_doc(sku, sku_id, pairs, brand, subcat):
+    product_id = sku.get(keys.PRODUCT_ID)
+    doc_ids = sku.get(keys.DOC_IDS, [])
+    doc_ids = [id for id in doc_ids if "clone" not in id]
+    if not doc_ids:
+        return
+
+    for doc_id in doc_ids:
+        doc = pairs.get(doc_id)
+        if not doc:
+            continue
+        doc["our_brand"] = brand
+        doc[keys.SUBCAT] = subcat
+        doc[keys.PRODUCT_ID] = product_id
+        doc[keys.SKU_ID] = sku_id
+        # if keys.SUBCAT in doc and keys.SUBCAT_CANDIDATES not in doc:
+
+        pairs[doc_id] = doc
+
+
 def add_sku_id_and_product_id_to_pairs():
     # raw docs
     pairs = services.read_json(paths.pairs)
@@ -37,39 +57,27 @@ def add_sku_id_and_product_id_to_pairs():
     skus = services.read_json(paths.skus)
     pid_tree = get_pid_tree(skus)
 
-    products_with_brand_and_sub_cat = services.read_json(
-        paths.products_with_brand_and_subcat
+    products = services.read_json(
+        paths.products_out
     )
 
-    def add_brand_and_subcat_to_doc(sku_id):
+    def sync(sku_id):
         sku = skus.get(sku_id, {})
-        product_id = sku.get(keys.PRODUCT_ID)
-        doc_ids = sku.get(keys.DOC_IDS, [])
-        doc_ids = [id for id in doc_ids if "clone" not in id]
-        if not doc_ids:
-            return
-        for doc_id in doc_ids:
-            doc = pairs.get(doc_id)
-            if not doc:
-                continue
-            doc["our_brand"] = product_with_brand_and_sub.get(keys.BRAND)
-            doc[keys.SUBCAT] = product_with_brand_and_sub.get(keys.SUBCAT)
-            doc[keys.PRODUCT_ID] = product_id
-            doc[keys.SKU_ID] = sku_id
-
-            pairs[doc_id] = doc
+        brand = doc.get(keys.BRAND)
+        subcat = doc.get(keys.SUBCAT)
+        add_brand_and_subcat_to_doc(sku, sku_id, pairs, brand, subcat)
 
     logging.info("add_brand_and_subcat_to_doc..")
-    for product_with_brand_and_sub in tqdm(products_with_brand_and_sub_cat):
-        sku_id = product_with_brand_and_sub.get(keys.SKU_ID)
+    for doc in tqdm(products):
+        sku_id = doc.get(keys.SKU_ID)
 
         if sku_id:
-            add_brand_and_subcat_to_doc(sku_id)
+            sync(sku_id)
         else:
-            product_id = product_with_brand_and_sub.get(keys.PRODUCT_ID)
+            product_id = doc.get(keys.PRODUCT_ID)
             sku_ids = pid_tree.get(product_id, [])
             for sku_id in sku_ids:
-                add_brand_and_subcat_to_doc(sku_id)
+                sync(sku_id)
 
     return pairs
 
@@ -99,7 +107,7 @@ def to_excel():
     # services.save_json(output_dir / "pairs_matched.json", pairs)
     rows = list(pairs.values())
     rows = [row for row in rows if keys.SKU_ID in row]
-    excel.create_excel(rows, "out/jun18.xlsx", colnames)
+    excel.create_excel(rows, "out/jun19.xlsx", colnames)
 
 
 if __name__ == "__main__":
