@@ -9,14 +9,15 @@ LINK = "link"
 SRC = "src"
 
 BRAND = "brand"
-SUB_BRAND = "sub_brand"
-BRAND_CANDIDATES = "brand_candidates"
 BRANDS_MULTIPLE = "brands"
 CLEAN_BRANDS = "clean_brands"
+
+SUB_BRAND = "sub_brand"
+
+
 COLOR = "color"
 CLEAN_COLORS = "clean_colors"
 SELECTED_COLOR = "selected_color"
-
 
 DOC_IDS = "doc_ids"
 

@@ -112,14 +112,13 @@ def filter_out_known_word_groups_from_a_name(product):
     # clean_colors = services.read_json(paths.clean_colors).values()
 
     clean_names = product.get(keys.CLEAN_NAMES, [])
-    brand_candidates = product.get(keys.BRAND_CANDIDATES, [])
-    # TODO no more subcat_candidates
-    subcat_candidates = product.get(keys.SUBCATS_IN_NAME, [])
+    clean_brands = product.get(keys.CLEAN_BRANDS, [])
+    clean_subcats = product.get(keys.CLEAN_SUBCATS, [])
     clean_colors = product.get(keys.CLEAN_COLORS, [])
 
     # sorted by length to remove longest ones first
-    sorted_brands = services.sort_from_long_to_short(set(brand_candidates))
-    sorted_subcats = services.sort_from_long_to_short(set(subcat_candidates))
+    sorted_brands = services.sort_from_long_to_short(set(clean_brands))
+    sorted_subcats = services.sort_from_long_to_short(set(clean_subcats))
     sorted_colors = services.sort_from_long_to_short(set(clean_colors))
 
     filtered_names = []

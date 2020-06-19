@@ -51,17 +51,9 @@ def add_raw_subcats(skus: List[dict]):
     return skus
 
 
-def search_sub_in_names(product, vendor_subcats):
-    clean_names = product.get(keys.CLEAN_NAMES, [])
-    if not clean_names:
-        return
-
-    for sub in services.sorted_counter(vendor_subcats):
-        for name in clean_names:
-            if sub in name and set(name.split()).issuperset(set(sub.split())):
-                return sub
-
-    partial_subs = []
+def search_and_replace_partial_subcat(product, vendor_subcats, clean_names):
+    """ a subcat might be written wrong, or abbreviated """
+    subs = []
     for sub in services.sorted_counter(vendor_subcats):
         for i, name in enumerate(clean_names):
             if sub in name:
@@ -70,7 +62,7 @@ def search_sub_in_names(product, vendor_subcats):
             # der hij -> derinlemesine hijyen
             partial_match = services.partial_string_search(name, sub)
             if partial_match:
-                partial_subs.append(sub)
+                subs.append(sub)
                 # replace partial_match with found subcat
                 # der hij -> derinlemesine hijyen
                 name = name.replace(partial_match, sub)
@@ -80,26 +72,48 @@ def search_sub_in_names(product, vendor_subcats):
     # save replaced names
     product[keys.CLEAN_NAMES] = clean_names
 
-    if partial_subs:
-        return partial_subs[0]
+    if subs:
+        return subs[0]
+
+
+def search_sub_in_names(vendor_subcats, clean_names):
+    for sub in services.sorted_counter(vendor_subcats):
+        for name in clean_names:
+            if sub in name and set(name.split()).issuperset(set(sub.split())):
+                return sub
 
 
 def add_subcat(
-    products: List[dict], subcat_original_to_clean: Dict[str, str],
+        products: List[dict], subcat_original_to_clean: Dict[str, str],
 ):
     logging.info("adding subcat..")
 
     subcat_freq: Counter = get_subcat_freq(products, subcat_original_to_clean)
     services.save_json("out/subcat_freq.json", OrderedDict(subcat_freq.most_common()))
 
+    not_in_name = 0
+    from_sub = 0
+    from_partial_sub = 0
     for product in tqdm(products):
         vendor_subcats = [
             subcat_original_to_clean.get(sub)
             for sub in product.get(keys.SUB_CATEGORIES, [])
         ]
-        sub = search_sub_in_names(product, vendor_subcats)
+        product[keys.CLEAN_SUBCATS] = vendor_subcats
+
+        clean_names = product.get(keys.CLEAN_NAMES, [])
+        if not clean_names:
+            continue
+
+        sub = search_sub_in_names(vendor_subcats, clean_names)
+        partial_sub = search_and_replace_partial_subcat(product, vendor_subcats, clean_names)
+
         if sub:
             product[keys.SUBCAT] = sub
+            from_sub += 1
+        elif partial_sub:
+            product[keys.SUBCAT] = partial_sub
+            from_partial_sub += 1
         else:
             # filter out overly broad cats
             vendor_subcats = [
@@ -108,20 +122,24 @@ def add_subcat(
             if vendor_subcats:
                 sub = services.get_most_common_item(vendor_subcats)
                 product[keys.SUBCAT] = sub
+                not_in_name += 1
 
                 clean_names = product.get(keys.CLEAN_NAMES, [])
-                print(clean_names[:3])
+                print(clean_names)
 
                 print(vendor_subcats)
                 print(sub)
 
                 print()
 
+    print(from_sub, "subcats from_sub")
+    print(from_partial_sub, "subcats from_partial_sub")
+    print(not_in_name, "subcats not_in_name")
     return products
 
 
 def get_possible_subcats_by_brand(
-    products, brand_original_to_clean, subcat_original_to_clean
+        products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
@@ -158,7 +176,7 @@ def get_clean_sub_categories(product, subcat_original_to_clean):
 
 
 def get_possible_subcats_for_this_product(
-    product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
+        product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
 ) -> list:
     """
     the result is a long list, every possible subcat for this brand and parts of this brand
