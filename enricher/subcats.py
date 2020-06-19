@@ -91,6 +91,8 @@ def add_subcat(
     subcat_freq: Counter = get_subcat_freq(products, subcat_original_to_clean)
     services.save_json("out/subcat_freq.json", OrderedDict(subcat_freq.most_common()))
 
+    subcats_from_longest = services.sort_from_long_to_short(subcat_freq.keys())
+
     not_in_name = 0
     from_sub = 0
     from_partial_sub = 0
@@ -134,6 +136,9 @@ def add_subcat(
                 print(sub)
 
                 print()
+            else:
+
+
 
     print(from_sub, "subcats from_sub")
     print(from_partial_sub, "subcats from_partial_sub")
@@ -178,38 +183,3 @@ def get_clean_sub_categories(product, subcat_original_to_clean):
     ]
 
 
-def get_possible_subcats_for_this_product(
-    product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
-) -> list:
-    """
-    the result is a long list, every possible subcat for this brand and parts of this brand
-    example:
-        for brand loreal paris,
-        include all possible subcats for both loreal and loreal paris
-
-    """
-    brand_candidates = product.get(keys.BRAND_CANDIDATES, [])
-    possible_subcats = [
-        possible_subcats_by_brand.get(brand, []) for brand in brand_candidates
-    ]
-
-    brand = product.get(keys.BRAND)
-    # possible_subcats will be a union of possible_subcats for all start combinations
-    # ["loreal", "loreal excellence", "loreal excellence intense"]
-    if brand:
-        brand_tokens = brand.split()
-        for i in range(1, len(brand_tokens) + 1):
-            possible_parent_brand = " ".join(brand_tokens[0:i])
-            possible_subcats += possible_subcats_by_brand.get(possible_parent_brand, [])
-
-    clean_subcats = get_clean_sub_categories(product, subcat_original_to_clean)
-    possible_subcats += clean_subcats
-
-    possible_subcats = list(services.flatten(possible_subcats))
-
-    # dedup, remove very long sub_cats, they are mostly wrong
-    possible_subcats = [
-        s for s in possible_subcats if s and 1 < len(s) < 30 and "indirim" not in s
-    ]
-
-    return possible_subcats

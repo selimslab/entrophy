@@ -230,7 +230,7 @@ def create_filtered_names():
     products = services.read_json(paths.products_out)
     products = add_filtered_names(products)
     filtered_names_tree = get_filtered_names_tree(products)
-
+    return filtered_names_tree
 
 def run():
     filtered_names_tree = services.read_json(paths.filtered_names_tree)
