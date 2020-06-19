@@ -2,6 +2,7 @@ import re
 from typing import List, Dict, Union, Iterable
 from collections import defaultdict, Counter, OrderedDict
 import logging
+from pprint import pprint
 from tqdm import tqdm
 
 import services
@@ -52,6 +53,8 @@ def add_raw_subcats(skus: List[dict]):
 
 def search_sub_in_names(product, vendor_subcats):
     clean_names = product.get(keys.CLEAN_NAMES, [])
+    if not clean_names:
+        return
 
     for sub in services.sorted_counter(vendor_subcats):
         for name in clean_names:
@@ -61,6 +64,8 @@ def search_sub_in_names(product, vendor_subcats):
     partial_subs = []
     for sub in services.sorted_counter(vendor_subcats):
         for i, name in enumerate(clean_names):
+            if sub in name:
+                continue
             # partial search
             # der hij -> derinlemesine hijyen
             partial_match = services.partial_string_search(name, sub)
@@ -69,6 +74,7 @@ def search_sub_in_names(product, vendor_subcats):
                 # replace partial_match with found subcat
                 # der hij -> derinlemesine hijyen
                 name = name.replace(partial_match, sub)
+                print("replace", partial_match, "with", sub)
                 clean_names[i] = name
 
     # save replaced names
@@ -94,29 +100,24 @@ def add_subcat(
         sub = search_sub_in_names(product, vendor_subcats)
         if sub:
             product[keys.SUBCAT] = sub
-
         else:
             # filter out overly broad cats
             vendor_subcats = [
                 s for s in vendor_subcats if s not in {"kozmetik", "supermarket"}
             ]
             if vendor_subcats:
-                counts = Counter(vendor_subcats)
-                product[keys.SUBCAT] = services.get_most_frequent_key(counts)
+                sub = services.get_most_common_item(vendor_subcats)
+                product[keys.SUBCAT] = sub
+
+                clean_names = product.get(keys.CLEAN_NAMES, [])
+                print(clean_names[:3])
+
+                print(vendor_subcats)
+                print(sub)
+
+                print()
 
     return products
-
-
-def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
-    """ Select the most frequent globally """
-    if subcat_candidates:
-        subcat_candidates_with_freq = {
-            sub: subcat_freq.get(sub, 0) for sub in subcat_candidates
-        }
-        the_most_frequent_subcat = services.get_most_frequent_key(
-            subcat_candidates_with_freq
-        )
-        return the_most_frequent_subcat
 
 
 def get_possible_subcats_by_brand(
