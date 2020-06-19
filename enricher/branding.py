@@ -1,4 +1,4 @@
-from collections import Counter, OrderedDict
+from collections import Counter
 import logging
 from typing import List
 
@@ -6,7 +6,6 @@ from tqdm import tqdm
 
 import services
 import constants as keys
-from paths import output_dir
 
 from freq import get_brand_freq
 
@@ -88,6 +87,7 @@ def add_brand(
 
             if len(selected.split()) > 1:
                 selected = check_root_brand(brand_freq, selected)
+
             product[keys.BRAND] = selected
         # TODO partial brand match
 
