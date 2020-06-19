@@ -24,7 +24,9 @@ def test_cat_to_subcats():
 def filter_subcats(subcats):
     subcats = services.flatten(subcats)
     bads = {"indirim", "%"}
-    subcats = [c for c in subcats if len(c) < 30 and not any(bad in c.lower() for bad in bads)]
+    subcats = [
+        c for c in subcats if len(c) < 30 and not any(bad in c.lower() for bad in bads)
+    ]
     subcat_lists = [cat_to_subcats(sub) for sub in subcats]
     subcats = services.flatten(subcat_lists)
     return subcats
@@ -77,8 +79,7 @@ def search_sub_in_names(product, vendor_subcats):
 
 
 def add_subcat(
-        products: List[dict],
-        subcat_original_to_clean: Dict[str, str],
+    products: List[dict], subcat_original_to_clean: Dict[str, str],
 ):
     logging.info("adding subcat..")
 
@@ -119,7 +120,7 @@ def select_subcat(subcat_candidates: Iterable, subcat_freq: dict) -> str:
 
 
 def get_possible_subcats_by_brand(
-        products, brand_original_to_clean, subcat_original_to_clean
+    products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
@@ -156,7 +157,7 @@ def get_clean_sub_categories(product, subcat_original_to_clean):
 
 
 def get_possible_subcats_for_this_product(
-        product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
+    product: dict, possible_subcats_by_brand: dict, subcat_original_to_clean: dict
 ) -> list:
     """
     the result is a long list, every possible subcat for this brand and parts of this brand

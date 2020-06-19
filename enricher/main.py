@@ -18,7 +18,6 @@ from filter_names import add_filtered_names
 from sub_brand import get_filtered_names_tree
 
 
-
 def add_brand_and_subcat(products: List[dict]):
     """
     run the data enrichment from scratch

@@ -57,9 +57,7 @@ def add_sku_id_and_product_id_to_pairs():
     skus = services.read_json(paths.skus)
     pid_tree = get_pid_tree(skus)
 
-    products = services.read_json(
-        paths.products_out
-    )
+    products = services.read_json(paths.products_out)
 
     def sync(sku_id):
         sku = skus.get(sku_id, {})

@@ -14,10 +14,7 @@ keys_to_merge = {
     keys.VARIANT_NAME,
 }
 
-relevant_keys = {
-    keys.SKU_ID,
-    keys.PRODUCT_ID
-}
+relevant_keys = {keys.SKU_ID, keys.PRODUCT_ID}
 
 relevant_keys.update(keys_to_merge)
 
