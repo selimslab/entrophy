@@ -232,6 +232,7 @@ def create_filtered_names():
     filtered_names_tree = get_filtered_names_tree(products)
     return filtered_names_tree
 
+
 def run():
     filtered_names_tree = services.read_json(paths.filtered_names_tree)
     create_possible_sub_brands(filtered_names_tree)

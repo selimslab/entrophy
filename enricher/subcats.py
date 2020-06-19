@@ -92,12 +92,14 @@ def search_in_global(clean_names, vendor_subcat_count):
 
 
 def add_subcat(
-        products: List[dict], subcat_original_to_clean: Dict[str, str],
+    products: List[dict], subcat_original_to_clean: Dict[str, str],
 ):
     logging.info("adding subcat..")
 
     vendor_subcat_count: Counter = get_subcat_freq(products, subcat_original_to_clean)
-    services.save_json("out/vendor_subcat_count.json", OrderedDict(vendor_subcat_count.most_common()))
+    services.save_json(
+        "out/vendor_subcat_count.json", OrderedDict(vendor_subcat_count.most_common())
+    )
 
     found_in_name = 0
     from_partial_sub = 0
@@ -134,14 +136,17 @@ def add_subcat(
 
     print(found_in_name, "subcats found_in_name")
     print(from_partial_sub, "subcats from partial (like bul. det.)")
-    print(from_vendor_not_in_name, "no sub found in name, selected the most common from vendor given subs")
+    print(
+        from_vendor_not_in_name,
+        "no sub found in name, selected the most common from vendor given subs",
+    )
     print(from_global_pool_in_name, "no sub given by vendor, searched in global pool")
 
     return products
 
 
 def get_possible_subcats_by_brand(
-        products, brand_original_to_clean, subcat_original_to_clean
+    products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 

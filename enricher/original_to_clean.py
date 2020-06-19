@@ -39,7 +39,11 @@ def get_subcat_original_to_clean(products: List[dict]) -> dict:
         for sub in subcats:
             clean_sub = services.clean_string(sub)
             clean_sub = services.plural_to_singular(clean_sub)
-            if len(clean_sub) < 40 and not any(bad in clean_sub for bad in bads) and clean_sub not in too_broad:
+            if (
+                len(clean_sub) < 40
+                and not any(bad in clean_sub for bad in bads)
+                and clean_sub not in too_broad
+            ):
                 clean_subcats.append(clean_sub)
                 subcat_original_to_clean[sub] = clean_sub
 

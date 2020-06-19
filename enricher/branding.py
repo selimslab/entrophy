@@ -70,7 +70,7 @@ def get_brand(product, brand_freq, brand_pool):
 
 
 def add_brand(
-        products: List[dict], brand_original_to_clean: dict, brand_pool: set
+    products: List[dict], brand_original_to_clean: dict, brand_pool: set
 ) -> List[dict]:
     logging.info("adding brand..")
 
@@ -104,8 +104,7 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
             window_frequencies.update(sliding_windows)
 
     services.save_json(
-        "out/window_frequencies.json",
-        services.sorted_counter(window_frequencies),
+        "out/window_frequencies.json", services.sorted_counter(window_frequencies),
     )
 
     most_frequent_start_strings = {
