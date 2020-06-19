@@ -49,4 +49,4 @@ class SKU(BasicSKU):
     clean_names: list = None
     digits_units: list = None
     brands: list = field(default_factory=list)
-    categories: list = field(default_factory=list)
+    categories: dict = field(default_factory=dict)
