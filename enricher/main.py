@@ -12,20 +12,11 @@ from original_to_clean import (
     get_color_original_to_clean,
 )
 from branding import get_brand_pool, add_brand
-from subcats import get_possible_subcats_by_brand, cat_to_subcats, add_subcat
-from enricher.test.inspect_results import inspect_results
+from subcats import get_possible_subcats_by_brand, add_raw_subcats, add_subcat
+from inspect_results import inspect_results
 from filter_names import add_filtered_names
 from sub_brand import get_filtered_names_tree
 
-
-def add_raw_subcats(products: List[dict]):
-    # derive_subcats_from_product_cats
-    for product in products:
-        cats = product.get(keys.CATEGORIES, [])
-        cats = services.flatten(cats)
-        subcat_lists = [cat_to_subcats(cat) for cat in cats]
-        product[keys.SUB_CATEGORIES] = services.flatten(subcat_lists)
-    return products
 
 
 def add_brand_and_subcat(products: List[dict]):
@@ -56,7 +47,7 @@ def add_brand_and_subcat(products: List[dict]):
 
     products = add_brand(products, brand_original_to_clean, brand_pool)
 
-    products = add_subcat(products, subcat_original_to_clean, possible_subcats_by_brand)
+    products = add_subcat(products, subcat_original_to_clean)
 
     return products
 
@@ -86,11 +77,15 @@ def add_color(products):
 
 
 def enrich_product_data(skus: dict):
-    filtered_skus = filter_docs(list(skus.values()))
-    products = group_products(filtered_skus)
+    skus = filter_docs(list(skus.values()))
 
-    products = add_raw_subcats(products)
+    logging.info("add_raw_subcats..")
+    skus = add_raw_subcats(skus)
 
+    logging.info("group_products..")
+    products = group_products(skus)
+
+    logging.info("add_color..")
     products = add_color(products)
 
     products = add_brand_and_subcat(products)
