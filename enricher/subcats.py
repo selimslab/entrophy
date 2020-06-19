@@ -24,10 +24,6 @@ def test_cat_to_subcats():
 
 def filter_subcats(subcats):
     subcats = services.flatten(subcats)
-    bads = {"indirim", "%"}
-    subcats = [
-        c for c in subcats if not any(bad in c.lower() for bad in bads)
-    ]
     subcat_lists = [cat_to_subcats(sub) for sub in subcats]
     subcats = services.flatten(subcat_lists)
     return subcats
@@ -91,23 +87,18 @@ def add_subcat(
     subcat_freq: Counter = get_subcat_freq(products, subcat_original_to_clean)
     services.save_json("out/subcat_freq.json", OrderedDict(subcat_freq.most_common()))
 
-    subcats_from_longest = services.sort_from_long_to_short(subcat_freq.keys())
-
-    not_in_name = 0
-    from_sub = 0
+    found_in_name = 0
     from_partial_sub = 0
+    from_vendor_not_in_name = 0
+    from_global_pool_in_name = 0
 
     for product in tqdm(products):
-        clean_subcats = [
-            subcat_original_to_clean.get(sub)
-            for sub in product.get(keys.SUB_CATEGORIES, [])
-        ]
-        product[keys.CLEAN_SUBCATS] = clean_subcats
 
         clean_names = product.get(keys.CLEAN_NAMES, [])
         if not clean_names:
             continue
 
+        clean_subcats =  product.get(keys.CLEAN_SUBCATS, [])
         sub = search_sub_in_names(clean_subcats, clean_names)
         partial_sub = search_and_replace_partial_subcat(
             product, clean_subcats, clean_names
@@ -115,34 +106,31 @@ def add_subcat(
 
         if sub:
             product[keys.SUBCAT] = sub
-            from_sub += 1
+            found_in_name += 1
         elif partial_sub:
             product[keys.SUBCAT] = partial_sub
             from_partial_sub += 1
+        elif clean_subcats:
+            sub = services.get_most_common_item(clean_subcats)
+            product[keys.SUBCAT] = sub
+            from_vendor_not_in_name += 1
         else:
-            # filter out overly broad cats
-            clean_subcats = [
-                s for s in clean_subcats if s not in {"kozmetik", "supermarket"}
-            ]
-            if clean_subcats:
-                sub = services.get_most_common_item(clean_subcats)
+            subs = []
+            for name in clean_names:
+                name_permutations = services.string_sliding_windows(name)
+                for perm in name_permutations:
+                    if perm in subcat_freq:
+                        subs.append(perm)
+            if subs:
+                sub = services.sort_from_long_to_short(subs)[0]
                 product[keys.SUBCAT] = sub
-                not_in_name += 1
+                from_global_pool_in_name += 1
 
-                clean_names = product.get(keys.CLEAN_NAMES, [])
-                print(clean_names)
-
-                print(clean_subcats)
-                print(sub)
-
-                print()
-            else:
-
-
-
-    print(from_sub, "subcats from_sub")
+    print(found_in_name, "subcats found_in_name")
     print(from_partial_sub, "subcats from_partial_sub")
-    print(not_in_name, "subcats not_in_name")
+    print(from_vendor_not_in_name, "subcats from_vendor_not_in_name")
+    print(from_global_pool_in_name, "subcats from_global_pool_in_name")
+
     return products
 
 
