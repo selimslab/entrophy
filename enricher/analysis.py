@@ -49,3 +49,4 @@ def how_many_with_vendor_brand():
 
 if __name__ == "__main__":
     analyze_brand()
+    analyze_subcat()

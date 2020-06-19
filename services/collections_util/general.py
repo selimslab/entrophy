@@ -7,6 +7,12 @@ def sorted_counter(it: Iterable):
     return OrderedDict(Counter(it).most_common())
 
 
+def test_sorted_counter():
+    res = sorted_counter([3, 3, 5, 5, 7, 7, 7])
+    for i in res:
+        print(i)
+
+
 def sort_from_long_to_short(it: Iterable) -> list:
     return sorted(list(it), key=len, reverse=True)
 
