@@ -10,30 +10,19 @@ import constants as keys
 from freq import get_brand_freq
 
 
-def select_brand(brand_candidates: set, brand_freq: dict) -> str:
-    """ return the_most_frequent_brand"""
-    brand_candidates_with_freq = {
-        brand: brand_freq.get(brand, 0) for brand in set(brand_candidates)
-    }
-    the_most_frequent_brand = services.get_most_frequent_key(brand_candidates_with_freq)
-    return the_most_frequent_brand
-
-
 def search_vendor_given_brands(product, brand_original_to_clean):
     brands_in_name = []
     clean_names = product.get(keys.CLEAN_NAMES, [])
 
     vendor_given_brands = product.get(keys.BRANDS_MULTIPLE)
-    vendor_given_brands = {brand_original_to_clean.get(b) for b in vendor_given_brands}
+    clean_brands = [brand_original_to_clean.get(b) for b in vendor_given_brands]
 
-    if vendor_given_brands:
-        # search in the names
+    for brand in services.sorted_counter(clean_brands):
         for name in clean_names:
             # brand is in first 4 tokens mostly
             beginning_of_name = " ".join(name.split()[:4])
-            for brand in vendor_given_brands:
-                if brand in beginning_of_name:
-                    brands_in_name.append(brand)
+            if brand in beginning_of_name:
+                brands_in_name.append(brand)
     return brands_in_name
 
 
@@ -63,7 +52,7 @@ def check_root_brand(brand_freq, selected):
 
 
 def add_brand(
-    products: List[dict], brand_original_to_clean: dict, brand_pool: set
+        products: List[dict], brand_original_to_clean: dict, brand_pool: set
 ) -> List[dict]:
     """
 
@@ -81,14 +70,14 @@ def add_brand(
         if not brands_in_name:
             brands_in_name = global_brand_search(clean_names, brand_pool)
 
-        if brands_in_name:
-            product[keys.BRAND_CANDIDATES] = list(brands_in_name)
-            selected = select_brand(set(brands_in_name), brand_freq)
+        product[keys.CLEAN_BRANDS] = list(brands_in_name)
+        selected = brands_in_name[0]
 
-            if len(selected.split()) > 1:
-                selected = check_root_brand(brand_freq, selected)
+        if len(selected.split()) > 1:
+            selected = check_root_brand(brand_freq, selected)
 
-            product[keys.BRAND] = selected
+        product[keys.BRAND] = selected
+
         # TODO partial brand match
 
     return products
