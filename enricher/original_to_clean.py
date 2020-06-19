@@ -8,12 +8,15 @@ import constants as keys
 def get_brand_original_to_clean(products: List[dict]):
     logging.info("cleaning brands..")
     brand_original_to_clean = {}
+    to_filter_out = {"brn ", "markasiz", "erkek", "kadin", " adet"}
 
     for product in products:
         brands = product.get(keys.BRANDS_MULTIPLE, [])
         for brand in brands:
             if brand not in brand_original_to_clean:
                 clean_brand = services.clean_string(brand)
+                if any(bad in brand for bad in to_filter_out):
+                    continue
                 if clean_brand == "loreal":
                     clean_brand = "loreal paris"
                 brand_original_to_clean[brand] = clean_brand
