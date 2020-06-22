@@ -33,6 +33,8 @@ SUBCAT = "subcat"
 
 SUBCAT_SOURCE = "subcat_source"
 
+SUBCAT_PREDICTED = "subcat_predicted"
+
 FILTERED_NAMES = "filtered_names"
 
 OUT_OF_STOCK = "out_of_stock"
