@@ -125,14 +125,16 @@ def add_subcat(
             if sub:
                 product[keys.SUBCAT] = sub
                 product[keys.SUBCAT_SOURCE] = "majority"
-        else:
+
+        if keys.SUBCAT not in product:
             sub = search_in_global(clean_names, vendor_subcat_count)
             if sub:
                 product[keys.SUBCAT] = sub
                 product[keys.SUBCAT_SOURCE] = "global_name"
 
-    logging.info("stage report")
-    for stage in {"global_name", "local_name", "majority", "partial"}:
+    logging.info("subcat stage report")
+    stages = {"global_name", "local_name", "majority", "partial"}
+    for stage in stages:
         res = sum(p.get(keys.SUBCAT_SOURCE) == stage for p in products)
         print(res, stage)
 
