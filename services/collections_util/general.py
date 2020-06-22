@@ -30,7 +30,6 @@ def get_majority_if_exists(itr):
     [a,a,b] -> [(a,2), (b,1)]
     """
     commons = Counter(itr).most_common(2)
-    print(commons)
     if not commons:
         return
     if len(commons) == 1:
