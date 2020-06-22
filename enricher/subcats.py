@@ -82,9 +82,10 @@ def search_sub_in_names(vendor_subcats, clean_names):
 def search_in_global(clean_names, vendor_subcat_count):
     subs = []
     for name in clean_names:
+        name_tokens = set(name.split())
         name_permutations = services.string_sliding_windows(name)
         for perm in name_permutations:
-            if perm in vendor_subcat_count:
+            if perm in vendor_subcat_count and name_tokens.issuperset(set(perm.split())):
                 subs.append(perm)
     if subs:
         sub = services.sort_from_long_to_short(subs)[0]
@@ -101,10 +102,6 @@ def add_subcat(
         "out/vendor_subcat_count.json", OrderedDict(vendor_subcat_count.most_common())
     )
 
-    found_in_name = 0
-    from_partial_sub = 0
-    from_vendor_majority = 0
-
     for product in tqdm(products):
 
         clean_names = product.get(keys.CLEAN_NAMES, [])
@@ -119,22 +116,25 @@ def add_subcat(
 
         if sub:
             product[keys.SUBCAT] = sub
-            found_in_name += 1
+            product[keys.SUBCAT_SOURCE] = "local_name"
         elif partial_sub:
             product[keys.SUBCAT] = partial_sub
-            from_partial_sub += 1
+            product[keys.SUBCAT_SOURCE] = "partial"
         elif clean_subcats:
             sub = services.get_majority_if_exists(clean_subcats)
             if sub:
                 product[keys.SUBCAT] = sub
-                from_vendor_majority += 1
+                product[keys.SUBCAT_SOURCE] = "majority"
+        else:
+            sub = search_in_global(clean_names, vendor_subcat_count)
+            if sub:
+                product[keys.SUBCAT] = sub
+                product[keys.SUBCAT_SOURCE] = "global_name"
 
-    print(found_in_name, "subcats found_in_name")
-    print(from_partial_sub, "subcats from partial (like bul. det.)")
-    print(
-        from_vendor_majority,
-        "no sub found in name, selected the most common from vendor given subs",
-    )
+    logging.info("stage report")
+    for stage in {"global_name", "local_name", "majority", "partial"}:
+        res = sum(p.get(keys.SUBCAT_SOURCE) == stage for p in products)
+        print(res, stage)
 
     return products
 

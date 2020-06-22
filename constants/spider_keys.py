@@ -31,6 +31,10 @@ SUBCATS_IN_NAME = "subcats_in_name"
 CATEGORY = "cat"
 SUBCAT = "subcat"
 
+SUBCAT_SOURCE = "subcat_source"
+
+FILTERED_NAMES = "filtered_names"
+
 OUT_OF_STOCK = "out_of_stock"
 
 HISTORICAL_PRICES = "historical_prices"
