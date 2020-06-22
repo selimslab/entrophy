@@ -23,3 +23,24 @@ def get_most_common_item(itr: Iterable):
 
 def test_get_most_common_item():
     assert get_most_common_item([(2, 3), (2, 3), 4, 5, "a"]) == (2, 3)
+
+
+def get_majority_if_exists(itr):
+    """
+    [a,a,b] -> [(a,2), (b,1)]
+    """
+    commons = Counter(itr).most_common(2)
+    print(commons)
+    if not commons:
+        return
+    if len(commons) == 1:
+        return commons[0][0]
+    if len(commons) == 2 and commons[0][1] > commons[1][1]:
+        return commons[0][0]
+
+
+def test_get_majority_if_exists():
+    assert get_majority_if_exists([1, 1, 2]) == 1
+    assert get_majority_if_exists([1, 2]) == None
+    assert get_majority_if_exists([]) == None
+    assert get_majority_if_exists([1, 1, 2, 2, 3, 3]) == None
