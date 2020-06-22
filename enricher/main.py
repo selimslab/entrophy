@@ -15,41 +15,27 @@ from branding import get_brand_pool, add_brand
 from subcats import get_possible_subcats_by_brand, add_raw_subcats, add_subcat
 from inspect_results import inspect_results
 from filter_names import add_filtered_names
-from sub_brand import get_filtered_names_tree, create_possible_sub_brands
+from sub_brand import get_filtered_names_tree, create_possible_sub_brands, add_subbrand
 from analysis import analyze_subcat, analyze_brand
 
 
-def add_brand_and_subcat(products: List[dict]):
-    """
-    run the data enrichment from scratch
-
-    next: use sku_ids, will be needed to use with supermatch
-    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-        products = pool.map(add_raw_sub_categories, tqdm(products))
-
-    """
-    # Dr O'etker : dr oetker
+def get_indexes(products):
     brand_original_to_clean: dict = get_brand_original_to_clean(products)
-    services.save_json(paths.brand_original_to_clean, brand_original_to_clean)
 
-    subcat_original_to_clean: dict = get_subcat_original_to_clean(products)
-    services.save_json(paths.subcat_original_to_clean, subcat_original_to_clean)
+    clean_brands = set(brand_original_to_clean.values())
+    subcat_original_to_clean: dict = get_subcat_original_to_clean(products, clean_brands)
 
     possible_subcats_by_brand: dict = get_possible_subcats_by_brand(
         products, brand_original_to_clean, subcat_original_to_clean
     )
+
+    services.save_json(paths.brand_original_to_clean, brand_original_to_clean)
+    services.save_json(paths.subcat_original_to_clean, subcat_original_to_clean)
     services.save_json(
         paths.output_dir / "possible_subcats_by_brand.json", possible_subcats_by_brand
     )
 
-    brand_pool: set = get_brand_pool(products, possible_subcats_by_brand)
-    services.save_json(paths.brand_pool, sorted(list(brand_pool)))
-
-    products = add_brand(products, brand_pool)
-
-    products = add_subcat(products, subcat_original_to_clean)
-
-    return products
+    return brand_original_to_clean, subcat_original_to_clean, possible_subcats_by_brand
 
 
 def select_color(clean_names, clean_colors):
@@ -88,22 +74,31 @@ def enrich_product_data(skus: dict):
     logging.info("add_color..")
     products = add_color(products)
 
-    products = add_brand_and_subcat(products)
+    brand_original_to_clean, subcat_original_to_clean, possible_subcats_by_brand = get_indexes(products)
+
+    brand_pool: set = get_brand_pool(products, possible_subcats_by_brand)
+    services.save_json(paths.brand_pool, sorted(list(brand_pool)))
+
+    products = add_brand(products, brand_pool)
+
+    products = add_subcat(products, subcat_original_to_clean)
+
+    analyze_brand(products)
+    analyze_subcat(products)
 
     # for sub brand
-    products = add_filtered_names(products)
-
-    services.save_json(paths.products_out, products)
+    products = add_filtered_names(products, possible_subcats_by_brand)
 
     filtered_names_tree = get_filtered_names_tree(products)
     services.save_json(paths.filtered_names_tree, filtered_names_tree)
 
+    possible_word_groups_for_sub_brand = create_possible_sub_brands(filtered_names_tree)
+
+    products = add_subbrand(products, possible_word_groups_for_sub_brand)
+
+    services.save_json(paths.products_out, products)
+
     inspect_results(products)
-
-    create_possible_sub_brands(filtered_names_tree)
-
-    analyze_brand()
-    analyze_subcat()
 
     print("done!")
 
