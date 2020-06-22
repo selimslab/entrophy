@@ -84,7 +84,9 @@ def filter_tokens(name: str):
     return " ".join(filtered_tokens)
 
 
-def filter_out_known_word_groups_from_a_name(product, possible_subcats_by_brand, remove_subcat=True):
+def filter_out_known_word_groups_from_a_name(
+    product, possible_subcats_by_brand, remove_subcat=True
+):
     """
     remove brand candidates, subcat_candidates, color, gender, plural_to_singular
 
@@ -117,7 +119,11 @@ def filter_out_known_word_groups_from_a_name(product, possible_subcats_by_brand,
     clean_brands = [c for c in clean_brands if c]
 
     possible_subcats = possible_subcats_by_brand.get(brand, [])
-    clean_subcats = product.get(keys.CLEAN_SUBCATS, []) + possible_subcats + [product.get(keys.SUBCAT)]
+    clean_subcats = (
+        product.get(keys.CLEAN_SUBCATS, [])
+        + possible_subcats
+        + [product.get(keys.SUBCAT)]
+    )
     clean_subcats = [c for c in clean_subcats if c]
 
     clean_colors = product.get(keys.CLEAN_COLORS, [])

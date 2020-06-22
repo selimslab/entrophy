@@ -23,7 +23,9 @@ def get_indexes(products):
     brand_original_to_clean: dict = get_brand_original_to_clean(products)
 
     clean_brands = set(brand_original_to_clean.values())
-    subcat_original_to_clean: dict = get_subcat_original_to_clean(products, clean_brands)
+    subcat_original_to_clean: dict = get_subcat_original_to_clean(
+        products, clean_brands
+    )
 
     possible_subcats_by_brand: dict = get_possible_subcats_by_brand(
         products, brand_original_to_clean, subcat_original_to_clean
@@ -74,7 +76,11 @@ def enrich_product_data(skus: dict):
     logging.info("add_color..")
     products = add_color(products)
 
-    brand_original_to_clean, subcat_original_to_clean, possible_subcats_by_brand = get_indexes(products)
+    (
+        brand_original_to_clean,
+        subcat_original_to_clean,
+        possible_subcats_by_brand,
+    ) = get_indexes(products)
 
     brand_pool: set = get_brand_pool(products, possible_subcats_by_brand)
     services.save_json(paths.brand_pool, sorted(list(brand_pool)))

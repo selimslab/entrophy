@@ -22,7 +22,9 @@ def add_subbrand(products, possible_word_groups_for_sub_brand):
         brand = product.get(keys.BRAND)
         subcat = product.get(keys.SUBCAT)
         clean_names = product.get(keys.CLEAN_NAMES, [])
-        possible_sub_brands = possible_word_groups_for_sub_brand.get(subcat, {}).get(brand, {})
+        possible_sub_brands = possible_word_groups_for_sub_brand.get(subcat, {}).get(
+            brand, {}
+        )
         sub = get_sub_brand(possible_sub_brands, clean_names)
         if sub:
             product[keys.SUB_BRAND] = sub
@@ -93,9 +95,9 @@ def filter_out_incomplete_parts(counts: dict) -> dict:
         long_word_tokens = set(long_word.split())
         for short_word in sorted(counts, key=len):
             if (
-                    counts[short_word] < counts[long_word]
-                    and short_word in long_word
-                    and long_word_tokens.issuperset(set(short_word.split()))
+                counts[short_word] < counts[long_word]
+                and short_word in long_word
+                and long_word_tokens.issuperset(set(short_word.split()))
             ):
                 to_remove.add(short_word)
 

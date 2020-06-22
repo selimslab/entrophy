@@ -114,7 +114,7 @@ def to_excel():
         keys.CATEGORIES,
         keys.SUBCAT,
         keys.SUBCAT_SOURCE,
-        keys.SUBCAT_PREDICTED
+        keys.SUBCAT_PREDICTED,
     ]
 
     products = services.read_json(paths.products_out)

@@ -48,7 +48,14 @@ def how_many_with_vendor_brand(products):
 
 
 def stages(products):
-    relevant_keys = {keys.PRODUCT_ID, keys.SKU_ID, keys.SUBCAT, keys.CLEAN_NAMES, keys.BRAND, keys.SUBCAT_SOURCE}
+    relevant_keys = {
+        keys.PRODUCT_ID,
+        keys.SKU_ID,
+        keys.SUBCAT,
+        keys.CLEAN_NAMES,
+        keys.BRAND,
+        keys.SUBCAT_SOURCE,
+    }
     products = [services.filter_keys(p, relevant_keys) for p in products]
     keyfunc = lambda product: product.get(keys.SUBCAT_SOURCE, "")
     products = sorted(products, key=keyfunc)

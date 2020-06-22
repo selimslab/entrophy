@@ -24,8 +24,16 @@ def predict_subcat(products: List[dict]) -> list:
     if not products:
         return []
 
-    with_sub = [p for p in products if keys.SUBCAT in p and p.get(keys.SUBCAT_SOURCE) != "global_name"]
-    no_sub = [p for p in products if keys.SUBCAT not in p or p.get(keys.SUBCAT_SOURCE) == "global_name"]
+    with_sub = [
+        p
+        for p in products
+        if keys.SUBCAT in p and p.get(keys.SUBCAT_SOURCE) != "global_name"
+    ]
+    no_sub = [
+        p
+        for p in products
+        if keys.SUBCAT not in p or p.get(keys.SUBCAT_SOURCE) == "global_name"
+    ]
 
     X_train = []
     y_train = []
@@ -75,9 +83,18 @@ def group_by_brand(products):
 def run():
     products = services.read_json(paths.products_out)
     *rest, possible_subcats_by_brand = get_indexes(products)
-    products = add_filtered_names(products, possible_subcats_by_brand, remove_subcat=False)
-    relevant_keys = {keys.PRODUCT_ID, keys.SKU_ID, keys.FILTERED_NAMES, keys.SUBCAT, keys.SUBCAT_SOURCE,
-                     keys.CLEAN_NAMES, keys.BRAND}
+    products = add_filtered_names(
+        products, possible_subcats_by_brand, remove_subcat=False
+    )
+    relevant_keys = {
+        keys.PRODUCT_ID,
+        keys.SKU_ID,
+        keys.FILTERED_NAMES,
+        keys.SUBCAT,
+        keys.SUBCAT_SOURCE,
+        keys.CLEAN_NAMES,
+        keys.BRAND,
+    }
     products = [services.filter_keys(p, relevant_keys) for p in products]
 
     subcat_predicted = []
