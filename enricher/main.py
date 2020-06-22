@@ -15,7 +15,7 @@ from branding import get_brand_pool, add_brand
 from subcats import get_possible_subcats_by_brand, add_raw_subcats, add_subcat
 from inspect_results import inspect_results
 from filter_names import add_filtered_names
-from sub_brand import get_filtered_names_tree
+from sub_brand import get_filtered_names_tree, create_possible_sub_brands
 from analysis import analyze_subcat, analyze_brand
 
 
@@ -99,6 +99,8 @@ def enrich_product_data(skus: dict):
     services.save_json(paths.filtered_names_tree, filtered_names_tree)
 
     inspect_results(products)
+
+    create_possible_sub_brands(filtered_names_tree)
 
     analyze_brand()
     analyze_subcat()
