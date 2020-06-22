@@ -1,4 +1,3 @@
-from collections import Counter
 import logging
 import itertools
 
@@ -85,7 +84,7 @@ def filter_tokens(name: str):
     return " ".join(filtered_tokens)
 
 
-def filter_out_known_word_groups_from_a_name(product, remove_subcat=True):
+def filter_out_known_word_groups_from_a_name(product, possible_subcats_by_brand, remove_subcat=True):
     """
     remove brand candidates, subcat_candidates, color, gender, plural_to_singular
 
@@ -112,13 +111,15 @@ def filter_out_known_word_groups_from_a_name(product, remove_subcat=True):
     # clean_colors = services.read_json(paths.clean_colors).values()
 
     clean_names = product.get(keys.CLEAN_NAMES, [])
-    clean_brands = product.get(keys.CLEAN_BRANDS, [])
 
     brand = product.get(keys.BRAND)
-    if brand:
-        clean_brands.append(brand)
+    clean_brands = product.get(keys.CLEAN_BRANDS, []) + [brand]
+    clean_brands = [c for c in clean_brands if c]
 
-    clean_subcats = product.get(keys.CLEAN_SUBCATS, [])
+    possible_subcats = possible_subcats_by_brand.get(brand, [])
+    clean_subcats = product.get(keys.CLEAN_SUBCATS, []) + possible_subcats + [product.get(keys.SUBCAT)]
+    clean_subcats = [c for c in clean_subcats if c]
+
     clean_colors = product.get(keys.CLEAN_COLORS, [])
 
     # sorted by length to remove longest ones first
@@ -139,11 +140,12 @@ def filter_out_known_word_groups_from_a_name(product, remove_subcat=True):
     return filtered_names
 
 
-def add_filtered_names(products, remove_subcat=True):
+def add_filtered_names(products, possible_subcats_by_brand, remove_subcat=True):
     logging.info("add_filtered_names..")
+
     for product in tqdm(products):
         filtered_names = filter_out_known_word_groups_from_a_name(
-            product, remove_subcat
+            product, possible_subcats_by_brand, remove_subcat
         )
         product[keys.FILTERED_NAMES] = filtered_names
 
