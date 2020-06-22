@@ -61,7 +61,7 @@ def check_root_brand(brand_freq, brand):
 
 def get_brand(product, brand_freq, brand_pool):
     clean_names = product.get(keys.CLEAN_NAMES, [])
-    clean_brands = product.get(keys.CLEAN_BRANDS)
+    clean_brands = product.get(keys.CLEAN_BRANDS, [])
     brands_in_name = search_vendor_given_brands(product, clean_brands)
 
     if brands_in_name:
@@ -109,7 +109,7 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
     )
 
     most_frequent_start_strings = {
-        s: count for s, count in window_frequencies.items() if count > 8
+        s: count for s, count in window_frequencies.items() if count > 10
     }
 
     # OrderedDict(Counter(groups).most_common())
@@ -119,7 +119,7 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
     brand_pool = {
         services.remove_whitespace(b)
         for b in brand_pool
-        if (len(b) > 2 and not any(bad in b for bad in to_filter_out))
+        if (b and len(b) > 2 and not any(bad in b for bad in to_filter_out))
     }
     return brand_pool
 
