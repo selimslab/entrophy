@@ -85,7 +85,7 @@ def filter_tokens(name: str):
     return " ".join(filtered_tokens)
 
 
-def filter_out_known_word_groups_from_a_name(product):
+def filter_out_known_word_groups_from_a_name(product, remove_subcat=True):
     """
     remove brand candidates, subcat_candidates, color, gender, plural_to_singular
 
@@ -129,7 +129,8 @@ def filter_out_known_word_groups_from_a_name(product):
     filtered_names = []
     for name in clean_names:
         name = remove_a_list_of_strings(name, sorted_brands)
-        name = remove_a_list_of_strings(name, sorted_subcats)
+        if remove_subcat:
+            name = remove_a_list_of_strings(name, sorted_subcats)
         name = remove_color(name, sorted_colors)
         name = filter_tokens(name)
         if name:
@@ -138,11 +139,11 @@ def filter_out_known_word_groups_from_a_name(product):
     return filtered_names
 
 
-def add_filtered_names(products):
+def add_filtered_names(products,remove_subcat=True):
     logging.info("add_filtered_names..")
     for product in tqdm(products):
-        filtered_names = filter_out_known_word_groups_from_a_name(product)
-        product["filtered_names"] = filtered_names
+        filtered_names = filter_out_known_word_groups_from_a_name(product,remove_subcat)
+        product[keys.FILTERED_NAMES] = filtered_names
 
     return products
 
