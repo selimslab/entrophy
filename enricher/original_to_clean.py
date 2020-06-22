@@ -14,16 +14,15 @@ def get_brand_original_to_clean(products: List[dict]):
         brands = product.get(keys.BRANDS_MULTIPLE, [])
         clean_brands = []
         for brand in brands:
-            if brand not in brand_original_to_clean:
-                clean_brand = services.clean_string(brand)
-                if any(bad in brand for bad in to_filter_out):
-                    continue
-                if brand in wrong_brands:
-                    continue
-                if clean_brand == "loreal":
-                    clean_brand = "loreal paris"
-                brand_original_to_clean[brand] = clean_brand
-                clean_brands.append(clean_brand)
+            clean_brand = services.clean_string(brand)
+            if any(bad in clean_brand for bad in to_filter_out):
+                continue
+            if clean_brand in wrong_brands:
+                continue
+            if clean_brand == "loreal":
+                clean_brand = "loreal paris"
+            brand_original_to_clean[brand] = clean_brand
+            clean_brands.append(clean_brand)
         product[keys.CLEAN_BRANDS] = clean_brands
     return brand_original_to_clean
 
