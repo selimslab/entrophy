@@ -113,6 +113,11 @@ def filter_out_known_word_groups_from_a_name(product):
 
     clean_names = product.get(keys.CLEAN_NAMES, [])
     clean_brands = product.get(keys.CLEAN_BRANDS, [])
+
+    brand = product.get(keys.BRAND)
+    if brand:
+        clean_brands.append(brand)
+
     clean_subcats = product.get(keys.CLEAN_SUBCATS, [])
     clean_colors = product.get(keys.CLEAN_COLORS, [])
 
