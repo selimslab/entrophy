@@ -37,7 +37,7 @@ def global_brand_search(clean_names, brand_pool):
     brands_in_name = []
     for name in clean_names:
         # a b c -> a, a b, a b c
-        start_strings = services.string_to_extending_windows(name, end=3)
+        start_strings = services.string_to_extending_windows(name, end=4)
         for s in start_strings:
             if s in brand_pool:
                 brands_in_name.append(s)
@@ -108,7 +108,7 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
     )
 
     most_frequent_start_strings = {
-        s: count for s, count in window_frequencies.items() if count > 10
+        s: count for s, count in window_frequencies.items() if count > 8
     }
 
     # OrderedDict(Counter(groups).most_common())
