@@ -92,7 +92,7 @@ def search_in_global(clean_names, vendor_subcat_count):
 
 
 def add_subcat(
-    products: List[dict], subcat_original_to_clean: Dict[str, str],
+        products: List[dict], subcat_original_to_clean: Dict[str, str],
 ):
     logging.info("adding subcat..")
 
@@ -103,8 +103,7 @@ def add_subcat(
 
     found_in_name = 0
     from_partial_sub = 0
-    from_vendor_not_in_name = 0
-    from_global_pool_in_name = 0
+    from_vendor_majority = 0
 
     for product in tqdm(products):
 
@@ -125,28 +124,23 @@ def add_subcat(
             product[keys.SUBCAT] = partial_sub
             from_partial_sub += 1
         elif clean_subcats:
-            sub = services.get_most_common_item(clean_subcats)
-            product[keys.SUBCAT] = sub
-            from_vendor_not_in_name += 1
-        else:
-            sub = search_in_global(clean_names, vendor_subcat_count)
+            sub = services.get_majority_if_exists(clean_subcats)
             if sub:
                 product[keys.SUBCAT] = sub
-                from_global_pool_in_name += 1
+                from_vendor_majority += 1
 
     print(found_in_name, "subcats found_in_name")
     print(from_partial_sub, "subcats from partial (like bul. det.)")
     print(
-        from_vendor_not_in_name,
+        from_vendor_majority,
         "no sub found in name, selected the most common from vendor given subs",
     )
-    print(from_global_pool_in_name, "no sub given by vendor, searched in global pool")
 
     return products
 
 
 def get_possible_subcats_by_brand(
-    products, brand_original_to_clean, subcat_original_to_clean
+        products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
