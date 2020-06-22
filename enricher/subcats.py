@@ -85,7 +85,9 @@ def search_in_global(clean_names, vendor_subcat_count):
         name_tokens = set(name.split())
         name_permutations = services.string_sliding_windows(name)
         for perm in name_permutations:
-            if perm in vendor_subcat_count and name_tokens.issuperset(set(perm.split())):
+            if perm in vendor_subcat_count and name_tokens.issuperset(
+                set(perm.split())
+            ):
                 subs.append(perm)
     if subs:
         sub = services.sort_from_long_to_short(subs)[0]
@@ -93,7 +95,7 @@ def search_in_global(clean_names, vendor_subcat_count):
 
 
 def add_subcat(
-        products: List[dict], subcat_original_to_clean: Dict[str, str],
+    products: List[dict], subcat_original_to_clean: Dict[str, str],
 ):
     logging.info("adding subcat..")
 
@@ -142,7 +144,7 @@ def add_subcat(
 
 
 def get_possible_subcats_by_brand(
-        products, brand_original_to_clean, subcat_original_to_clean
+    products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 

@@ -139,10 +139,12 @@ def filter_out_known_word_groups_from_a_name(product, remove_subcat=True):
     return filtered_names
 
 
-def add_filtered_names(products,remove_subcat=True):
+def add_filtered_names(products, remove_subcat=True):
     logging.info("add_filtered_names..")
     for product in tqdm(products):
-        filtered_names = filter_out_known_word_groups_from_a_name(product,remove_subcat)
+        filtered_names = filter_out_known_word_groups_from_a_name(
+            product, remove_subcat
+        )
         product[keys.FILTERED_NAMES] = filtered_names
 
     return products

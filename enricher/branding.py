@@ -72,9 +72,7 @@ def get_brand(product, brand_freq, brand_pool):
             return select_most_frequent_brand(global_brands, brand_freq)
 
 
-def add_brand(
-        products: List[dict], brand_pool: set
-) -> List[dict]:
+def add_brand(products: List[dict], brand_pool: set) -> List[dict]:
     logging.info("adding brand..")
 
     brand_freq: dict = get_brand_freq(products)
