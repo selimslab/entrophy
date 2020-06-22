@@ -2,7 +2,7 @@ from collections import Counter
 import constants as keys
 
 
-def get_brand_freq(products, brand_original_to_clean):
+def get_brand_freq(products):
     """  how many items has been given this  brand by a vendor
 
     "erikli": 89,
@@ -13,8 +13,7 @@ def get_brand_freq(products, brand_original_to_clean):
     brand_freq = Counter()
 
     for product in products:
-        brands = product.get(keys.BRANDS_MULTIPLE, [])
-        clean_brands = [brand_original_to_clean.get(b) for b in brands]
+        clean_brands = product.get(keys.CLEAN_BRANDS, [])
         brand_freq.update(clean_brands)
 
     return brand_freq

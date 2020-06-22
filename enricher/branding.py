@@ -45,14 +45,17 @@ def global_brand_search(clean_names, brand_pool):
     return brands_in_name
 
 
-def check_root_brand(brand_freq, selected):
-    current_freq = brand_freq.get(selected, 0)
-    possible_roots = services.string_to_extending_windows(selected)
+def check_root_brand(brand_freq, brand):
+    current_freq = brand_freq.get(brand, 0)
+    possible_roots = services.string_to_extending_windows(brand)
     possible_roots.sort(key=len)
+    selected = brand
     for root in possible_roots:
-        if brand_freq.get(root, 0) > current_freq:
+        root_freq = brand_freq.get(root, 0)
+        if root_freq > current_freq:
             selected = root
-            current_freq = brand_freq.get(root)
+            current_freq = root_freq
+            print(brand, "->", selected)
     return selected
 
 
@@ -70,11 +73,11 @@ def get_brand(product, brand_freq, brand_pool):
 
 
 def add_brand(
-    products: List[dict], brand_original_to_clean: dict, brand_pool: set
+        products: List[dict], brand_pool: set
 ) -> List[dict]:
     logging.info("adding brand..")
 
-    brand_freq: dict = get_brand_freq(products, brand_original_to_clean)
+    brand_freq: dict = get_brand_freq(products)
     services.save_json("out/brand_freq.json", services.sorted_counter(brand_freq))
 
     # brand_pool_sorted = services.sort_from_long_to_short(brand_pool)
