@@ -242,7 +242,7 @@ TY’deki son eleman = Hiyerarşideki son söz öbeği, Ruj
 Migros’taki son eleman, crawl ederken solda tıklanabilir son kategori elemanı, kolonya.
 
 
-Tüm diğer vendor’lar da yine aynnı şekilde.
+Tüm diğer vendor’lar da yine aynı şekilde.
 
 Vendor’lardan gelen subcat verilerini “&” ve “,” kısımlarından ayırıyoruz. Bu kısmı “OR/VEYA” bağlacı ile kullanacağız.
 Ayırdığımız veriler ile diğer bütün subcat’lerin sonundaki (sadece sonundaki) “ler”, “lar” eklerini siliyoruz. “leri” ve “ları” ile bitenlerden de son 4 harfin ilk 3’ündeki “ler” ve “lar” kısımlarını siliyoruz, son harfi bırakıyoruz.
@@ -270,6 +270,8 @@ C:Ariel Dağ Esintisi Ç. Deterjanı	Gratis		Çamaşır Deterjanları
 B ve C item’ındaki subcat’i temizledik ve “Çamaşır Deterjanı” yaptık. Bu modified subcat’ı tekrardan original’e geçirince, majority’den bu SKU’ya “Çamaşır Deterjanları” demeyelim. Modified hali zaten başka bir vendor’ın original’ı. Direkt bunu kullanalım ve topic yapalım.
 
 Hala subcat atayamadıklarımız için tekrar majority'e bakıyoruz (Tekrar bakmak önenmli ilk başta içinde bulabildiklerimiz ile gitmeliyiz). Vendor'lardan bir ürünle ilgili gelen veri a,b,b  (b=b exact match with modified or original) ise ve bu b'ler 1'den fazla farklı vendor'dan geldi ise, b'yi subcat olarak atıyoruz.
+
+Global subcat atamasında daha fala product ya da item'ı olan subcat öncelikli. Subcat name uzunluğuna bakmaya gerek yok.
 
 ## Sub-Category Merging:
 Öncelikle subcat merge'ü ML' girmeden önceki aşamada kullanacağız.
