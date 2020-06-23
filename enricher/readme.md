@@ -146,6 +146,8 @@ Güneş ürünlerinde SPF20, GKF30 gibi önemli ayrıntıların silindiğini gö
 
 Not: 5d7bf018fb73f00e578baf42 skuid’deki gibi ürünlerle karşılaştım. Burada migros ürününü bağlayabileceğimiz iki farklı SKU var (diğeri 5d7bdff4525e36c343df1748), biri sadece google’ın olduğu, diğeri de olağan SKU. Migros item tek google olana bağlanmış. Bu da app’te bu tarz ürünleri only Migros göstermemize neden oluyor. Exact Name Match ve Set Match’te eşitlik halinde google’ın olmadığı item’ı önceliklendirelim. Ya da önce google’ın olmadığı SKU’ları alalım. Ya da son durumda sponsored match ne kadar işimize yarıyor, bir konuşalım, kaldırabiliriz.
 
+Not: Bir vendor'ın bir sku'da sadece bir adet URL'i olur diye bir kuralımız vardı. Fakat, Hayatımızda artık marketplace'ler var. Marketplace'lerin bir üründe 1'den fazla URL'i olabilir. Diğer websiteler için tek URL zorunluluğu devam ediyor.
+
 
 # Önemli:
 En son skuid’yi fixlememiz lazım. Sepete atılan ürünler, geçmiş alışverişler ve recommendation bu id’ler üzerinden çalışacak. Stabil olmalı. Birbiri ile merge eden ürünlerin “or” ile bağlanan 1’den fazla skuid’si olabilir.
