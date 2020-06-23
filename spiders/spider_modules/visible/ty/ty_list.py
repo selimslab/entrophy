@@ -66,10 +66,15 @@ class TrendyolSpider(BaseSpider):
             product = {k: v for k, v in product.items() if k in keys_parse}
             product["market"] = "ty"
             product[keys.PRICE] = product.get("price", {}).get("sellingPrice")
-            product[keys.BRAND] = product.get("brand", {}).get("name")
+            brand = product.get("brand", {}).get("name")
+            product[keys.BRAND] = brand
+            name = product.get("name", "")
+            if brand not in name:
+                name = " ".join([brand, name])
+            product[keys.NAME] = name
+
             product[keys.LINK] = "https://www.trendyol.com" + product.get("url")
             product[keys.CATEGORIES] = product.get("categoryHierarchy", "").split("/")
-
             yield product
 
         if products:
@@ -80,7 +85,7 @@ class TrendyolSpider(BaseSpider):
 
             yield response.follow(
                 next_page_url,
-                meta={"category_name": category_name, keys.PAGE_NUMBER: page_number,},
+                meta={"category_name": category_name, keys.PAGE_NUMBER: page_number, },
                 callback=self.parse,
             )
 
