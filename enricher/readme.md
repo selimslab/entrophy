@@ -260,10 +260,78 @@ C:Ariel Dağ Esintisi Ç. Deterjanı	Gratis		Çamaşır Deterjanları
 
 B ve C item’ındaki subcat’i temizledik ve “Çamaşır Deterjanı” yaptık. Bu modified subcat’ı tekrardan original’e geçirince, majority’den bu SKU’ya “Çamaşır Deterjanları” demeyelim. Modified hali zaten başka bir vendor’ın original’ı. Direkt bunu kullanalım ve topic yapalım.
 
+## Sub-Category Merging:
+Öncelikle subcat merge'ü ML' girmeden önceki aşamada kullanacağız.
+
+1- Modified halleri ile sadece son 3 harfleri farklı olan, 7 harften büyük subcat'leri, büyük olana merge ediyoruz.
+Örnek:
+"Camasir Suyu" ve "Camasir Su" merge edip, "Camasir Suyu" haline getiriyoruz. Topic olarak kullanmak üzere original halini tutmaya devam ediyoruz.
+
+2- Token olarak birbirinin içinde geçen ve 1'den fazla kelime içeren subcat'leri kısa olanın içine dahil ediyoruz. (Tek kelimeli subcat'ler kesinlikle bu sürece dahil olmayacak)
+Örnek:
+A: "Sıvı ve Jel Çamaşır Deterjanı" ve B:"Sıvı Deterjanı"
+B'nin tüm token'ları A'nın içinde geçtiği için, A'yı B'ye dahil edip, B'yi topic olarak kullanıyoruz.
+
+Önceliklendirme: Yukarıya C: "Çamaşır Deterjanı" ekleyelim. Eğer C'nin sahip olduğu product sayısı B'den fazla ise, C hem A'yı, hem de C'nın alt kümesi olduğundan dolayı B'yi kendi içine alır. 
+Eğer B, C'den daha çok ürüne sahip olsaydı, bu 3 subcat'i B'nin içinde merge edecektik.
 
 
-Subbrand
-Issue’daki haliyle deneyeceğiz.
+## Subbrand
+Brand içinde 1'den fazla product group'ta geçen, fakat ait olduğu subcategory içinde herhangi başka bir brand'de geçmeyen söz ya da söz öbekleri.
+
+Subbrand:
+Brand içinde 1'den fazla product group'ta geçen, fakat ait olduğu subcategory içinde herhangi başka bir brand'de geçmeyen söz ya da söz öbekleri.
+
+  1- İşe product içindeki item'larda yineleyen söz ya da söz öbekleriyle başlayalım.
+Items:
+Fairy Platinum Limon Bulaşık Deterjanı 1000ml
+Fairy Platinum Limon Bulaşık Deterjanı 500ml
+Fairy Bulaşık Deterjanı Limon Pet 1000ml
+Fairy Platinum Limon Bulaşık Sıvısı 500ml
+
+After Grouping:
+Fairy Platinum Limon Bulaşık Deterjanı
+Fairy Platinum Limon Bulaşık Deterjanı
+Fairy Bulaşık Deterjanı Limon Pet
+Fairy Platinum Limon Bulaşık Sıvısı
+
+After Brand and Subcat:
+Platinum Limon
+Platinum Limon
+Limon Pet
+Platinum Limon
+
+Buradan sonra frekansa girebiliriz. Burada 1'den fazla kelimeleri repeat edenler için aynı sıralama ile geçmesi önemli. Örneğin 5.bir item olsaydı ve adı "Fairy Limon Platinum 400ml" olsaydı, Aşağıdaki "Platinum Limon" X3 olmaya devam edecekti, sıra doğru değil.
+
+  Frekanslara göre de sort ediyoruz. Sort ederken sayılar eşitse UZUN olan öncelikli.
+Limon X4
+Platinum LimonX3
+PlatinumX3
+Limon PetX1
+PetX1
+
+Sort'lama ile beraber, product içindeki item'ların 50%'sinde geçmeyen subbrand adaylarını eliyoruz.
+
+Kalan:
+Limon X4
+Platinum LimonX3
+PlatinumX3
+
+  Sort'lu sırayla şimdi önce token'ın brand içinde en az 1 kere başka bir ürün grubunda daha geçmesini bekliyoruz
+
+  Başka bir ürün grubunda geçmesine de yine aynı şekilde frekans ile bakacağız. Bütün ürün gruplarında yukarıdaki gibi tekrar eden söz ve söz öbekleri içinde geçmesini bekleyeceğiz. Sadece item içinde değil. Bu sayede tek başına olan item'ları da elemiş olduk.
+
+  Geçiyorsa, ilgili subcat içinde başka bir markada geçmemesini bekliyoruz.
+
+Limon'u aldık. Fairy'de başka bir ürün grubunda daha geçiyor. Ama subcat'te de başka bir markada var. Eledik.
+
+Sırada Platinum Limon var. Bu da brand içinde tekrar etmediğinden dolayı elenmiş olsun.
+
+Sırada Platinum var. Fairy'de başka bir ürün grubunda daha geçiyor. Subcat içinde başka bir markada geçmiyor. Platinum artık bu ürün grubunun subbrand'i. Bu kadar.
+
+  2- Bir durumumuz daha var. Carte Dor gibi iki kelimeli subbrand'lerde Carte kelimesi Carte Dor'dan daha fazla gelebilir. Bundan dolayı iki kelimeli tekrar eden token'lara öncelik verebilmek için frekanslarını 1.25 ile çarpalım (80% ihtimal geçmiş olmasını yeterli görmüş oluyoruz) 3 kelimelileri de 1.25X1.25=1.56 ile çarpalım.
+
+
 
 
 
