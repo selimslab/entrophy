@@ -27,7 +27,7 @@ def predict_subcat(products: List[dict]) -> list:
     with_sub = [
         p
         for p in products
-        if keys.SUBCAT in p and p.get(keys.SUBCAT_SOURCE) != "global_name"
+        if keys.SUBCAT in p  and p.get(keys.SUBCAT_SOURCE) != "global_name"
     ]
     no_sub = [
         p
@@ -59,16 +59,42 @@ def predict_subcat(products: List[dict]) -> list:
     # X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
     clf = MultinomialNB().fit(X_train_counts, y_train)
 
-    y_pred = clf.predict(count_vect.transform(X_test))
+    test_vector = count_vect.transform(X_test)
+    y_pred = clf.predict(test_vector)
+    y_prob = clf.predict_proba(test_vector)
+    log_probas = clf.predict_log_proba(test_vector)
 
     for i, product in enumerate(no_sub):
-        product[keys.SUBCAT] = y_pred[i]
+        probs = y_prob[i].tolist()
+        predicted_class = y_pred[i]
+        idx = y_train.index(predicted_class)
+        try:
+            prob = y_prob[i][idx]
+            max_prob = max(y_prob[i])
+            index_of_max_prob = probs.index(max_prob)
+            pred_with_max_prob = y_pred[index_of_max_prob]
+
+            log_prob = log_probas[i][idx]
+            print(X_test[i])
+            print(predicted_class, prob, log_prob)
+            print(max_prob, pred_with_max_prob)
+            if log_prob < -80:
+                print("X")
+            print()
+        except IndexError:
+            continue
+        product[keys.SUBCAT] = predicted_class
         product[keys.SUBCAT_SOURCE] = "ML"
 
+    """
     for names, pred in zip(X_test, y_pred):
         print(names)
         print(pred)
         print()
+        # print(prob)
+        # print(y_train[y_prob.index(max(y_prob))])
+
+    """
 
     return no_sub
 
@@ -98,11 +124,26 @@ def run():
     products = [services.filter_keys(p, relevant_keys) for p in products]
 
     subcat_predicted = []
-    for brand, products in group_by_brand(products):
-        predicted = predict_subcat(list(products))
-        subcat_predicted += predicted
+    # for brand, products in group_by_brand(products):
+    predicted = predict_subcat(list(products))
+    subcat_predicted += predicted
 
     services.save_json("stage/ML_subcat_predicted.json", subcat_predicted)
+
+
+def test_mnb():
+    import numpy as np
+    rng = np.random.RandomState(1)
+    X = rng.randint(5, size=(6, 100))
+    y = np.array([1, 2, 3, 4, 5, 6])
+    from sklearn.naive_bayes import MultinomialNB
+    clf = MultinomialNB()
+    clf.fit(X, y)
+
+    test = X[2:3]
+    print(test)
+    print(clf.predict(test))
+    print(clf.predict_proba(test))
 
 
 if __name__ == "__main__":
