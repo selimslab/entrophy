@@ -61,40 +61,22 @@ def predict_subcat(products: List[dict]) -> list:
 
     test_vector = count_vect.transform(X_test)
     y_pred = clf.predict(test_vector)
-    y_prob = clf.predict_proba(test_vector)
     log_probas = clf.predict_log_proba(test_vector)
 
     for i, product in enumerate(no_sub):
-        probs = y_prob[i].tolist()
         predicted_class = y_pred[i]
         idx = y_train.index(predicted_class)
         try:
-            prob = y_prob[i][idx]
-            max_prob = max(y_prob[i])
-            index_of_max_prob = probs.index(max_prob)
-            pred_with_max_prob = y_pred[index_of_max_prob]
-
             log_prob = log_probas[i][idx]
             print(X_test[i])
-            print(predicted_class, prob, log_prob)
-            print(max_prob, pred_with_max_prob)
-            if log_prob < -80:
-                print("X")
+            print(predicted_class, log_prob)
+            if log_prob < -100:
+                continue
             print()
         except IndexError:
             continue
         product[keys.SUBCAT] = predicted_class
         product[keys.SUBCAT_SOURCE] = "ML"
-
-    """
-    for names, pred in zip(X_test, y_pred):
-        print(names)
-        print(pred)
-        print()
-        # print(prob)
-        # print(y_train[y_prob.index(max(y_prob))])
-
-    """
 
     return no_sub
 
