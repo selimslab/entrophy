@@ -55,9 +55,9 @@ def predict_subcat(products: List[dict]) -> list:
         X_train_counts = count_vect.fit_transform(X_train)
     except ValueError:
         return []
-    tfidf_transformer = TfidfTransformer()
-    X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-    clf = MultinomialNB().fit(X_train_tfidf, y_train)
+    # tfidf_transformer = TfidfTransformer()
+    # X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+    clf = MultinomialNB().fit(X_train_counts, y_train)
 
     y_pred = clf.predict(count_vect.transform(X_test))
 
