@@ -331,7 +331,7 @@ PlatinumX3
 
   Başka bir ürün grubunda geçmesine de yine aynı şekilde frekans ile bakacağız. Bütün ürün gruplarında yukarıdaki gibi tekrar eden söz ve söz öbekleri içinde geçmesini bekleyeceğiz. Sadece item içinde değil. Bu sayede tek başına olan item'ları da elemiş olduk.
 
-  Geçiyorsa, ilgili subcat içinde başka bir markada geçmemesini bekliyoruz.
+  Geçiyorsa, ilgili subcat içinde başka bir markada geçmemesini bekliyoruz. Buradaki ilgili subcat hem bizim atadığımız subcat'lerin içindeki brand'lerde geçmemesi, hem de vendor'dan gelen subcat'teki var olan vendor'daki başka brand'in subcat'i. Subbrand searach'ü bir patent edasıyla hem kendi subcat'imiz içinde, hem de vendor'ın belirlediği subat'lerdeki item'lar içinde arayacağız ve bulamazsak subbrand atayacağız.
 
 Limon'u aldık. Fairy'de başka bir ürün grubunda daha geçiyor. Ama subcat'te de başka bir markada var. Eledik.
 
