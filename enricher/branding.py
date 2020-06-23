@@ -66,6 +66,8 @@ def get_brand(product, brand_freq, brand_pool):
 
     if brands_in_name:
         return brands_in_name[0]
+    elif clean_brands:
+        return services.get_most_common_item(clean_brands)
     else:
         global_brands = global_brand_search(clean_names, brand_pool)
         if global_brands:
