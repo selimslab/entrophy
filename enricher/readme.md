@@ -119,11 +119,11 @@ myo, wat, gratis, c4, ross, ty
     * a type should be in min. 2 brands, and min. 5 skus 
     
 
-From Zero
+##From Zero
 
 Öncelikle temizledeğimiz, karakter değişikliği yaparak “modified” ettiğimizin herşeyin original halini de saklıyoruz.
 
-Veri Temizliği
+#Veri Temizliği
 
 And, ve, for, için ("and" , "ve" , “for” , “için” tek başına ve iki tarafında space var ise) kelimelerini matching'e özel tek bir format haline getiriyoruz. Matching'de kullanırkan "Head&Shoulders", "Head& Shoulders", "Head &Shoulders", "Head and Shoulders", "Head ve Shoulders" 5'lisi bizim için exact match'tir.
 Noktalama işaretlerini temizliyoruz.
