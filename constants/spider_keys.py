@@ -31,6 +31,8 @@ SUBCATS_IN_NAME = "subcats_in_name"
 CATEGORY = "cat"
 SUBCAT = "subcat"
 
+GENDER = "gender"
+
 SUBCAT_SOURCE = "subcat_source"
 
 SUBCAT_PREDICTED = "subcat_predicted"
