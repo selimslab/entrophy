@@ -239,6 +239,8 @@ Bütün vendor’lardan subcat’leri tam ve doğru bir şekilde aldığımıza 
 TY’deki son eleman = Hiyerarşideki son söz öbeği, Ruj
 Migros’taki son eleman, crawl ederken solda tıklanabilir son kategori elemanı, kolonya.
 
+Hiyerarşisinden emin olamağımız marketyo gibi vendor'lardan gelen verilerde tüm "/"
+
 Tüm diğer vendor’lar da yine aynnı şekilde.
 
 Vendor’lardan gelen subcat verilerini “&” ve “,” kısımlarından ayırıyoruz. Bu kısmı “OR/VEYA” bağlacı ile kullanacağız.
@@ -259,6 +261,8 @@ B:Ariel Dağ Çamaşır Deterjanı	Trendyol		Çamaşır Deterjanları
 C:Ariel Dağ Esintisi Ç. Deterjanı	Gratis		Çamaşır Deterjanları
 
 B ve C item’ındaki subcat’i temizledik ve “Çamaşır Deterjanı” yaptık. Bu modified subcat’ı tekrardan original’e geçirince, majority’den bu SKU’ya “Çamaşır Deterjanları” demeyelim. Modified hali zaten başka bir vendor’ın original’ı. Direkt bunu kullanalım ve topic yapalım.
+
+Hala subcat atayamadıklarımız için tekrar majority'e bakıyoruz (Tekrar bakmak önenmli ilk başta içinde bulabildiklerimiz ile gitmeliyiz). Vendor'lardan bir ürünle ilgili gelen veri a,b,b  (b=b exact match with modified or original) ise ve bu b'ler 1'den fazla farklı vendor'dan geldi ise, b'yi subcat olarak atıyoruz.
 
 ## Sub-Category Merging:
 Öncelikle subcat merge'ü ML' girmeden önceki aşamada kullanacağız.
