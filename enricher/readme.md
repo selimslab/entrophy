@@ -226,6 +226,7 @@ Majority’e bakmadan gördüğümüzde direkt atayacağımız, sadelestirmeden 
 
 # Subcat
 Subcat= İlgili vendor’ın category ağacındaki son eleman.
+Hiç bir subcat'te numeric karakter geçemez.
 
 Bütün vendor’lardan subcat’leri tam ve doğru bir şekilde aldığımıza emin olalım.
 
@@ -258,6 +259,7 @@ B:Ariel Dağ Çamaşır Deterjanı	Trendyol		Çamaşır Deterjanları
 C:Ariel Dağ Esintisi Ç. Deterjanı	Gratis		Çamaşır Deterjanları
 
 B ve C item’ındaki subcat’i temizledik ve “Çamaşır Deterjanı” yaptık. Bu modified subcat’ı tekrardan original’e geçirince, majority’den bu SKU’ya “Çamaşır Deterjanları” demeyelim. Modified hali zaten başka bir vendor’ın original’ı. Direkt bunu kullanalım ve topic yapalım.
+
 
 
 Subbrand
