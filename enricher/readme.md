@@ -336,6 +336,13 @@ Sırada Platinum var. Fairy'de başka bir ürün grubunda daha geçiyor. Subcat 
   2- Bir durumumuz daha var. Carte Dor gibi iki kelimeli subbrand'lerde Carte kelimesi Carte Dor'dan daha fazla gelebilir. Bundan dolayı iki kelimeli tekrar eden token'lara öncelik verebilmek için frekanslarını 1.25 ile çarpalım (80% ihtimal geçmiş olmasını yeterli görmüş oluyoruz) 3 kelimelileri de 1.25X1.25=1.56 ile çarpalım.
 
 
+## Gender
 
+Subbrand sonrası full item name içinde aşağıdaki tokenları arayarak tüm product'lara gender atıyoruz.
+
+men = {"erkek", "men", "bay", "man"}
+woman = {"kadin", "women", "bayan", "woman"}
+child = {"cocuk", "child", "children", "bebe"}
+unisex = {"unisex"}
 
 
