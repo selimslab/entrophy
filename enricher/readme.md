@@ -253,6 +253,10 @@ Unlar Yumurtalar —> “Unlar Yumurta”
 Vendor’lardan SKU’ya gelen 1’den fazla subcat verisi var elimizde.
 İlk olarak yine majority’e bakıp karar veriyoruz. Çoğunluğun kabul ettiği subcat ismi product’ımızın içinde arıyoruz. Varsa subcat tamamdır. Yoksa, ikinci en çok geçeni arıyoruz. Buna bulana kadar devam ediyoruz. Bulamazsak subcat atamıyoruz.
 
+Eğer bu aşamada hala bir subcat atayamadıysak, hiyerarşinin tamamını subcat içinde arıyoruz. TY örnek: ['Saç Spreyi', 'Saç Şekillendirici', 'Kişisel Bakım', 'Süpermarket', 'Saç Bakım'] buradakilerin tamamını product içinde arıyoruz, bulursak atamasını gerçekleştiriyoruz.
+
+Eğer buraya kadar hala subcat atayamadıysak, majority'den default gelen bir subcat bilgisi var ise bunu atayabiliriz. Burada en önemli mesele, 1'den fazla farklı vendor'ın bilgisinin modified ya da original haliyle exact match olması.
+
 Önemli:
 Subcat’lerin modified hali eger baska yerde original ise, bunu kullanacagiz. Yani subcat’te direkt original varsa topic subcat bu olacak
 Örnek SKU:
