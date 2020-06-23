@@ -119,11 +119,11 @@ myo, wat, gratis, c4, ross, ty
     * a type should be in min. 2 brands, and min. 5 skus 
     
 
-##From Zero
+## From Zero
 
 Öncelikle temizledeğimiz, karakter değişikliği yaparak “modified” ettiğimizin herşeyin original halini de saklıyoruz.
 
-#Veri Temizliği
+# Veri Temizliği
 
 And, ve, for, için ("and" , "ve" , “for” , “için” tek başına ve iki tarafında space var ise) kelimelerini matching'e özel tek bir format haline getiriyoruz. Matching'de kullanırkan "Head&Shoulders", "Head& Shoulders", "Head &Shoulders", "Head and Shoulders", "Head ve Shoulders" 5'lisi bizim için exact match'tir.
 Noktalama işaretlerini temizliyoruz.
@@ -131,11 +131,14 @@ Noktalama işaretlerini temizliyoruz.
 Türkçe'ye özel ğ,ü,ş,i,ö,ç harflerini ingilizce karşılıklarıyla hem büyük hem de küçükler için matching'e özel değiştiriyoruz.
 “Kg” ya da “KG.” ile biten ve oncesinde bosluklu ya da bosluksuz numeric bir karakter bulunmayan tum itemlardan bu “kg” ve “kg.”leri siliyoruz. 
 Item Name sonunda 8, 10, 11 veya 13 karakterli bir numeric var ise, barkod olarak içeri alıp, name’den bu kısmı çıkarıyoruz. 
-NOT: Başka sayı temizliği yapmayacağız! Numaralar color ya da size numarası olabilir!
+# NOT: 
+Başka sayı temizliği yapmayacağız! Numaralar color ya da size numarası olabilir!
 Type’a gelene kadar herhangi ekstra bir temizlik yapmayacağız.
 Bu temizlikleridimizi ilerideki aşamalarda item içinde araycağımız “Color” , “Brand” ve “Subcat” içinde yapıyoruz.
-Not: Güneş ürünlerinde SPF20, GKF30 gibi önemli ayrıntıların silindiğini gördüm. Veri temizliğinde bu satırlarda stick kalalım.
-Matching
+# Not: 
+Güneş ürünlerinde SPF20, GKF30 gibi önemli ayrıntıların silindiğini gördüm. Veri temizliğinde bu satırlarda stick kalalım.
+
+## Matching
 1- Barcode Match
 2- Exact Name Match
 3- Set Match
@@ -144,10 +147,10 @@ Matching
 Not: 5d7bf018fb73f00e578baf42 skuid’deki gibi ürünlerle karşılaştım. Burada migros ürününü bağlayabileceğimiz iki farklı SKU var (diğeri 5d7bdff4525e36c343df1748), biri sadece google’ın olduğu, diğeri de olağan SKU. Migros item tek google olana bağlanmış. Bu da app’te bu tarz ürünleri only Migros göstermemize neden oluyor. Exact Name Match ve Set Match’te eşitlik halinde google’ın olmadığı item’ı önceliklendirelim. Ya da önce google’ın olmadığı SKU’ları alalım. Ya da son durumda sponsored match ne kadar işimize yarıyor, bir konuşalım, kaldırabiliriz.
 
 
-Önemli:
+# Önemli:
 En son skuid’yi fixlememiz lazım. Sepete atılan ürünler, geçmiş alışverişler ve recommendation bu id’ler üzerinden çalışacak. Stabil olmalı. Birbiri ile merge eden ürünlerin “or” ile bağlanan 1’den fazla skuid’si olabilir.
 
-Sizing
+## Sizing
 Halihazırda her item için sizing yapıyoruz. SKU’ları grupladıktan sonra, item’lar içindeki farklı size’lardan en fazla hangisi varsa onu alacağız.
 
 Örnek SKU:
@@ -157,9 +160,12 @@ Gliss 525ML
 Bu SKU’nun size’ı 525ML’dir.
 Bir SKU’ya tek size vereceğiz. Group match’e giderken de item’lardaki bütün size’ları sileceğiz. 
 Group match’te SKU’nun size topic’i bu verdiğimiz “tek” size olacak. App’te de variant olarak bunu kullanacağız.
+Size için kullandığımız tüm token'ları siliyoruz. Bu örnek için ml, mililitre, l ve litre yi kullanarak size bulduk, tüm bunları siliyoruz. Ayrıca içinde geçen tüm 525 ve 550'leri de siliyoruz.
 
-Color
+# Color
 Bize zaten gratis ve TY’den color verisi geliyor. Gelen color verilerini, color’ın geldiği vendor item’ı da dahil olmak üzere, SKU içindeki item’larda arayacağız. Bulduğumuzda o SKU’ya bu color’ı atayacağız. Bir SKU için 1’den fazla color verisi var ise tüm color verilerini arayacağız. 
+Color'da da yine color'ın kelimelerinin geçtiği tüm token'ları siliyoruz.
+
 Veri Temizliği
 Bunun aramasını yaparken black=siyah, dark=koyu gibi basit şeylerin TR-EN karşılıklarını da arayalım.
 
@@ -179,7 +185,7 @@ Burada Kırmızı ve Edition kelimelerini de siliyoruz. Tamamının geçmesini b
 
 Topic olarak seçeceğimiz ve app’te göstereceğimiz rengi, öncelik sıralamasıyla TY ve Gratis olarak seçelim ve bir tanesini kullanalım. TR-EN dictionary’den topic renk seçmeyeceğiz.
 
-Product Grouping
+# Product Grouping
 Burada Set Match’ten color ve sizing’i çıkaracağız ve SKU gruplarını yine ortak set zorunlu olacak ve karakteristik sette de alt küme olacak şekilde birbirleri ile eşleştireceğiz. 
 Eşleştirirken önemli olan, bunu sadece 1 SKU’yu başka 1 SKU ile eşleştirmek olmalı, product grouping sadece bir aşama olmalı. Şu anki SKU match’teki gibi bir kısmını gruplayıp daha sonra içini doldurmaya çalışmamalıyız, yoksa tüm brand’i gruplarız.  Fakat aynı SKU da 1’den fazla SKU ile eşleşebilir. En sonunda şöyle bir durum yapacağız:
 SKU A is merged with SKU B, SKU D, but not with SKU C
@@ -204,8 +210,10 @@ Bu case’de color yok. A ve B ürünleri size üzerinden gruplanabilir.
 
 Product Grouping ile işimiz bittiğinde, ne ile grupladıysak o token’ları çıkarıp bir “Product Name” vereceğiz. İlk örnek için Iphone X 64GB ve Iphone X 128GB gibi.
 
+Eğer SKU'ya size ya da color atamamış isek, product grouping'e sokmuyoruz.
 
-Brand
+
+# Brand
 Verileri temizliyoruz
 Vendor’lardan item’lara 1 ya da 1’den fazla brand verisi gelebilir. En çok gelen brand verisini buluyoruz ve item’ların başında arıyoruz. En çok gelen veriyi bulamazsak, ikinci en çok gelen veriyi buluyoruz ve yine item’ların başında arıyoruz. İlk bulduğumuz brand verisini verified brand olarak atiyoruz. Fakat bu sku’ya henuz bir brand vermedik. 
 Verified brand’ler icinde, ayni kelime ile baslayip en kisa olan brand’leri buluyoruz. 
@@ -216,7 +224,7 @@ Sadelestirme islemini item’daki butun marka verilerine uyguluyoruz, ve daha on
 Majority’e bakmadan gördüğümüzde direkt atayacağımız, sadelestirmeden yararlanmayacak olan manuel bir şekilde manuple edeceğimiz birkaç marka var. Loreal Paris bunların ilki. Loreal görünce Loreal Paris’i direkt olarak yapıştırabiliriz. Bunlardan cok az vardir. Gordukce manuel bir sekilde gireriz. 
 
 
-Subcat
+# Subcat
 Subcat= İlgili vendor’ın category ağacındaki son eleman.
 
 Bütün vendor’lardan subcat’leri tam ve doğru bir şekilde aldığımıza emin olalım.
