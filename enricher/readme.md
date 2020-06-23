@@ -256,7 +256,9 @@ Vendor’lardan SKU’ya gelen 1’den fazla subcat verisi var elimizde.
 
 Eğer bu aşamada hala bir subcat atayamadıysak, hiyerarşinin tamamını subcat içinde arıyoruz. TY örnek: ['Saç Spreyi', 'Saç Şekillendirici', 'Kişisel Bakım', 'Süpermarket', 'Saç Bakım'] buradakilerin tamamını product içinde arıyoruz, bulursak atamasını gerçekleştiriyoruz.
 
-Eğer buraya kadar hala subcat atayamadıysak, majority'den default gelen bir subcat bilgisi var ise bunu atayabiliriz. Burada en önemli mesele, 1'den fazla farklı vendor'ın bilgisinin modified ya da original haliyle exact match olması. Buradaki majority'de bizim için marketyo tek bir market. Farklı vendor'larıyla bu kısım için burayı manüple etmesine izin vermeyelim.
+Eğer buraya kadar hala subcat atayamadıysak, majority'den default gelen bir subcat bilgisi var ise bunu atayabiliriz. Burada en önemli mesele, 1'den fazla farklı vendor'ın bilgisinin modified ya da original haliyle exact match olması. 
+
+Tüm majority'de bizim için marketyo tek bir market. Aynı category tree'deki farklı vendor'larıyla bu kısım için burayı manüple etmesine izin vermeyelim.
 
 Önemli:
 Subcat’lerin modified hali eger baska yerde original ise, bunu kullanacagiz. Yani subcat’te direkt original varsa topic subcat bu olacak
