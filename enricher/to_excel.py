@@ -36,6 +36,9 @@ def add_brand_and_subcat_to_doc(skus, sku_id, ml_sub, product, pairs):
     subcat = product.get(keys.SUBCAT)
     subcat_source = product.get(keys.SUBCAT_SOURCE)
 
+    ## TODO add color
+    clean_colors = product.get(keys.CLEAN_COLORS)
+
     product_id = sku.get(keys.PRODUCT_ID)
     doc_ids = sku.get(keys.DOC_IDS, [])
     doc_ids = [id for id in doc_ids if "clone" not in id]
@@ -107,7 +110,6 @@ def to_excel():
         "barcodes",
         # keys.OUT_OF_STOCK,
         # keys.VARIANT_NAME,
-        # "stage",
         "brand",
         "our_brand",
         keys.SUB_BRAND,
