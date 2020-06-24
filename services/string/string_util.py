@@ -17,3 +17,8 @@ def test_get_all_contigious_substrings_of_a_string():
     cases = [("a b c", ["a", "a b", "a b c", "b", "b c", "c"])]
 
     check(get_all_contigious_substrings_of_a_string, cases)
+
+
+def full_string_search(haystack, needle):
+    haystack_includes_all_tokens = set(haystack.split()).issuperset(set(needle.split()))
+    return needle in haystack and haystack_includes_all_tokens
