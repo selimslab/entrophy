@@ -199,6 +199,7 @@ def get_word_group_count_by_brand(word_counts_by_product: dict) -> dict:
 def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat):
     """ get_possible_sub_brands by subcat and brand """
 
+    final_count = defaultdict(dict)
     for subcat, brands in counts_by_brand.items():
 
         counts_in_subcat = counts_by_subcat[subcat]
@@ -206,18 +207,18 @@ def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat
             if not counts_in_brand:
                 continue
             word_counts_by_product = counts_by_product[subcat][brand]
+
+            # how many times the word_group seen in all of products of this brand
             brand_count = get_word_group_count_by_brand(word_counts_by_product)
 
             filtered_counts = {}
             for word_group, count_in_brand in counts_in_brand.items():
                 if len(word_group) < 3:
                     continue
-                    # a word_group should be in a single brand of this subcat only, to be a sub-brand
-                count_in_subcat = counts_in_subcat.get(word_group)
-                in_a_single_brand = count_in_subcat < 2
-                # a word_group should be in at least 2 products, to be a sub-brand
-                in_at_least_2_products = count_in_brand > 1
-                if in_a_single_brand and in_at_least_2_products:
+                # a word_group should be in a single brand of this subcat only, to be a sub-brand
+                in_a_single_brand = counts_in_subcat.get(word_group) < 2
+                # a word_group should be in more than 3 products, to be a sub-brand
+                if in_a_single_brand and count_in_brand > 3:
                     filtered_counts[word_group] = int(brand_count.get(word_group))
 
             if not filtered_counts:
@@ -225,10 +226,10 @@ def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat
 
             filtered_counts = filter_out_incomplete_parts(filtered_counts)
 
-            counts_by_brand[subcat][brand] = OrderedDict(
+            final_count[subcat][brand] = OrderedDict(
                 Counter(filtered_counts).most_common()
             )
-    return counts_by_brand
+    return final_count
 
 
 def create_possible_sub_brands(filtered_names_tree):
