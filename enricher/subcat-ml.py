@@ -106,9 +106,9 @@ def run():
     products = [services.filter_keys(p, relevant_keys) for p in products]
 
     subcat_predicted = []
-    # for brand, products in group_by_brand(products):
-    predicted = predict_subcat(list(products))
-    subcat_predicted += predicted
+    for brand, products in group_by_brand(products):
+        predicted = predict_subcat(list(products))
+        subcat_predicted += predicted
 
     services.save_json("stage/ML_subcat_predicted.json", subcat_predicted)
 

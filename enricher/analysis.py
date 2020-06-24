@@ -64,6 +64,9 @@ def stages(products):
 
 
 if __name__ == "__main__":
-    products = services.read_json(paths.products_out)
+    # products = services.read_json(paths.products_out)
+    from pprint import pprint
 
-    stages()
+    new = services.read_json("out/subcats_assigned.json")
+    merged = get_merged_subcats(new)
+    pprint(merged)

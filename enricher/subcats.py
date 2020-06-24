@@ -62,7 +62,6 @@ def search_and_replace_partial_subcat(product, vendor_subcats, clean_names):
                 # replace partial_match with found subcat
                 # der hij -> derinlemesine hijyen
                 name = name.replace(partial_match, sub)
-                print("replace", partial_match, "with", sub)
                 clean_names[i] = name
 
     # save replaced names

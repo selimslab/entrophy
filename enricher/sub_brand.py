@@ -155,12 +155,7 @@ def get_counts_by_brand(counts_by_product):
         for brand, filtered_name_groups in brands.items():
             word_groups = [list(group.keys()) for group in filtered_name_groups]
             word_groups = services.flatten(word_groups)
-            counts = Counter(word_groups)
-            # a word_group should be in at least 2 products, to be a sub-brand
-            counts = {
-                word_group: count for word_group, count in counts.items() if count > 1
-            }
-            counts_by_brand[subcat][brand] = counts
+            counts_by_brand[subcat][brand] = Counter(word_groups)
     return counts_by_brand
 
 
@@ -175,17 +170,8 @@ def get_counts_by_subcat(counts_by_brand):
             list(freq_by_brand.keys()) for brand, freq_by_brand in brands.items()
         ]
         word_groups = services.flatten(word_groups)
-        freq_by_subcat = Counter(word_groups)
 
-        counts_by_subcat[subcat] = list(set(possible_sub_brands_for_this_subcat))
-
-
-        # a word_group should be in a single brand of this subcat only, to be a sub-brand
-        # since some counts multiplied by 1.25, < 2 instead of == 1
-        possible_sub_brands_for_this_subcat = (
-            word_group for word_group, count in freq_by_subcat.items() if count < 2
-        )
-        services.save_json("out/possible_sub_brands_for_this_subcat.json", possible_sub_brands_for_this_subcat)
+        counts_by_subcat[subcat] = Counter(word_groups)
 
     return counts_by_subcat
 
@@ -214,28 +200,30 @@ def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat
     """ get_possible_sub_brands by subcat and brand """
 
     for subcat, brands in counts_by_brand.items():
-        possible_sub_brands_for_this_subcat = counts_by_subcat[subcat]
-        for brand, word_counts in brands.items():
-            if not word_counts:
+
+        counts_in_subcat = counts_by_subcat[subcat]
+        for brand, counts_in_brand in brands.items():
+            if not counts_in_brand:
                 continue
             word_counts_by_product = counts_by_product[subcat][brand]
             brand_count = get_word_group_count_by_brand(word_counts_by_product)
-            possible_word_groups = {
-                word_group
-                for word_group, count in word_counts.items()
-                if (word_group in possible_sub_brands_for_this_subcat
-                    and len(word_group) > 2
-                    )
-            }
 
-            counts = {
-                word_group: int(brand_count.get(word_group))
-                for word_group in possible_word_groups
-            }
-            if not counts:
+            filtered_counts = {}
+            for word_group, count_in_brand in counts_in_brand.items():
+                if len(word_group) < 3:
+                    continue
+                    # a word_group should be in a single brand of this subcat only, to be a sub-brand
+                count_in_subcat = counts_in_subcat.get(word_group)
+                in_a_single_brand = count_in_subcat < 2
+                # a word_group should be in at least 2 products, to be a sub-brand
+                in_at_least_2_products = count_in_brand > 1
+                if in_a_single_brand and in_at_least_2_products:
+                    filtered_counts[word_group] = int(brand_count.get(word_group))
+
+            if not filtered_counts:
                 continue
 
-            filtered_counts = filter_out_incomplete_parts(counts)
+            filtered_counts = filter_out_incomplete_parts(filtered_counts)
 
             counts_by_brand[subcat][brand] = OrderedDict(
                 Counter(filtered_counts).most_common()

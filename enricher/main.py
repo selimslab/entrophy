@@ -1,5 +1,6 @@
 import logging
 from typing import List
+from collections import defaultdict
 
 import services
 import constants as keys
@@ -53,15 +54,14 @@ def add_color(products):
 
     for product in products:
         clean_names = product.get(keys.CLEAN_NAMES, [])
-        colors = product.get(keys.COLOR, []) + product.get(keys.VARIANT_NAME, [])
-        clean_colors = [color_original_to_clean.get(color) for color in colors]
-        clean_colors = [c for c in clean_colors if c]
-        product[keys.CLEAN_COLORS] = clean_colors
+        clean_colors = product.get(keys.CLEAN_COLORS, [])
         color = select_color(clean_names, clean_colors)
         if color:
             product[keys.SELECTED_COLOR] = color
 
     return products
+
+
 
 
 def enrich_product_data(skus: dict):
@@ -90,7 +90,7 @@ def enrich_product_data(skus: dict):
     products = add_subcat(products, subcat_original_to_clean)
 
     analyze_brand(products)
-    analyze_subcat(products)
+    subcats_assigned = analyze_subcat(products)
 
     # for sub brand
     products = add_filtered_names(products, possible_subcats_by_brand)
@@ -113,3 +113,14 @@ if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     skus: dict = services.read_json(paths.skus)
     enrich_product_data(skus)
+    """
+
+    + replace partials with reals in names, permanently -> replace sivi det with sivi deterjan
+    + if no brand found in name, and no vendor given brand, search if name has a brand from the global pool 
+    + if no subcat found in name, and no vendor given subcat, 
+    search if name has a subcat from the global pool 
+        + such products are also predicted with ML
+        but having a subcat directly in name gives clearly better results than ML predictions 
+    + cut off possible word groups for sub_brand from median, and filter out shorter than 3 letters 
+    
+    """

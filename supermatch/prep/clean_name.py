@@ -70,8 +70,13 @@ def get_clean_results(to_clean: list):
 
 def add_clean_name(id_doc_pairs):
     logging.info("add_clean_name..")
-
-    to_clean = [(doc_id, doc.get(keys.NAME)) for doc_id, doc in id_doc_pairs.items()]
+    to_clean = []
+    for doc_id, doc in id_doc_pairs.items():
+        name = doc.get(keys.NAME, "")
+        brand = doc.get(keys.BRAND, "")
+        if name and brand and brand not in name:
+            name = " ".join([brand, name])
+        to_clean.append((doc_id, name))
 
     results = get_clean_results(to_clean)
 

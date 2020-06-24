@@ -154,9 +154,15 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     if digits:
         unit_price = round(best_price / digits, 2)
 
-    categories = {}
+    categories = collections.defaultdict(list)
     for doc in docs:
-        categories[doc.get(keys.MARKET)] = doc.get(keys.CATEGORIES, [])
+        vendor = doc.get(keys.MARKET)
+        if vendor in keys.MARKETYO_MARKET_NAMES:
+            vendor = "myo"
+        cats = doc.get(keys.CATEGORIES, [])
+        for cat in cats:
+            if cat not in categories[vendor]:
+                categories[vendor].append(cat)
 
     brands = [doc.get(keys.BRAND) for doc in docs]
 
