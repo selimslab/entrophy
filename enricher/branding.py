@@ -55,7 +55,6 @@ def check_root_brand(brand_freq, brand):
         if root_freq > current_freq:
             selected = root
             current_freq = root_freq
-            print(brand, "->", selected)
     return selected
 
 
