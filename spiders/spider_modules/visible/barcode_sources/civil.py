@@ -92,4 +92,7 @@ class CivilSpider(BaseSpider):
 
 
 if __name__ == "__main__":
-    debug_spider(CivilSpider)
+    # debug_spider(CivilSpider)
+    ## TODO crawl civil cat by cat
+    cat_urls = TopLocalHelper.get_category_urls("http://www.civilim.com/")
+    print(cat_urls)
