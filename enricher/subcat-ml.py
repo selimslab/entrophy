@@ -27,7 +27,7 @@ def predict_subcat(products: List[dict]) -> list:
     with_sub = [
         p
         for p in products
-        if keys.SUBCAT in p  and p.get(keys.SUBCAT_SOURCE) != "global_name"
+        if keys.SUBCAT in p and p.get(keys.SUBCAT_SOURCE) != "global_name"
     ]
     no_sub = [
         p
@@ -115,10 +115,12 @@ def run():
 
 def test_mnb():
     import numpy as np
+
     rng = np.random.RandomState(1)
     X = rng.randint(5, size=(6, 100))
     y = np.array([1, 2, 3, 4, 5, 6])
     from sklearn.naive_bayes import MultinomialNB
+
     clf = MultinomialNB()
     clf.fit(X, y)
 

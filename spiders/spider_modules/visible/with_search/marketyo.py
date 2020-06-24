@@ -47,7 +47,11 @@ class MarketyoSpider(BaseSpider):
             p[keys.NAME] = product.get("name")
             p[keys.PRICE] = product.get("price")
             p[keys.BRAND] = product.get("brand", {}).get("name")
-            cats = [cat.get("name") for cat in product.get("categories", []) if cat.get("isVisible")]
+            cats = [
+                cat.get("name")
+                for cat in product.get("categories", [])
+                if cat.get("isVisible")
+            ]
             cats = [c for c in cats if c]
             p[keys.CATEGORIES] = cats
             images = product.get("images")

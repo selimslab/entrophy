@@ -1,8 +1,5 @@
 from collections import Counter, OrderedDict, defaultdict
 import logging
-from pprint import pprint
-import statistics
-
 from tqdm import tqdm
 
 import services
@@ -15,7 +12,9 @@ from filter_names import remove_a_list_of_strings
 def get_sub_brand(possible_sub_brands, clean_names):
     for sub_brand in possible_sub_brands:
         for name in clean_names:
-            if sub_brand in name and set(name.split()).issuperset(set(sub_brand.split())):
+            if sub_brand in name and set(name.split()).issuperset(
+                set(sub_brand.split())
+            ):
                 return sub_brand
 
 
@@ -92,9 +91,9 @@ def filter_out_incomplete_parts(counts: dict) -> dict:
         long_word_tokens = set(long_word.split())
         for short_word in sorted(counts, key=len):
             if (
-                    counts[short_word] < counts[long_word]
-                    and short_word in long_word
-                    and long_word_tokens.issuperset(set(short_word.split()))
+                counts[short_word] < counts[long_word]
+                and short_word in long_word
+                and long_word_tokens.issuperset(set(short_word.split()))
             ):
                 to_remove.add(short_word)
 
@@ -135,9 +134,7 @@ def get_counts_by_product(filtered_names_tree):
                 word_groups_counts = {
                     word_group: count
                     for word_group, count in word_groups_counts.items()
-                    if (word_group
-                        and count >= len(names) / 2
-                        )
+                    if (word_group and count >= len(names) / 2)
                 }
 
                 filtered_names_tree[subcat][brand].append(word_groups_counts)

@@ -62,8 +62,6 @@ def add_color(products):
     return products
 
 
-
-
 def enrich_product_data(skus: dict):
     skus = filter_docs(list(skus.values()))
 
