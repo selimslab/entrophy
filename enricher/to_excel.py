@@ -123,7 +123,7 @@ def to_excel():
     # services.save_json(output_dir / "pairs_matched.json", pairs)
     rows = list(pairs.values())
     rows = [row for row in rows if keys.SKU_ID in row]
-    excel.create_excel(rows, "out/jun22.xlsx", colnames)
+    excel.create_excel(rows, "out/jun23.xlsx", colnames)
 
 
 if __name__ == "__main__":

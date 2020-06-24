@@ -13,12 +13,12 @@ from freq import get_subcat_freq
 
 def cat_to_subcats(cat: Union[list, str]) -> List[str]:
     # "Şeker, Tuz & Baharat / un " ->  [Şeker, Tuz, Baharat, un]
-    subcats = re.split("[/,&]", cat)
+    subcats = re.split("/|,|&| ve | and ", cat)
     return [s.strip() for s in subcats]
 
 
 def test_cat_to_subcats():
-    cases = [("Şeker,Tuz &Baharat / un ", ["Şeker", "Tuz", "Baharat", "un"])]
+    cases = [("Şeker,Tuz &Baharat / un ve poveta and to", ["Şeker", "Tuz", "Baharat", "un", "poveta", "to"])]
     services.check(cat_to_subcats, cases)
 
 
@@ -75,7 +75,9 @@ def search_and_replace_partial_subcat(product, vendor_subcats, clean_names):
 def search_sub_in_names(vendor_subcats, clean_names):
     for sub in services.sorted_counter(vendor_subcats):
         for name in clean_names:
-            if sub in name and set(name.split()).issuperset(set(sub.split())):
+            if services.full_string_search(name, sub):
+                return sub
+            if len(sub.split()) > 1 and sub in name:
                 return sub
 
 
@@ -86,7 +88,7 @@ def search_in_global(clean_names, vendor_subcat_count):
         name_permutations = services.string_sliding_windows(name)
         for perm in name_permutations:
             if perm in vendor_subcat_count and name_tokens.issuperset(
-                set(perm.split())
+                    set(perm.split())
             ):
                 subs.append(perm)
     if subs:
@@ -95,7 +97,7 @@ def search_in_global(clean_names, vendor_subcat_count):
 
 
 def add_subcat(
-    products: List[dict], subcat_original_to_clean: Dict[str, str],
+        products: List[dict], subcat_original_to_clean: Dict[str, str],
 ):
     logging.info("adding subcat..")
 
@@ -144,7 +146,7 @@ def add_subcat(
 
 
 def get_possible_subcats_by_brand(
-    products, brand_original_to_clean, subcat_original_to_clean
+        products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
