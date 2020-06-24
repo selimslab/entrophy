@@ -1,19 +1,21 @@
 from collections import Counter, OrderedDict, defaultdict
 import logging
 from pprint import pprint
+import statistics
+
 from tqdm import tqdm
 
 import services
 import paths as paths
 import constants as keys
 
-from filter_names import add_filtered_names
+from filter_names import remove_a_list_of_strings
 
 
 def get_sub_brand(possible_sub_brands, clean_names):
     for sub_brand in possible_sub_brands:
         for name in clean_names:
-            if sub_brand in name:
+            if sub_brand in name and set(name.split()).issuperset(set(sub_brand.split())):
                 return sub_brand
 
 
@@ -55,11 +57,6 @@ def get_filtered_names_tree(products_filtered: list) -> dict:
     return filtered_names_by_subcat_brand
 
 
-def sliding_window_frequency(s: str):
-    substrings = services.get_all_contigious_substrings_of_a_string(s)
-    return Counter(substrings)
-
-
 def adjust_frequencies(string_counts: Counter):
     """
     Carte Dor gibi iki kelimeli subbrand'lerde
@@ -95,9 +92,9 @@ def filter_out_incomplete_parts(counts: dict) -> dict:
         long_word_tokens = set(long_word.split())
         for short_word in sorted(counts, key=len):
             if (
-                counts[short_word] < counts[long_word]
-                and short_word in long_word
-                and long_word_tokens.issuperset(set(short_word.split()))
+                    counts[short_word] < counts[long_word]
+                    and short_word in long_word
+                    and long_word_tokens.issuperset(set(short_word.split()))
             ):
                 to_remove.add(short_word)
 
@@ -107,14 +104,19 @@ def filter_out_incomplete_parts(counts: dict) -> dict:
     return counts
 
 
-def count_a_single_product(names: list):
+def count_a_single_product(names: list, brand: str):
     """ get_word_group_frequency_for_a_product """
-    window_counts = Counter()
+    word_groups_counts = Counter()
     for name in names:
-        counts = sliding_window_frequency(name)
+        substrings = services.string_to_extending_windows(name, 4)
+        for i, s in enumerate(substrings):
+            substrings[i] = remove_a_list_of_strings(s, [brand])
+
+        counts = Counter(substrings)
         adjusted_frequencies = adjust_frequencies(counts)
-        window_counts.update(adjusted_frequencies)
-    return window_counts
+        word_groups_counts.update(adjusted_frequencies)
+
+    return word_groups_counts
 
 
 def get_counts_by_product(filtered_names_tree):
@@ -123,7 +125,21 @@ def get_counts_by_product(filtered_names_tree):
         for brand, filtered_name_groups in brands.items():
             filtered_names_tree[subcat][brand] = []
             for names in filtered_name_groups:
-                word_groups_counts = count_a_single_product(names)
+                word_groups_counts = count_a_single_product(names, brand)
+                word_groups_counts = {
+                    word_group.replace(brand, "").strip(): count
+                    for word_group, count in word_groups_counts.items()
+                }
+
+                ##  Bir subbrandin subbrand olabilmesi için grup içindeki item'ların 50%'sinde geçmesi gerekiyor.
+                word_groups_counts = {
+                    word_group: count
+                    for word_group, count in word_groups_counts.items()
+                    if (word_group
+                        and count >= len(names) / 2
+                        )
+                }
+
                 filtered_names_tree[subcat][brand].append(word_groups_counts)
 
     return filtered_names_tree
@@ -140,9 +156,9 @@ def get_counts_by_brand(counts_by_product):
             word_groups = [list(group.keys()) for group in filtered_name_groups]
             word_groups = services.flatten(word_groups)
             counts = Counter(word_groups)
-            # a word_group should be in at least 2 products, to be a sub-brand
+            # a word_group should be in at least 3 products, to be a sub-brand
             counts = {
-                word_group: count for word_group, count in counts.items() if count > 1
+                word_group: count for word_group, count in counts.items() if count > 2
             }
             counts_by_brand[subcat][brand] = counts
     return counts_by_brand
@@ -162,6 +178,7 @@ def get_counts_by_subcat(counts_by_brand):
         freq_by_subcat = Counter(word_groups)
 
         # a word_group should be in a single brand of this subcat only, to be a sub-brand
+        # since some counts multiplied by 1.25, < 2 instead of == 1
         possible_sub_brands_for_this_subcat = (
             word_group for word_group, count in freq_by_subcat.items() if count < 2
         )
@@ -196,18 +213,25 @@ def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat
     for subcat, brands in counts_by_brand.items():
         possible_sub_brands_for_this_subcat = counts_by_subcat[subcat]
         for brand, word_counts in brands.items():
+            if not word_counts:
+                continue
             word_counts_by_product = counts_by_product[subcat][brand]
             brand_count = get_word_group_count_by_brand(word_counts_by_product)
             possible_word_groups = {
                 word_group
                 for word_group, count in word_counts.items()
-                if word_group in possible_sub_brands_for_this_subcat
+                if (word_group in possible_sub_brands_for_this_subcat
+                    and len(word_group) > 2
+                    )
             }
 
             counts = {
                 word_group: int(brand_count.get(word_group))
                 for word_group in possible_word_groups
             }
+            if not counts:
+                continue
+
 
             filtered_counts = filter_out_incomplete_parts(counts)
 
@@ -248,13 +272,6 @@ def create_possible_sub_brands(filtered_names_tree):
     )
 
     return possible_word_groups_for_sub_brand
-
-
-def create_filtered_names():
-    products = services.read_json(paths.products_out)
-    products = add_filtered_names(products)
-    filtered_names_tree = get_filtered_names_tree(products)
-    return filtered_names_tree
 
 
 def run():
