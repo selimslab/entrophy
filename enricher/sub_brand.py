@@ -156,9 +156,9 @@ def get_counts_by_brand(counts_by_product):
             word_groups = [list(group.keys()) for group in filtered_name_groups]
             word_groups = services.flatten(word_groups)
             counts = Counter(word_groups)
-            # a word_group should be in at least 3 products, to be a sub-brand
+            # a word_group should be in at least 2 products, to be a sub-brand
             counts = {
-                word_group: count for word_group, count in counts.items() if count > 2
+                word_group: count for word_group, count in counts.items() if count > 1
             }
             counts_by_brand[subcat][brand] = counts
     return counts_by_brand
@@ -177,12 +177,15 @@ def get_counts_by_subcat(counts_by_brand):
         word_groups = services.flatten(word_groups)
         freq_by_subcat = Counter(word_groups)
 
+        counts_by_subcat[subcat] = list(set(possible_sub_brands_for_this_subcat))
+
+
         # a word_group should be in a single brand of this subcat only, to be a sub-brand
         # since some counts multiplied by 1.25, < 2 instead of == 1
         possible_sub_brands_for_this_subcat = (
             word_group for word_group, count in freq_by_subcat.items() if count < 2
         )
-        counts_by_subcat[subcat] = list(set(possible_sub_brands_for_this_subcat))
+        services.save_json("out/possible_sub_brands_for_this_subcat.json", possible_sub_brands_for_this_subcat)
 
     return counts_by_subcat
 
@@ -231,7 +234,6 @@ def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat
             }
             if not counts:
                 continue
-
 
             filtered_counts = filter_out_incomplete_parts(counts)
 
