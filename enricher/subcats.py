@@ -34,15 +34,22 @@ def add_raw_subcats(skus: List[dict]):
     for sku in tqdm(skus):
         category_dict = sku.get(keys.CATEGORIES, {})
         subcats = []
+        myos = []
         for market, cats in category_dict.items():
-            if market == "ty":
+            if market in keys.MARKETYO_MARKET_NAMES:
+                myos += cats
+            elif market == "ty":
                 sub = cats[-1]
             elif isinstance(cats, str) and "/" in cats:
                 sub = cats.split("/")[0]
             else:
                 sub = cats
-            subcats.append(sub)
 
+            if sub:
+                subcats.append(sub)
+
+        # merge myos
+        subcats += list(set(myos))
         sku[keys.SUB_CATEGORIES] = filter_subcats(subcats)
     return skus
 
