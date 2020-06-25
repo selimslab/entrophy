@@ -50,14 +50,32 @@ stopwords = {
 def remove_a_list_of_strings(s: str, to_remove: list):
     tokens = s.split()
     for word in to_remove:
+        tokens_to_remove = word.split()
+
         #  a string should include all tokens of the removal string
         if word in s and set(tokens).issuperset(word.split()):
             s = s.replace(word, "")
+
+        if word in s and len(tokens_to_remove) > 1:
+            s = remove_whole_word(tokens, tokens_to_remove)
+
         # remove tokens
-        for token_to_remove in word.split():
+        for token_to_remove in tokens_to_remove:
             if s and token_to_remove in tokens:
                 s = s.replace(token_to_remove, "")
+
     return s
+
+
+def remove_whole_word(tokens, tokens_to_remove):
+    """ remove "kedi mama" from "asfs kedi mamasi fsdgfd"  """
+    return [token
+            for token in tokens
+            if not any(bad in token for bad in tokens_to_remove)]
+
+
+def test_remove_a_list_of_strings():
+    print(remove_whole_word("asd kedi mamasi asf".split(), ["kedi", "mama"]))
 
 
 def remove_color(s, clean_colors):
@@ -85,7 +103,7 @@ def filter_tokens(name: str):
 
 
 def filter_out_known_word_groups_from_a_name(
-    product, possible_subcats_by_brand, remove_subcat=True
+        product, possible_subcats_by_brand, remove_subcat=True
 ):
     """
     remove brand candidates, subcat_candidates, color, gender, plural_to_singular
@@ -120,9 +138,9 @@ def filter_out_known_word_groups_from_a_name(
 
     possible_subcats = possible_subcats_by_brand.get(brand, [])
     clean_subcats = (
-        product.get(keys.CLEAN_SUBCATS, [])
-        + possible_subcats
-        + [product.get(keys.SUBCAT)]
+            product.get(keys.CLEAN_SUBCATS, [])
+            + possible_subcats
+            + [product.get(keys.SUBCAT)]
     )
     clean_subcats = [c for c in clean_subcats if c]
 
