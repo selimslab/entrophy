@@ -1,8 +1,7 @@
 import re
-from typing import List, Dict, Union, Iterable
+from typing import List, Dict, Union
 from collections import defaultdict, Counter, OrderedDict
 import logging
-from pprint import pprint
 from tqdm import tqdm
 
 import services
@@ -35,35 +34,49 @@ def unfold_cats(subcats):
     return subcats
 
 
+def get_cats(sku):
+    category_dict = sku.get(keys.CATEGORIES, {})
+
+    cats = list(cats for market, cats in category_dict.items())
+    cats = unfold_cats(cats)
+    clean_cats = [services.clean_string(cat) for cat in cats]
+    clean_cats = [services.plural_to_singular(cat) for cat in clean_cats]
+
+    return clean_cats
+
+
+def get_subcats(sku):
+    category_dict = sku.get(keys.CATEGORIES, {})
+
+    subcats = []
+    myos = []
+    for market, cats in category_dict.items():
+        sub = None
+        if market in keys.MARKETYO_MARKET_NAMES:
+            myos += cats
+        elif market == "ty":
+            sub = cats[-1]
+        elif isinstance(cats, str) and "/" in cats:
+            sub = cats.split("/")[0]
+        else:
+            sub = cats
+        if sub:
+            subcats.append(sub)
+
+    # merge myos
+    subcats += list(set(myos))
+    subcats = unfold_cats(subcats)
+
+    return subcats
+
+
 def add_raw_subcats(skus: List[dict]):
     # derive_subcats_from_product_cats
     for sku in tqdm(skus):
-        category_dict = sku.get(keys.CATEGORIES, {})
-
-        cats = list(category_dict.keys())
-        cats = unfold_cats(cats)
-        clean_cats = [services.clean_string(cat) for cat in cats]
-        clean_cats = [services.plural_to_singular(cat) for cat in clean_cats]
+        clean_cats = get_cats(sku)
+        subcats = get_subcats(sku)
         sku[keys.CLEAN_CATS] = clean_cats
-
-        subcats = []
-        myos = []
-        for market, cats in category_dict.items():
-            sub = None
-            if market in keys.MARKETYO_MARKET_NAMES:
-                myos += cats
-            elif market == "ty":
-                sub = cats[-1]
-            elif isinstance(cats, str) and "/" in cats:
-                sub = cats.split("/")[0]
-            else:
-                sub = cats
-            if sub:
-                subcats.append(sub)
-
-        # merge myos
-        subcats += list(set(myos))
-        sku[keys.SUB_CATEGORIES] = unfold_cats(subcats)
+        sku[keys.SUB_CATEGORIES] = subcats
     return skus
 
 
@@ -80,7 +93,7 @@ def search_and_replace_partial_subcat(product, vendor_subcats, clean_names):
             if partial_match:
                 subs.append(sub)
                 # replace partial_match with found subcat
-                # der hij -> derinlemesine hijyen
+                # der. hij. -> derinlemesine hijyen
                 name = name.replace(partial_match, sub)
                 clean_names[i] = name
 
@@ -91,7 +104,25 @@ def search_and_replace_partial_subcat(product, vendor_subcats, clean_names):
         return subs[0]
 
 
-def search_sub_in_names(vendor_subcats, clean_cats, clean_names):
+def search_parents(clean_cats, clean_names):
+    """
+    # Hiyerarşideki son elemanı subcat'ten bulduktan sonra ile majority öncesinde,
+    # tüm hiyerarşiyi product içinde arayalım.
+
+    Örnek:['Saç Spreyi', 'Saç Şekillendirici', 'Kişisel Bakım', 'Süpermarket', 'Saç Bakım']
+    Bütün vendor'ların hiyerarşi son elemanını aradıktan sonra hala bulamadıysak,
+    buradaki tüm 5'liyi product içinde arayıp, bulduğumuzu subcat olarak atıyoruz.
+    """
+    for cat in services.sort_from_long_to_short(list(set(clean_cats))):
+        for name in clean_names:
+            if services.full_string_search(name, cat):
+                return cat
+            # "kedi mama" in "kedi mamasi"
+            if len(cat.split()) > 1 and cat in name:
+                return cat
+
+
+def search_sub_in_names(vendor_subcats, clean_names):
     for sub in services.sorted_counter(vendor_subcats):
         for name in clean_names:
             if services.full_string_search(name, sub):
@@ -101,28 +132,17 @@ def search_sub_in_names(vendor_subcats, clean_cats, clean_names):
                 return sub
 
 
-    """
-    # Hiyerarşideki son elemanı subcat'ten bulduktan sonra ile majority öncesinde,
-    # tüm hiyerarşiyi product içinde arayalım.
-    
-    Örnek:['Saç Spreyi', 'Saç Şekillendirici', 'Kişisel Bakım', 'Süpermarket', 'Saç Bakım'] 
-    Bütün vendor'ların hiyerarşi son elemanını aradıktan sonra hala bulamadıysak,
-    buradaki tüm 5'liyi product içinde arayıp, bulduğumuzu subcat olarak atıyoruz.
-    """
-    for cat in services.sort_from_long_to_short(list(set(clean_cats))):
-        for name in clean_names:
-            if services.full_string_search(name, cat):
-                return cat
-
-
 def search_in_global(clean_names, vendor_subcat_count):
     subs = []
     for name in clean_names:
         name_tokens = set(name.split())
         name_permutations = services.string_sliding_windows(name)
         for perm in name_permutations:
+            tokens = perm.split()
+            if len(tokens) < 2:
+                continue
             if perm in vendor_subcat_count and name_tokens.issuperset(
-                    set(perm.split())
+                    set(tokens)
             ):
                 subs.append(perm)
     if subs:
@@ -130,54 +150,67 @@ def search_in_global(clean_names, vendor_subcat_count):
         return sub
 
 
-def add_subcat(
-        products: List[dict], subcat_original_to_clean: Dict[str, str],
-):
-    logging.info("adding subcat..")
+def get_subcat_and_source(product):
+    clean_names = product.get(keys.CLEAN_NAMES, [])
+    if not clean_names:
+        return
 
-    vendor_subcat_count: Counter = get_subcat_freq(products, subcat_original_to_clean)
-    services.save_json(
-        "out/vendor_subcat_count.json", OrderedDict(vendor_subcat_count.most_common())
+    clean_subcats = product.get(keys.CLEAN_SUBCATS, [])
+    clean_cats = product.get(keys.CLEAN_CATS, [])
+
+    # search last elements of vendor given lists
+    sub = search_sub_in_names(clean_subcats, clean_names)
+    if not sub:
+        # search parents
+        sub = search_sub_in_names(clean_cats, clean_names)
+
+    partial_sub = search_and_replace_partial_subcat(
+        product, clean_subcats, clean_names
     )
 
-    for product in tqdm(products):
-
-        clean_names = product.get(keys.CLEAN_NAMES, [])
-        if not clean_names:
-            continue
-
-        clean_subcats = product.get(keys.CLEAN_SUBCATS, [])
-        clean_cats = product.get(keys.CLEAN_CATS, [])
-
-        sub = search_sub_in_names(clean_subcats, clean_cats, clean_names)
-        partial_sub = search_and_replace_partial_subcat(
-            product, clean_subcats, clean_names
-        )
-
+    if sub:
+        return sub, "local_name"
+    elif partial_sub:
+        return partial_sub, "partial"
+    elif clean_subcats:
+        sub = services.get_majority_if_exists(clean_subcats)
         if sub:
-            product[keys.SUBCAT] = sub
-            product[keys.SUBCAT_SOURCE] = "local_name"
-        elif partial_sub:
-            product[keys.SUBCAT] = partial_sub
-            product[keys.SUBCAT_SOURCE] = "partial"
-        elif clean_subcats:
-            sub = services.get_majority_if_exists(clean_subcats)
-            if sub:
-                product[keys.SUBCAT] = sub
-                product[keys.SUBCAT_SOURCE] = "majority"
+            return sub, "majority"
 
-        if keys.SUBCAT not in product:
-            sub = search_in_global(clean_names, vendor_subcat_count)
-            if sub:
-                product[keys.SUBCAT] = sub
-                product[keys.SUBCAT_SOURCE] = "global_name"
 
+def stage_report(products):
     logging.info("subcat stage report")
     stages = {"global_name", "local_name", "majority", "partial"}
     for stage in stages:
         res = sum(p.get(keys.SUBCAT_SOURCE) == stage for p in products)
         print(res, stage)
 
+
+def add_subcat(
+        products: List[dict], subcat_original_to_clean: Dict[str, str], debug=False
+):
+    logging.info("adding subcat..")
+
+    vendor_subcat_count: Counter = get_subcat_freq(products, subcat_original_to_clean)
+    if debug:
+        services.save_json(
+            "out/vendor_subcat_count.json", OrderedDict(vendor_subcat_count.most_common())
+        )
+
+    for product in tqdm(products):
+        result = get_subcat_and_source(product)
+        if result:
+            sub, source = result
+        else:
+            clean_names = product.get(keys.CLEAN_NAMES, [])
+            sub = search_in_global(clean_names, vendor_subcat_count)
+            source = "global_name"
+
+        if sub and source:
+            product[keys.SUBCAT] = sub
+            product[keys.SUBCAT_SOURCE] = source
+
+    stage_report(products)
     return products
 
 
@@ -209,10 +242,3 @@ def get_possible_subcats_by_brand(
     }
     return possible_subcats_by_brand
 
-
-def get_clean_sub_categories(product, subcat_original_to_clean):
-    """ vendor-given categories turned to subcats through splitting by / & , and cleaning """
-    return [
-        subcat_original_to_clean.get(sub)
-        for sub in product.get(keys.SUB_CATEGORIES, [])
-    ]
