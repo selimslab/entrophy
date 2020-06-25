@@ -36,8 +36,6 @@ def add_brand_and_subcat_to_doc(skus, sku_id, ml_sub, product, pairs):
     subcat = product.get(keys.SUBCAT)
     subcat_source = product.get(keys.SUBCAT_SOURCE)
 
-    ## TODO add color
-    clean_colors = product.get(keys.CLEAN_COLORS)
 
     product_id = sku.get(keys.PRODUCT_ID)
     doc_ids = sku.get(keys.DOC_IDS, [])
@@ -104,12 +102,13 @@ def to_excel():
         # "clean_name",
         "digits",
         "unit",
+        keys.VARIANT_NAME,
+        keys.COLOR,
         # "size",
         "market",
         # "price",
         "barcodes",
         # keys.OUT_OF_STOCK,
-        # keys.VARIANT_NAME,
         "brand",
         "our_brand",
         keys.SUB_BRAND,
@@ -125,7 +124,7 @@ def to_excel():
     # services.save_json(output_dir / "pairs_matched.json", pairs)
     rows = list(pairs.values())
     rows = [row for row in rows if keys.SKU_ID in row]
-    excel.create_excel(rows, "out/jun23.xlsx", colnames)
+    excel.create_excel(rows, "out/jun25.xlsx", colnames)
 
 
 if __name__ == "__main__":
