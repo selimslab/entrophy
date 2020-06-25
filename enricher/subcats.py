@@ -27,7 +27,8 @@ def test_cat_to_subcats():
     services.check(cat_to_subcats, cases)
 
 
-def filter_subcats(subcats):
+def unfold_cats(subcats):
+    """ [ "a/b&c", ["x and y", .. ], .. ] -> [a,b,c,x,y, .. ]"""
     subcats = services.flatten(subcats)
     subcat_lists = [cat_to_subcats(sub) for sub in subcats]
     subcats = services.flatten(subcat_lists)
@@ -38,9 +39,17 @@ def add_raw_subcats(skus: List[dict]):
     # derive_subcats_from_product_cats
     for sku in tqdm(skus):
         category_dict = sku.get(keys.CATEGORIES, {})
+
+        cats = list(category_dict.keys())
+        cats = unfold_cats(cats)
+        clean_cats = [services.clean_string(cat) for cat in cats]
+        clean_cats = [services.plural_to_singular(cat) for cat in clean_cats]
+        sku[keys.CLEAN_CATS] = clean_cats
+
         subcats = []
         myos = []
         for market, cats in category_dict.items():
+            sub = None
             if market in keys.MARKETYO_MARKET_NAMES:
                 myos += cats
             elif market == "ty":
@@ -49,13 +58,12 @@ def add_raw_subcats(skus: List[dict]):
                 sub = cats.split("/")[0]
             else:
                 sub = cats
-
             if sub:
                 subcats.append(sub)
 
         # merge myos
         subcats += list(set(myos))
-        sku[keys.SUB_CATEGORIES] = filter_subcats(subcats)
+        sku[keys.SUB_CATEGORIES] = unfold_cats(subcats)
     return skus
 
 
@@ -83,13 +91,28 @@ def search_and_replace_partial_subcat(product, vendor_subcats, clean_names):
         return subs[0]
 
 
-def search_sub_in_names(vendor_subcats, clean_names):
+def search_sub_in_names(vendor_subcats, clean_cats, clean_names):
     for sub in services.sorted_counter(vendor_subcats):
         for name in clean_names:
             if services.full_string_search(name, sub):
                 return sub
+            # "kedi mama" in "kedi mamasi"
             if len(sub.split()) > 1 and sub in name:
                 return sub
+
+
+    """
+    # Hiyerarşideki son elemanı subcat'ten bulduktan sonra ile majority öncesinde,
+    # tüm hiyerarşiyi product içinde arayalım.
+    
+    Örnek:['Saç Spreyi', 'Saç Şekillendirici', 'Kişisel Bakım', 'Süpermarket', 'Saç Bakım'] 
+    Bütün vendor'ların hiyerarşi son elemanını aradıktan sonra hala bulamadıysak,
+    buradaki tüm 5'liyi product içinde arayıp, bulduğumuzu subcat olarak atıyoruz.
+    """
+    for cat in services.sort_from_long_to_short(list(set(clean_cats))):
+        for name in clean_names:
+            if services.full_string_search(name, cat):
+                return cat
 
 
 def search_in_global(clean_names, vendor_subcat_count):
@@ -99,7 +122,7 @@ def search_in_global(clean_names, vendor_subcat_count):
         name_permutations = services.string_sliding_windows(name)
         for perm in name_permutations:
             if perm in vendor_subcat_count and name_tokens.issuperset(
-                set(perm.split())
+                    set(perm.split())
             ):
                 subs.append(perm)
     if subs:
@@ -108,7 +131,7 @@ def search_in_global(clean_names, vendor_subcat_count):
 
 
 def add_subcat(
-    products: List[dict], subcat_original_to_clean: Dict[str, str],
+        products: List[dict], subcat_original_to_clean: Dict[str, str],
 ):
     logging.info("adding subcat..")
 
@@ -124,7 +147,9 @@ def add_subcat(
             continue
 
         clean_subcats = product.get(keys.CLEAN_SUBCATS, [])
-        sub = search_sub_in_names(clean_subcats, clean_names)
+        clean_cats = product.get(keys.CLEAN_CATS, [])
+
+        sub = search_sub_in_names(clean_subcats, clean_cats, clean_names)
         partial_sub = search_and_replace_partial_subcat(
             product, clean_subcats, clean_names
         )
@@ -157,7 +182,7 @@ def add_subcat(
 
 
 def get_possible_subcats_by_brand(
-    products, brand_original_to_clean, subcat_original_to_clean
+        products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 

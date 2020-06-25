@@ -16,9 +16,9 @@ def get_brand_original_to_clean(products: List[dict]):
         for brand in brands:
             clean_brand = services.clean_string(brand)
             if (
-                not clean_brand
-                or clean_brand in wrong_brands
-                or any(bad in clean_brand for bad in to_filter_out)
+                    not clean_brand
+                    or clean_brand in wrong_brands
+                    or any(bad in clean_brand for bad in to_filter_out)
             ):
                 continue
             if "loreal" in clean_brand and "loreal paris" not in clean_brand:
@@ -133,11 +133,11 @@ def get_subcat_original_to_clean(products: List[dict], clean_brands: set) -> dic
                         break
 
             if (
-                not clean_sub.isdigit()
-                and len(clean_sub) < 40
-                and not any(bad in clean_sub for bad in bads)
-                and clean_sub not in too_broad
-                and clean_sub not in clean_brands
+                    not clean_sub.isdigit()
+                    and len(clean_sub) < 40
+                    and not any(bad in clean_sub for bad in bads)
+                    and clean_sub not in too_broad
+                    and clean_sub not in clean_brands
             ):
                 clean_subcats.append(clean_sub)
                 subcat_original_to_clean[sub] = clean_sub
@@ -160,9 +160,9 @@ def get_color_original_to_clean(products: List[dict]) -> dict:
         for color in colors:
             clean_color = services.clean_string(color)
             if (
-                not clean_color
-                or clean_color.isdigit()
-                or any(sw in clean_color for sw in stopwords)
+                    not clean_color
+                    or clean_color.isdigit()
+                    or any(sw in clean_color for sw in stopwords)
             ):
                 continue
             color_original_to_clean[color] = clean_color

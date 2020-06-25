@@ -35,7 +35,7 @@ class BasicSKU:
     color: str = None
     reviews: list = None
 
-    variant_name: str = None
+    google_variant_name: str = None
 
 
 @dataclass
@@ -49,4 +49,5 @@ class SKU(BasicSKU):
     clean_names: list = None
     digits_units: list = None
     brands: list = field(default_factory=list)
+    colors: list = field(default_factory=list)
     categories: dict = field(default_factory=dict)
