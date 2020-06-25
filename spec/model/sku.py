@@ -47,6 +47,7 @@ class SKU(BasicSKU):
     variants: list = None
     names: list = None
     clean_names: list = None
+    clean_brands: list = None
     digits_units: list = None
     brands: list = field(default_factory=list)
     colors: list = field(default_factory=list)
