@@ -58,6 +58,3 @@ def stages(products):
     products = sorted(products, key=keyfunc)
     for key, items in itertools.groupby(products, key=keyfunc):
         services.save_json("stage/" + key + ".json", list(items))
-
-
-

@@ -13,7 +13,11 @@ from prep.cat_to_subcat import add_raw_subcats
 from selectors.subcat_selector import get_possible_subcats_by_brand, add_subcat
 from inspect_results import inspect_results
 from prep.filter_names import add_filtered_names
-from selectors.sub_brand_selector import get_filtered_names_tree, create_possible_sub_brands, select_subbrand
+from selectors.sub_brand_selector import (
+    get_filtered_names_tree,
+    create_possible_sub_brands,
+    select_subbrand,
+)
 from analysis import analyze_subcat, analyze_brand
 
 

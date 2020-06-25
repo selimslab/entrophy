@@ -202,7 +202,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         brands=brands,
         clean_brands=clean_brands,
         google_variant_name=get_google_variant_name(docs),
-        colors=colors
+        colors=colors,
     )
 
     sku = asdict(sku)

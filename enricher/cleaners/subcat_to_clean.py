@@ -41,11 +41,11 @@ def is_bad_sub(clean_sub, clean_brands) -> bool:
         "temizleyici",
     }
     return (
-            clean_sub.isdigit()
-            or len(clean_sub) > 40
-            or any(bad in clean_sub for bad in bads)
-            or clean_sub in too_broad
-            or clean_sub in clean_brands
+        clean_sub.isdigit()
+        or len(clean_sub) > 40
+        or any(bad in clean_sub for bad in bads)
+        or clean_sub in too_broad
+        or clean_sub in clean_brands
     )
 
 

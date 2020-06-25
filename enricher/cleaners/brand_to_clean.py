@@ -8,9 +8,9 @@ def is_bad_brand(clean_brand):
     to_filter_out = {"brn ", "markasiz", "erkek", "kadin", " adet"}
     wrong_brands = {"dr", "my"}
     return (
-            not clean_brand
-            or clean_brand in wrong_brands
-            or any(bad in clean_brand for bad in to_filter_out)
+        not clean_brand
+        or clean_brand in wrong_brands
+        or any(bad in clean_brand for bad in to_filter_out)
     )
 
 

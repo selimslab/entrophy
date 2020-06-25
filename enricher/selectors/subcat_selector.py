@@ -70,9 +70,7 @@ def search_in_global(clean_names, vendor_subcat_count):
             tokens = perm.split()
             if len(tokens) < 2:
                 continue
-            if perm in vendor_subcat_count and name_tokens.issuperset(
-                    set(tokens)
-            ):
+            if perm in vendor_subcat_count and name_tokens.issuperset(set(tokens)):
                 subs.append(perm)
     if subs:
         sub = services.sort_from_long_to_short(subs)[0]
@@ -93,9 +91,7 @@ def get_subcat_and_source(product):
         # search parents
         sub = search_sub_in_names(clean_cats, clean_names)
 
-    partial_sub = search_and_replace_partial_subcat(
-        product, clean_subcats, clean_names
-    )
+    partial_sub = search_and_replace_partial_subcat(product, clean_subcats, clean_names)
 
     if sub:
         return sub, "local_name"
@@ -116,14 +112,15 @@ def stage_report(products):
 
 
 def add_subcat(
-        products: List[dict], subcat_original_to_clean: Dict[str, str], debug=False
+    products: List[dict], subcat_original_to_clean: Dict[str, str], debug=False
 ):
     logging.info("adding subcat..")
 
     vendor_subcat_count: Counter = get_subcat_freq(products, subcat_original_to_clean)
     if debug:
         services.save_json(
-            "../out/vendor_subcat_count.json", OrderedDict(vendor_subcat_count.most_common())
+            "../out/vendor_subcat_count.json",
+            OrderedDict(vendor_subcat_count.most_common()),
         )
 
     for product in tqdm(products):
@@ -144,7 +141,7 @@ def add_subcat(
 
 
 def get_possible_subcats_by_brand(
-        products, brand_original_to_clean, subcat_original_to_clean
+    products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
@@ -170,4 +167,3 @@ def get_possible_subcats_by_brand(
         k: list(v) for k, v in possible_subcats_by_brand.items()
     }
     return possible_subcats_by_brand
-

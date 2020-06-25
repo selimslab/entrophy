@@ -70,9 +70,9 @@ def remove_a_list_of_strings(s: str, to_remove: list):
 
 def remove_partial_tokens(tokens, tokens_to_remove):
     """ remove "kedi mama" from "asfs kedi mamasi fsdgfd"  """
-    return [token
-            for token in tokens
-            if not any(bad in token for bad in tokens_to_remove)]
+    return [
+        token for token in tokens if not any(bad in token for bad in tokens_to_remove)
+    ]
 
 
 def test_remove_a_list_of_strings():
@@ -104,7 +104,7 @@ def filter_tokens(name: str):
 
 
 def filter_out_known_word_groups_from_a_name(
-        product, possible_subcats_by_brand, remove_subcat=True
+    product, possible_subcats_by_brand, remove_subcat=True
 ):
     """
     remove brand candidates, subcat_candidates, color, gender, plural_to_singular
@@ -139,9 +139,9 @@ def filter_out_known_word_groups_from_a_name(
 
     possible_subcats = possible_subcats_by_brand.get(brand, [])
     clean_subcats = (
-            product.get(keys.CLEAN_SUBCATS, [])
-            + possible_subcats
-            + [product.get(keys.SUBCAT)]
+        product.get(keys.CLEAN_SUBCATS, [])
+        + possible_subcats
+        + [product.get(keys.SUBCAT)]
     )
     clean_subcats = [c for c in clean_subcats if c]
 

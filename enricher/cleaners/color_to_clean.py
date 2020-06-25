@@ -4,13 +4,12 @@ import services
 import constants as keys
 
 
-
 def is_bad_color(clean_color):
     stopwords = {"nocolor", "no color", "cok renkli", "renkli"}
     return (
-            not clean_color
-            or clean_color.isdigit()
-            or any(sw in clean_color for sw in stopwords)
+        not clean_color
+        or clean_color.isdigit()
+        or any(sw in clean_color for sw in stopwords)
     )
 
 
