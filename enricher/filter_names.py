@@ -57,7 +57,8 @@ def remove_a_list_of_strings(s: str, to_remove: list):
             s = s.replace(word, "")
 
         if word in s and len(tokens_to_remove) > 1:
-            s = remove_whole_word(tokens, tokens_to_remove)
+            tokens = remove_partial_tokens(tokens, tokens_to_remove)
+            s = " ".join(tokens)
 
         # remove tokens
         for token_to_remove in tokens_to_remove:
@@ -67,7 +68,7 @@ def remove_a_list_of_strings(s: str, to_remove: list):
     return s
 
 
-def remove_whole_word(tokens, tokens_to_remove):
+def remove_partial_tokens(tokens, tokens_to_remove):
     """ remove "kedi mama" from "asfs kedi mamasi fsdgfd"  """
     return [token
             for token in tokens
@@ -75,7 +76,7 @@ def remove_whole_word(tokens, tokens_to_remove):
 
 
 def test_remove_a_list_of_strings():
-    print(remove_whole_word("asd kedi mamasi asf".split(), ["kedi", "mama"]))
+    print(remove_partial_tokens("asd kedi mamasi asf".split(), ["kedi", "mama"]))
 
 
 def remove_color(s, clean_colors):
