@@ -39,10 +39,10 @@ def predict_subcat(products: List[dict]) -> list:
     y_train = []
     logging.info("training..")
     for product in tqdm(with_sub):
-        names = product.get(keys.FILTERED_NAMES, [])
+        filtered_names = product.get(keys.FILTERED_NAMES, [])
         sub = product.get(keys.SUBCAT)
-        X_train += [" ".join(names)]
-        y_train += [sub]
+        X_train += filtered_names
+        y_train += [sub] * len(filtered_names)
 
     filtered_names = [product.get(keys.FILTERED_NAMES, []) for product in tqdm(no_sub)]
     X_test = [" ".join(names) for names in filtered_names]
