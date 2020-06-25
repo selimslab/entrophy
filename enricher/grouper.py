@@ -1,7 +1,5 @@
 from collections import defaultdict
 from typing import List
-from pprint import pprint
-
 import services
 import constants as keys
 
@@ -21,10 +19,12 @@ relevant_keys.update(keys_to_merge)
 
 
 def filter_docs(docs: List[dict]) -> List[dict]:
+    """ only relevant_keys can stay """
     return [services.filter_keys(doc, relevant_keys) for doc in docs]
 
 
 def group_products(filtered_skus: List[dict]) -> List[dict]:
+    """ group skus to products """
     groups = defaultdict(list)
     products = []
     for sku in filtered_skus:
