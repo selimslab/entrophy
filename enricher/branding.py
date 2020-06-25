@@ -23,7 +23,7 @@ def search_vendor_given_brands(product, clean_brands):
 
 
 def select_most_frequent_brand(brand_candidates: list, brand_freq: dict) -> str:
-    """ return the_most_frequent_brand"""
+    """ return the_most_frequent_brand """
     brand_candidates_with_freq = {
         brand: brand_freq.get(brand, 0) for brand in set(brand_candidates)
     }
@@ -68,6 +68,7 @@ def get_brand(product, brand_freq, brand_pool):
     elif clean_brands:
         return services.get_most_common_item(clean_brands)
     else:
+        """ sometimes a vendor may not write a brand, however the name may include the brand """
         global_brands = global_brand_search(clean_names, brand_pool)
         if global_brands:
             return select_most_frequent_brand(global_brands, brand_freq)
@@ -92,11 +93,7 @@ def add_brand(products: List[dict], brand_pool: set) -> List[dict]:
     return products
 
 
-def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set:
-    # brands given by vendors
-    brands = possible_subcats_by_brand.keys()
-    brand_pool = set(brands)
-
+def get_window_frequencies(products: List[dict]):
     window_frequencies = Counter()
     max_brand_size = 3
     for product in products:
@@ -105,23 +102,35 @@ def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set
             sliding_windows = services.string_to_extending_windows(name, max_brand_size)
             window_frequencies.update(sliding_windows)
 
-    services.save_json(
-        "out/window_frequencies.json", services.sorted_counter(window_frequencies),
-    )
+    return window_frequencies
 
-    most_frequent_start_strings = {
-        s: count for s, count in window_frequencies.items() if count > 10
-    }
 
-    # OrderedDict(Counter(groups).most_common())
-    brand_pool.update(set(most_frequent_start_strings.keys()))
-
+def filter_brands(brand_pool):
     to_filter_out = {"brn ", "markasiz", "erkek", "kadin", " adet"}
-    brand_pool = {
+    return {
         services.remove_whitespace(b)
         for b in brand_pool
         if (b and len(b) > 2 and not any(bad in b for bad in to_filter_out))
     }
+
+
+def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set:
+    # brands given by vendors
+    brands = possible_subcats_by_brand.keys()
+    brand_pool = set(brands)
+
+    # common start strings
+    window_frequencies = get_window_frequencies(products)
+
+    # if more than 10 names start with this string, it's probably a brand
+    most_frequent_start_strings = {
+        s: count for s, count in window_frequencies.items() if count > 10
+    }
+
+    brand_pool.update(set(most_frequent_start_strings.keys()))
+
+    brand_pool = filter_brands(brand_pool)
+
     return brand_pool
 
 
