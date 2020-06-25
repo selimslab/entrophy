@@ -1,11 +1,8 @@
-import logging
-from typing import List
-from collections import defaultdict, Counter, OrderedDict
+from collections import Counter, OrderedDict
 import itertools
 
 import services
 import constants as keys
-import paths as paths
 
 
 def sort_subcat():
@@ -63,10 +60,4 @@ def stages(products):
         services.save_json("stage/" + key + ".json", list(items))
 
 
-if __name__ == "__main__":
-    # products = services.read_json(paths.products_out)
-    from pprint import pprint
 
-    new = services.read_json("out/subcats_assigned.json")
-    merged = get_merged_subcats(new)
-    pprint(merged)

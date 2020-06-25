@@ -105,3 +105,15 @@ def get_merged_subcats(products):
             merged_subcats[sub] = root_sub
 
     return merged_subcats
+
+
+def test_subcat_merge():
+    from pprint import pprint
+
+    new = services.read_json("out/subcats_assigned.json")
+    merged = get_merged_subcats(new)
+    pprint(merged)
+
+
+if __name__ == "__main__":
+    test_subcat_merge()

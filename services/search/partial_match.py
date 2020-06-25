@@ -17,6 +17,7 @@ def is_eligible_tokensets(window_tokens: list, needle_tokens: list) -> bool:
 
 
 def compare_tokensets(window_tokens: list, needle_tokens: list) -> bool:
+    # TODO simpler
     # diff = []
     tolerate_single_letter = True
     for window_token, needle_token in zip(window_tokens, needle_tokens):

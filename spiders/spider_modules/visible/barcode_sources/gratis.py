@@ -98,6 +98,7 @@ class GratisSpider(BaseSpider):
             self.start_urls = GratisHelper.get_category_urls(self.base_url)
 
     def parse(self, response):
+        ## TODO simplify
         data = json.loads(response.text)
 
         results = data.get("resultsList")

@@ -195,7 +195,7 @@ def get_word_group_count_by_brand(word_counts_by_product: dict) -> dict:
 
 def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat):
     """ get_possible_sub_brands by subcat and brand """
-
+    ## TODO simpler
     final_count = defaultdict(dict)
     for subcat, brands in counts_by_brand.items():
 

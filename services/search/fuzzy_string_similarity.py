@@ -1,4 +1,6 @@
+# deprecated
 from itertools import combinations
+import collections
 
 from fuzzywuzzy import fuzz
 from tqdm import tqdm
