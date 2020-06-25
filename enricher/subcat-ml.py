@@ -27,12 +27,12 @@ def predict_subcat(products: List[dict]) -> list:
     with_sub = [
         p
         for p in products
-        if keys.SUBCAT in p and p.get(keys.SUBCAT_SOURCE) != "global_name"
+        if keys.SUBCAT in p # and p.get(keys.SUBCAT_SOURCE) != "global_name"
     ]
     no_sub = [
         p
         for p in products
-        if keys.SUBCAT not in p or p.get(keys.SUBCAT_SOURCE) == "global_name"
+        if keys.SUBCAT not in p # or p.get(keys.SUBCAT_SOURCE) == "global_name"
     ]
 
     X_train = []
@@ -69,7 +69,7 @@ def predict_subcat(products: List[dict]) -> list:
         try:
             log_prob = log_probas[i][idx]
             print(X_test[i])
-            print(predicted_class, log_prob)
+            print(predicted_class, log_prob, max(log_probas[i]), sum(log_probas[i]))
             if log_prob < -100:
                 continue
             print()
@@ -91,6 +91,8 @@ def group_by_brand(products):
 def run():
     products = services.read_json(paths.products_out)
     *rest, possible_subcats_by_brand = get_indexes(products)
+
+    # keep subcats for ML, remove brand and others
     products = add_filtered_names(
         products, possible_subcats_by_brand, remove_subcat=False
     )
@@ -106,9 +108,9 @@ def run():
     products = [services.filter_keys(p, relevant_keys) for p in products]
 
     subcat_predicted = []
-    for brand, products in group_by_brand(products):
-        predicted = predict_subcat(list(products))
-        subcat_predicted += predicted
+    # for brand, products in group_by_brand(products):
+    predicted = predict_subcat(list(products))
+    subcat_predicted += predicted
 
     services.save_json("stage/ML_subcat_predicted.json", subcat_predicted)
 

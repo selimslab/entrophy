@@ -18,7 +18,7 @@ def get_sub_brand(possible_sub_brands, clean_names):
                 return sub_brand
 
 
-def add_subbrand(products, possible_word_groups_for_sub_brand):
+def select_subbrand(products, possible_word_groups_for_sub_brand):
     for product in tqdm(products):
         brand = product.get(keys.BRAND)
         subcat = product.get(keys.SUBCAT)

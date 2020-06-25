@@ -207,6 +207,20 @@ any one them in your code ?
 
 
 
+### image match 
+
+you may take a similarity hash of images and compare them to match items 
+
+https://github.com/JohannesBuchner/imagehash 
+
+### topic modelling 
+
+gensim is great 
+
+https://radimrehurek.com/gensim/auto_examples/core/run_similarity_queries.html#sphx-glr-auto-examples-core-run-similarity-queries-py
+
+https://radimrehurek.com/gensim/models/ldamodel.html
+
  ## next steps 
 
 a few bits of advice :) 

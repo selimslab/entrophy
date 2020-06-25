@@ -1,12 +1,9 @@
 import logging
-from typing import List
-from collections import defaultdict
-
 import services
 import constants as keys
 import paths as paths
 
-from preprocess import filter_docs, group_products
+from grouper import filter_docs, group_products
 from original_to_clean import (
     get_brand_original_to_clean,
     get_subcat_original_to_clean,
@@ -16,7 +13,7 @@ from branding import get_brand_pool, add_brand
 from subcats import get_possible_subcats_by_brand, add_raw_subcats, add_subcat
 from inspect_results import inspect_results
 from filter_names import add_filtered_names
-from sub_brand import get_filtered_names_tree, create_possible_sub_brands, add_subbrand
+from sub_brand import get_filtered_names_tree, create_possible_sub_brands, select_subbrand
 from analysis import analyze_subcat, analyze_brand
 
 
@@ -62,18 +59,36 @@ def add_color(products):
     return products
 
 
-def enrich_product_data(skus: dict):
+def skus_to_products(skus: dict):
+    # only relevant keys remain
     skus = filter_docs(list(skus.values()))
 
     logging.info("add_raw_subcats..")
+    # they have cats, add clean_cats and sub_cats
     skus = add_raw_subcats(skus)
 
     logging.info("group_products..")
+    # group skus to products
     products = group_products(skus)
 
     logging.info("add_color..")
     products = add_color(products)
 
+    return products
+
+
+def add_sub_brand(products, possible_subcats_by_brand):
+    products = add_filtered_names(products, possible_subcats_by_brand)
+    filtered_names_tree = get_filtered_names_tree(products)
+    # services.save_json(paths.filtered_names_tree, filtered_names_tree)
+
+    possible_word_groups_for_sub_brand = create_possible_sub_brands(filtered_names_tree)
+    products = select_subbrand(products, possible_word_groups_for_sub_brand)
+    return products
+
+
+def enrich_product_data(products, debug=False):
+    # we may need to find the original of a clean string
     (
         brand_original_to_clean,
         subcat_original_to_clean,
@@ -81,36 +96,32 @@ def enrich_product_data(skus: dict):
     ) = get_indexes(products)
 
     brand_pool: set = get_brand_pool(products, possible_subcats_by_brand)
-    services.save_json(paths.brand_pool, sorted(list(brand_pool)))
+    # services.save_json(paths.brand_pool, sorted(list(brand_pool)))
 
     products = add_brand(products, brand_pool)
 
     products = add_subcat(products, subcat_original_to_clean)
+    products = add_sub_brand(products, possible_subcats_by_brand)
 
-    analyze_brand(products)
-    subcats_assigned = analyze_subcat(products)
+    return products
 
-    # for sub brand
-    products = add_filtered_names(products, possible_subcats_by_brand)
 
-    filtered_names_tree = get_filtered_names_tree(products)
-    services.save_json(paths.filtered_names_tree, filtered_names_tree)
+def test_enrich(skus):
+    products = skus_to_products(skus)
 
-    possible_word_groups_for_sub_brand = create_possible_sub_brands(filtered_names_tree)
-
-    products = add_subbrand(products, possible_word_groups_for_sub_brand)
-
-    services.save_json(paths.products_out, products)
-
+    products = enrich_product_data(products)
     inspect_results(products)
-
-    print("done!")
+    analyze_brand(products)
+    analyze_subcat(products)
+    services.save_json(paths.products_out, products)
 
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     skus: dict = services.read_json(paths.skus)
-    enrich_product_data(skus)
+    test_enrich(skus)
+    print("done!")
+
     """
 
     + replace partials with reals in names, permanently -> replace sivi det with sivi deterjan

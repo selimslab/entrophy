@@ -36,7 +36,6 @@ def add_brand_and_subcat_to_doc(skus, sku_id, ml_sub, product, pairs):
     subcat = product.get(keys.SUBCAT)
     subcat_source = product.get(keys.SUBCAT_SOURCE)
 
-
     product_id = sku.get(keys.PRODUCT_ID)
     doc_ids = sku.get(keys.DOC_IDS, [])
     doc_ids = [id for id in doc_ids if "clone" not in id]
