@@ -17,22 +17,19 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.naive_bayes import MultinomialNB
 
 
-def predict_subcat(products: List[dict]) -> list:
-    """
-    use products with subcat as training, and classify the remaining
-    """
+def split_training_and_test(products):
     if not products:
         return []
 
     with_sub = [
         p
         for p in products
-        if keys.SUBCAT in p # and p.get(keys.SUBCAT_SOURCE) != "global_name"
+        if keys.SUBCAT in p  # and p.get(keys.SUBCAT_SOURCE) != "global_name"
     ]
     no_sub = [
         p
         for p in products
-        if keys.SUBCAT not in p # or p.get(keys.SUBCAT_SOURCE) == "global_name"
+        if keys.SUBCAT not in p  # or p.get(keys.SUBCAT_SOURCE) == "global_name"
     ]
 
     X_train = []
@@ -47,16 +44,28 @@ def predict_subcat(products: List[dict]) -> list:
     filtered_names = [product.get(keys.FILTERED_NAMES, []) for product in tqdm(no_sub)]
     X_test = [" ".join(names) for names in filtered_names]
 
-    if not X_train or not y_train or not X_test:
-        return []
+    return X_train, y_train, X_test, no_sub
 
+
+def predict_subcat(X_train, y_train, X_test, no_sub):
+    """
+    use products with subcat as training, and classify the remaining
+    """
+    if not X_train or not y_train or not X_test:
+        return
+
+    """
+    tf-idf is also possible 
+
+    tfidf_transformer = TfidfTransformer()
+    X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+    """
     count_vect = CountVectorizer()
     try:
         X_train_counts = count_vect.fit_transform(X_train)
     except ValueError:
-        return []
-    # tfidf_transformer = TfidfTransformer()
-    # X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+        return
+
     clf = MultinomialNB().fit(X_train_counts, y_train)
 
     test_vector = count_vect.transform(X_test)
@@ -88,8 +97,7 @@ def group_by_brand(products):
         yield key, items
 
 
-def run():
-    products = services.read_json(paths.products_out)
+def run(products):
     *rest, possible_subcats_by_brand = get_indexes(products)
 
     # keep subcats for ML, remove brand and others
@@ -109,10 +117,11 @@ def run():
 
     subcat_predicted = []
     # for brand, products in group_by_brand(products):
-    predicted = predict_subcat(list(products))
+    X_train, y_train, X_test, no_sub = split_training_and_test(products)
+    predicted = predict_subcat(X_train, y_train, X_test, no_sub)
     subcat_predicted += predicted
-
     services.save_json("stage/ML_subcat_predicted.json", subcat_predicted)
+    return subcat_predicted
 
 
 def test_mnb():
@@ -134,4 +143,5 @@ def test_mnb():
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
-    run()
+    products = services.read_json(paths.products_out)
+    run(products)

@@ -4,11 +4,10 @@ import constants as keys
 import paths as paths
 
 from grouper import filter_docs, group_products
-from original_to_clean import (
-    get_brand_original_to_clean,
-    get_subcat_original_to_clean,
-    get_color_original_to_clean,
-)
+from brand_to_clean import get_brand_original_to_clean
+from subcat_to_clean import get_subcat_original_to_clean
+from color_to_clean import get_color_original_to_clean
+
 from branding import get_brand_pool, add_brand
 from subcats import get_possible_subcats_by_brand, add_raw_subcats, add_subcat
 from inspect_results import inspect_results
