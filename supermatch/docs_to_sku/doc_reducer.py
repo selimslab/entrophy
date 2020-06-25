@@ -154,20 +154,19 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     if digits:
         unit_price = round(best_price / digits, 2)
 
-    categories = collections.defaultdict(list)
+    categories = {}
     for doc in docs:
-        vendor = doc.get(keys.MARKET)
-        if vendor in keys.MARKETYO_MARKET_NAMES:
-            vendor = "myo"
-        cats = doc.get(keys.CATEGORIES, [])
-        for cat in cats:
-            if cat not in categories[vendor]:
-                categories[vendor].append(cat)
+        categories[doc.get(keys.MARKET)] = doc.get(keys.CATEGORIES, [])
 
     brands = [doc.get(keys.BRAND) for doc in docs]
 
+    colors = [doc.get(keys.COLOR) for doc in docs]
+    # VARIANT_NAME is from gratis, it is mostly color
+    variant_names = [doc.get(keys.VARIANT_NAME) for doc in docs]
+    colors += variant_names
+    colors = [c for c in colors if c]
+
     # TODO add color
-    # TODO add reviews
 
     sku = SKU(
         doc_ids=doc_ids,
@@ -192,7 +191,8 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         digits_units=list(set(digit_unit_tuples)),
         categories=categories,
         brands=brands,
-        variant_name=get_google_variant_name(docs),
+        google_variant_name=get_google_variant_name(docs),
+        colors=colors
     )
 
     sku = asdict(sku)
