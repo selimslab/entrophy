@@ -6,7 +6,7 @@ import services
 import paths as paths
 import constants as keys
 
-from filter_names import remove_a_list_of_strings
+from prep.filter_names import remove_a_list_of_strings
 
 
 def get_sub_brand(possible_sub_brands, clean_names):

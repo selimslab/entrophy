@@ -3,16 +3,17 @@ import services
 import constants as keys
 import paths as paths
 
-from grouper import filter_docs, group_products
-from brand_to_clean import get_brand_original_to_clean
-from subcat_to_clean import get_subcat_original_to_clean
-from color_to_clean import get_color_original_to_clean
+from prep.grouper import filter_docs, group_products
+from cleaners.brand_to_clean import get_brand_original_to_clean
+from cleaners.subcat_to_clean import get_subcat_original_to_clean
+from cleaners.color_to_clean import get_color_original_to_clean
 
-from branding import get_brand_pool, add_brand
-from subcats import get_possible_subcats_by_brand, add_raw_subcats, add_subcat
+from selectors.brand_selector import get_brand_pool, add_brand
+from prep.cat_to_subcat import add_raw_subcats
+from selectors.subcat_selector import get_possible_subcats_by_brand, add_subcat
 from inspect_results import inspect_results
-from filter_names import add_filtered_names
-from sub_brand import get_filtered_names_tree, create_possible_sub_brands, select_subbrand
+from prep.filter_names import add_filtered_names
+from selectors.sub_brand_selector import get_filtered_names_tree, create_possible_sub_brands, select_subbrand
 from analysis import analyze_subcat, analyze_brand
 
 

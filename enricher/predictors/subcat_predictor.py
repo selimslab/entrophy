@@ -1,7 +1,5 @@
 import logging
-from typing import List
 import itertools
-import operator
 
 from tqdm import tqdm
 
@@ -9,11 +7,10 @@ import services
 import constants as keys
 import paths as paths
 
-from filter_names import add_filtered_names
+from prep.filter_names import add_filtered_names
 from main import get_indexes
 
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.naive_bayes import MultinomialNB
 
 
@@ -120,7 +117,7 @@ def run(products):
     X_train, y_train, X_test, no_sub = split_training_and_test(products)
     predicted = predict_subcat(X_train, y_train, X_test, no_sub)
     subcat_predicted += predicted
-    services.save_json("stage/ML_subcat_predicted.json", subcat_predicted)
+    services.save_json("../stage/ML_subcat_predicted.json", subcat_predicted)
     return subcat_predicted
 
 

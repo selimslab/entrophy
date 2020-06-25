@@ -7,7 +7,7 @@ from tqdm import tqdm
 import services
 import constants as keys
 
-from freq import get_brand_freq
+from prep.freq import get_brand_freq
 
 
 def search_vendor_given_brands(product, clean_brands):
@@ -78,7 +78,7 @@ def add_brand(products: List[dict], brand_pool: set) -> List[dict]:
     logging.info("adding brand..")
 
     brand_freq: dict = get_brand_freq(products)
-    services.save_json("out/brand_freq.json", services.sorted_counter(brand_freq))
+    services.save_json("../out/brand_freq.json", services.sorted_counter(brand_freq))
 
     # brand_pool_sorted = services.sort_from_long_to_short(brand_pool)
     for product in tqdm(products):

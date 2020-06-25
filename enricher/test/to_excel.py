@@ -45,7 +45,6 @@ def add_brand_and_subcat_to_doc(skus, sku_id, ml_sub, product, pairs):
     for doc_id in doc_ids:
         doc = pairs.get(doc_id)
         if not doc:
-            continue
         doc["our_brand"] = brand
         doc[keys.SUB_BRAND] = sub_brand
         doc[keys.SUBCAT] = subcat

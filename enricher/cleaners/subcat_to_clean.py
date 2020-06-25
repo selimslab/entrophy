@@ -3,7 +3,7 @@ from typing import List
 import services
 import constants as keys
 
-from subcat_merger import get_merged_subcats
+from cleaners.subcat_merger import get_merged_subcats
 
 
 def search_gender(clean_sub):
