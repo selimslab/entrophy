@@ -132,7 +132,18 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     barcodes = services.flatten(barcodes)
     barcodes = list(set(barcodes))
 
-    clean_names = list(doc.get("clean_name") for doc in docs)
+    brands = []
+    clean_names = []
+    clean_brands = []
+    for doc in docs:
+        brand = doc.get(keys.BRAND)
+        brands.append(brand)
+        clean_brand = services.clean_string(brand)
+        clean_name = doc.get(keys.CLEAN_NAME)
+        if clean_brand and clean_name and clean_brand not in clean_name:
+            clean_name = " ".join([clean_brand, clean_name])
+        clean_names.append(clean_name)
+        clean_brands.append(clean_brand)
 
     tokens = services.tokenize_a_nested_list(clean_names)
     most_common_tokens = sorted(services.get_n_most_common_list_elements(tokens, 3))
@@ -157,8 +168,6 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     categories = {}
     for doc in docs:
         categories[doc.get(keys.MARKET)] = doc.get(keys.CATEGORIES, [])
-
-    brands = [doc.get(keys.BRAND) for doc in docs]
 
     colors = [doc.get(keys.COLOR) for doc in docs]
     # VARIANT_NAME is from gratis, it is mostly color
@@ -191,6 +200,7 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
         digits_units=list(set(digit_unit_tuples)),
         categories=categories,
         brands=brands,
+        clean_brands=clean_brands,
         google_variant_name=get_google_variant_name(docs),
         colors=colors
     )
