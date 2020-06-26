@@ -15,14 +15,6 @@ keys_to_merge = {
     keys.VARIANT_NAME,
 }
 
-relevant_keys = {keys.SKU_ID, keys.PRODUCT_ID}
-
-relevant_keys.update(keys_to_merge)
-
-
-def filter_docs(docs: List[dict]) -> List[dict]:
-    """ only relevant_keys can stay """
-    return [services.filter_keys(doc, relevant_keys) for doc in docs]
 
 
 def group_products(filtered_skus: List[dict]) -> List[dict]:

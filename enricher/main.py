@@ -3,7 +3,7 @@ import services
 import constants as keys
 import paths as paths
 
-from prep.grouper import filter_docs, group_products
+from prep.grouper import group_products
 from prep.cat_to_subcat import add_raw_subcats
 from prep.filter_names import add_filtered_names
 from prep.indexer import create_indexes
@@ -26,7 +26,7 @@ from to_excel import create_excel
 
 def skus_to_products(skus: dict):
     # only relevant keys remain
-    skus = filter_docs(list(skus.values()))
+    skus = list(skus.values())
 
     logging.info("add_raw_subcats..")
     # they have cats, add clean_cats and sub_cats
@@ -96,12 +96,12 @@ def add_brand_sub_brand_subcat_to_skus(skus: dict):
 
 
 def debug_enrich(skus: dict):
-    _, products = add_brand_sub_brand_subcat_to_skus(skus)
+    enriched_skus, products = add_brand_sub_brand_subcat_to_skus(skus)
     inspect_results(products)
     analyze_brand(products)
     analyze_subcat(products)
     services.save_json(paths.products_out, products)
-    create_excel(products)
+    create_excel(products, enriched_skus)
 
 
 if __name__ == "__main__":

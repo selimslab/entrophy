@@ -44,7 +44,6 @@ def add_brand_and_subcat_to_doc(sku, sku_id, product, pairs):
     size = sku.get(keys.SIZE)
     color = sku.get(keys.SELECTED_COLOR)
 
-
     for doc_id in doc_ids:
         doc = pairs.get(doc_id)
         if not doc:
@@ -60,12 +59,11 @@ def add_brand_and_subcat_to_doc(sku, sku_id, product, pairs):
         pairs[doc_id] = doc
 
 
-def add_sku_id_and_product_id_to_pairs(products):
+def add_sku_id_and_product_id_to_pairs(products, skus):
     # raw docs
     pairs = services.read_json(paths.pairs)
     pairs = filter_pairs(pairs)
 
-    skus = services.read_json(paths.skus)
     pid_tree = get_pid_tree(skus)
 
     logging.info("add_brand_and_subcat_to_doc..")
@@ -85,7 +83,7 @@ def add_sku_id_and_product_id_to_pairs(products):
     return pairs
 
 
-def create_excel(products):
+def create_excel(products, skus):
     colnames = [
         "product_id",
         "sku_id",
@@ -111,7 +109,7 @@ def create_excel(products):
         keys.SUBCAT_SOURCE,
     ]
 
-    pairs = add_sku_id_and_product_id_to_pairs(products)
+    pairs = add_sku_id_and_product_id_to_pairs(products, skus)
 
     rows = list(pairs.values())
     rows = [row for row in rows if keys.SKU_ID in row]
@@ -120,5 +118,7 @@ def create_excel(products):
 
 if __name__ == "__main__":
     products = services.read_json(paths.products_out)
-    create_excel(products)
+    skus = services.read_json(paths.skus)
+
+    create_excel(products, skus)
     # pairs = add_sku_id_and_product_id_to_pairs()
