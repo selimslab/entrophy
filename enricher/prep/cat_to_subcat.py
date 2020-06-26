@@ -46,6 +46,7 @@ def get_subcats(sku):
 
     subcats = []
     myos = []
+    # TODO only 1 vote per vendor
     for market, cats in category_dict.items():
         sub = None
         if market in keys.MARKETYO_MARKET_NAMES:

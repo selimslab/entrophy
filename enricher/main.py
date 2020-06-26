@@ -10,13 +10,13 @@ from prep.filter_names import add_filtered_names
 from cleaners.brand_to_clean import get_brand_original_to_clean
 from cleaners.subcat_to_clean import get_subcat_original_to_clean
 
-from selectors.brand_selector import get_brand_pool, add_brand
-from selectors.subcat_selector import get_possible_subcats_by_brand, add_subcat
-from selectors.color_selector import add_color
+from choosers.brand_selector import add_brand
+from choosers.subcat_selector import get_possible_subcats_by_brand, add_subcat
+from choosers.color_selector import add_color
 
 from inspect_results import inspect_results
 
-from selectors.sub_brand_selector import (
+from choosers.sub_brand_selector import (
     get_filtered_names_tree,
     create_possible_sub_brands,
     select_subbrand,
@@ -81,10 +81,7 @@ def enrich_product_data(products, debug=False):
         possible_subcats_by_brand,
     ) = create_indexes(products)
 
-    brand_pool: set = get_brand_pool(products, possible_subcats_by_brand)
-    # services.save_json(paths.brand_pool, sorted(list(brand_pool)))
-
-    products = add_brand(products, brand_pool)
+    products = add_brand(products)
 
     products = add_subcat(products, subcat_original_to_clean)
     products = add_sub_brand(products, possible_subcats_by_brand)
