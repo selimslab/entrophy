@@ -75,13 +75,8 @@ def remove_partial_tokens(tokens, tokens_to_remove):
     ]
 
 
-def test_remove_a_list_of_strings():
-    print(remove_partial_tokens("asd kedi mamasi asf".split(), ["kedi", "mama"]))
-
-
 def remove_color(s, clean_colors):
     for color in clean_colors:
-        #
         if color in s and set(s.split()).issuperset(color.split()):
             s = s.replace(color, "").strip()
         # remove sub tokens
@@ -91,6 +86,11 @@ def remove_color(s, clean_colors):
             if s and token in color_dict:
                 s = s.replace(color_dict.get(token), "")
     return s
+
+
+def test_removals():
+    print(remove_color("red special edition", ["kirmizi edition"]))
+    print(remove_partial_tokens("asd kedi mamasi asf".split(), ["kedi", "mama"]))
 
 
 def is_known_token(s: str):
@@ -104,7 +104,7 @@ def filter_tokens(name: str):
 
 
 def filter_out_known_word_groups_from_a_name(
-    product, possible_subcats_by_brand, remove_subcat=True
+        product, possible_subcats_by_brand, remove_subcat=True
 ):
     """
     remove brand candidates, subcat_candidates, color, gender, plural_to_singular
@@ -139,9 +139,9 @@ def filter_out_known_word_groups_from_a_name(
 
     possible_subcats = possible_subcats_by_brand.get(brand, [])
     clean_subcats = (
-        product.get(keys.CLEAN_SUBCATS, [])
-        + possible_subcats
-        + [product.get(keys.SUBCAT)]
+            product.get(keys.CLEAN_SUBCATS, [])
+            + possible_subcats
+            + [product.get(keys.SUBCAT)]
     )
     clean_subcats = [c for c in clean_subcats if c]
 
