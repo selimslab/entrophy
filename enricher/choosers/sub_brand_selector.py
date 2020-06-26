@@ -129,7 +129,6 @@ def get_counts_by_product(filtered_names_tree):
                     word_group.replace(brand, "").strip(): count
                     for word_group, count in word_groups_counts.items()
                 }
-
                 ##  Bir subbrandin subbrand olabilmesi için grup içindeki item'ların 50%'sinde geçmesi gerekiyor.
                 word_groups_counts = {
                     word_group: count
@@ -214,8 +213,7 @@ def get_possible_sub_brands(counts_by_product, counts_by_brand, counts_by_subcat
                     continue
                 # a word_group should be in a single brand of this subcat only, to be a sub-brand
                 in_a_single_brand = counts_in_subcat.get(word_group) < 2
-                # a word_group should be in more than 3 products, to be a sub-brand
-                if in_a_single_brand and count_in_brand > 3:
+                if in_a_single_brand:
                     filtered_counts[word_group] = int(brand_count.get(word_group))
 
             if not filtered_counts:

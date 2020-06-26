@@ -115,19 +115,23 @@ def filter_brands(brand_pool):
 
 
 def get_brand_pool(products: List[dict], possible_subcats_by_brand: dict) -> set:
+
+    # TODO brand pool -> only in name
     # brands given by vendors
     brands = possible_subcats_by_brand.keys()
     brand_pool = set(brands)
 
-    # common start strings
-    window_frequencies = get_window_frequencies(products)
-
-    # if more than 10 names start with this string, it's probably a brand
-    most_frequent_start_strings = {
-        s: count for s, count in window_frequencies.items() if count > 10
-    }
-
-    brand_pool.update(set(most_frequent_start_strings.keys()))
+    """
+        # common start strings
+        window_frequencies = get_window_frequencies(products)
+    
+        # if more than 10 names start with this string, it's probably a brand
+        most_frequent_start_strings = {
+            s: count for s, count in window_frequencies.items() if count > 10
+        }
+    
+        brand_pool.update(set(most_frequent_start_strings.keys()))
+    """
 
     brand_pool = filter_brands(brand_pool)
 
