@@ -110,10 +110,35 @@ def enrich_product_data(products, debug=False):
     return products
 
 
-def test_enrich(skus):
-    products = skus_to_products(skus)
+def add_product_info_to_skus(skus: dict, products: list):
+    keys_to_add = {keys.SUBCAT, keys.BRAND, keys.SUB_BRAND}
+    product_info = {}
+    for product in products:
+        to_update = {k: product.get(k) for k in keys_to_add}
+        if keys.PRODUCT_ID in product:
+            pid = product.get(keys.PRODUCT_ID)
+            product_info[pid] = to_update
+        else:
+            sku_id = product.get(keys.SKU_ID)
+            skus[sku_id].update(to_update)
 
+    for sku_id, sku in skus.items():
+        if keys.PRODUCT_ID in sku:
+            pid = sku.get(keys.PRODUCT_ID)
+            skus[sku_id].update(product_info.get(pid))
+
+    return skus
+
+
+def add_brand_sub_brand_subcat_to_skus(skus: dict):
+    products: list = skus_to_products(skus)
     products = enrich_product_data(products)
+    add_product_info_to_skus(skus, products)
+    return skus, products
+
+
+def test_enrich(skus: dict):
+    _, products = add_brand_sub_brand_subcat_to_skus(skus)
     inspect_results(products)
     analyze_brand(products)
     analyze_subcat(products)

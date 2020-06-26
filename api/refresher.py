@@ -2,6 +2,9 @@ import data_services
 from supermatch.main import create_matching
 from supermatch.prep.preprocess import get_clean_id_doc_pairs
 from supermatch.syncer import Syncer
+
+from enricher.main import add_brand_sub_brand_subcat_to_skus
+
 import constants as keys
 import sentry_sdk
 
@@ -14,6 +17,7 @@ def create_new_matching():
     )
     pairs = get_clean_id_doc_pairs(docs_to_match)
     skus: dict = create_matching(id_doc_pairs=pairs)
+    skus, _ = add_brand_sub_brand_subcat_to_skus(skus)
     syncer = Syncer(debug=False)
     syncer.sync_the_new_matching(skus)
 

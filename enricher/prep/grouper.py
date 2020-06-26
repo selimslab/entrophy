@@ -24,7 +24,14 @@ def filter_docs(docs: List[dict]) -> List[dict]:
 
 
 def group_products(filtered_skus: List[dict]) -> List[dict]:
-    """ group skus to products """
+    """ group skus to products
+    there will be 2 kind of docs, product members and singles
+    [
+    {pid } -> product member
+    {sku_id}
+    ]
+
+    """
     groups = defaultdict(list)
     products = []
     for sku in filtered_skus:
