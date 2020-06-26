@@ -42,7 +42,8 @@ def add_brand_and_subcat_to_doc(sku, sku_id, product, pairs):
         return
 
     size = sku.get(keys.SIZE)
-    color = product.get(keys.SELECTED_COLOR)
+    color = sku.get(keys.SELECTED_COLOR)
+
 
     for doc_id in doc_ids:
         doc = pairs.get(doc_id)
@@ -84,7 +85,7 @@ def add_sku_id_and_product_id_to_pairs(products):
     return pairs
 
 
-def to_excel():
+def create_excel(products):
     colnames = [
         "product_id",
         "sku_id",
@@ -110,7 +111,6 @@ def to_excel():
         keys.SUBCAT_SOURCE,
     ]
 
-    products = services.read_json(paths.products_out)
     pairs = add_sku_id_and_product_id_to_pairs(products)
 
     rows = list(pairs.values())
@@ -119,5 +119,6 @@ def to_excel():
 
 
 if __name__ == "__main__":
-    to_excel()
+    products = services.read_json(paths.products_out)
+    create_excel(products)
     # pairs = add_sku_id_and_product_id_to_pairs()

@@ -21,6 +21,8 @@ from choosers.sub_brand_selector import (
 )
 from analysis import analyze_subcat, analyze_brand
 
+from to_excel import create_excel
+
 
 def skus_to_products(skus: dict):
     # only relevant keys remain
@@ -30,12 +32,12 @@ def skus_to_products(skus: dict):
     # they have cats, add clean_cats and sub_cats
     skus = add_raw_subcats(skus)
 
+    logging.info("add_color..")
+    skus = add_color(skus)
+
     logging.info("group_products..")
     # group skus to products
     products = group_products(skus)
-
-    logging.info("add_color..")
-    products = add_color(products)
 
     return products
 
@@ -99,6 +101,7 @@ def debug_enrich(skus: dict):
     analyze_brand(products)
     analyze_subcat(products)
     services.save_json(paths.products_out, products)
+    create_excel(products)
 
 
 if __name__ == "__main__":

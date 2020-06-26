@@ -13,8 +13,8 @@ def is_bad_color(clean_color):
     )
 
 
-def get_clean_colors(product):
-    colors = product.get(keys.COLOR_PLURAL, [])
+def get_clean_colors(sku):
+    colors = sku.get(keys.COLOR_PLURAL, [])
     colors = services.flatten(colors)
     clean_colors = []
     original_to_clean = {}
@@ -28,13 +28,13 @@ def get_clean_colors(product):
     return clean_colors, original_to_clean
 
 
-def get_color_original_to_clean(products: List[dict]) -> dict:
+def get_color_original_to_clean(skus: List[dict]) -> dict:
     logging.info("cleaning colors..")
     color_original_to_clean = {}
 
-    for product in products:
-        clean_colors, original_to_clean = get_clean_colors(product)
+    for sku in skus:
+        clean_colors, original_to_clean = get_clean_colors(sku)
         color_original_to_clean.update(original_to_clean)
-        product[keys.CLEAN_COLORS] = clean_colors
+        sku[keys.CLEAN_COLORS] = clean_colors
 
     return color_original_to_clean

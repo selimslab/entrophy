@@ -9,6 +9,7 @@ keys_to_merge = {
     keys.SUB_CATEGORIES,
     keys.BRANDS_MULTIPLE,
     keys.CLEAN_NAMES,
+    keys.CLEAN_COLORS,
     keys.CLEAN_CATS,
     keys.COLOR_PLURAL,
     keys.VARIANT_NAME,

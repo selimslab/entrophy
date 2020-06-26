@@ -11,15 +11,15 @@ def select_color(clean_names, clean_colors):
                 return color
 
 
-def add_color(products):
-    color_original_to_clean = get_color_original_to_clean(products)
+def add_color(skus):
+    color_original_to_clean = get_color_original_to_clean(skus)
     services.save_json(paths.color_original_to_clean, color_original_to_clean)
 
-    for product in products:
-        clean_names = product.get(keys.CLEAN_NAMES, [])
-        clean_colors = product.get(keys.CLEAN_COLORS, [])
+    for sku in skus:
+        clean_names = sku.get(keys.CLEAN_NAMES, [])
+        clean_colors = sku.get(keys.CLEAN_COLORS, [])
         color = select_color(clean_names, clean_colors)
         if color:
-            product[keys.SELECTED_COLOR] = color
+            sku[keys.SELECTED_COLOR] = color
 
-    return products
+    return skus
