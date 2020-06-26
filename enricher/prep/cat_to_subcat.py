@@ -68,5 +68,21 @@ def add_raw_subcats(skus: List[dict]):
         clean_cats = get_cats(sku)
         subcats = get_subcats(sku)
         sku[keys.CLEAN_CATS] = clean_cats
-        sku[keys.SUB_CATEGORIES] = subcats
+        if keys.PRODUCT_ID in sku:
+            sku[keys.SUB_CATEGORIES] = subcats
+        else:
+            """
+
+            SUB_CATEGORIES is a dict of market:subs pairs 
+
+            it is done this way to ensure when multiple SKUs merged, 
+            a vendor will vote only 1 subcat per product 
+            {
+                market_name: subs,
+                ..
+            }
+            """
+            subs = sku.get(keys.SUB_CATEGORIES, {}).values()
+            sku[keys.SUB_CATEGORIES] = services.flatten(list(subs))
+
     return skus
