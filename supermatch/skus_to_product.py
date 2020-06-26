@@ -82,18 +82,14 @@ def group_link_id_tuples(link_id_tuples: List[tuple]) -> List[list]:
     return groups
 
 
-def set_match_generator_for_skus(skus: dict) -> tuple:
-    eligible = {
-        sku_id: sku
-        for sku_id, sku in skus.items()
-        if keys.VARIANT_NAME not in sku and keys.COLOR not in sku
-    }
+def set_match_generator_for_skus(eligible: dict) -> tuple:
     indexer = Indexer()
     logging.info("creating group_info and inverted index..")
     for sku_id, sku in tqdm(eligible.items()):
         indexer.index_skus(sku, sku_id)
 
     for sku_id, sku in tqdm(eligible.items()):
+        # any sku with at least 1 common size and token-set match
         matches = indexer.search_skus_to_connect(sku, sku_id)
         if matches:
             other_sku_id_to_connect = services.get_most_frequent_key(matches)
@@ -109,14 +105,32 @@ def group_skus(skus: dict, variants, links_of_products) -> list:
     gratis_groups = group_link_id_tuples(gratis_link_id_tuples)
 
     logging.info("creating edges_from_sku_names")
-    edges_from_sku_names = set_match_generator_for_skus(skus)
-    edges_from_sku_names = list(edges_from_sku_names)
+    color_only = {
+        sku_id: sku
+        for sku_id, sku in skus.items()
+        if keys.DIGIT_UNIT_TUPLES not in sku and "colors" in sku
+    }
+
+    size_only = {
+        sku_id: sku
+        for sku_id, sku in skus.items()
+        if keys.DIGIT_UNIT_TUPLES in sku and "colors" not in sku
+    }
+
+    edges_from_color = set_match_generator_for_skus(color_only)
+    edges_from_size = set_match_generator_for_skus(size_only)
+
+    edges_from_color = list(edges_from_color)
+    edges_from_size = list(edges_from_size)
+
     print(
-        len(set(itertools.chain.from_iterable(edges_from_sku_names))),
-        "connections from product set match",
+        len(set(itertools.chain.from_iterable(edges_from_color))),
+        "edges_from_color connections for product set match",
+        len(set(itertools.chain.from_iterable(edges_from_size))),
+        "edges_from_size connections for product set match",
     )
 
-    sku_groups = itertools.chain(google_groups, gratis_groups, edges_from_sku_names)
+    sku_groups = itertools.chain(google_groups, gratis_groups, edges_from_color, edges_from_size)
 
     graph_of_skus = services.GenericGraph.create_graph_from_neighbor_pairs(sku_groups)
     groups_of_sku_ids = services.GenericGraph.create_connected_component_groups(

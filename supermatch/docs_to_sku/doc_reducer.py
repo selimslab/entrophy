@@ -175,8 +175,6 @@ def reduce_docs_to_sku(docs: list, doc_ids: list, used_ids) -> tuple:
     colors += variant_names
     colors = [c for c in colors if c]
 
-    # TODO add color
-
     sku = SKU(
         doc_ids=doc_ids,
         sku_id=sku_id,

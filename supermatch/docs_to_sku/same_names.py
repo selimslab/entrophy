@@ -42,11 +42,6 @@ def exact_name_match(self):
         if len(single_doc_ids) <= 1:
             continue
 
-        ## TODO this might require checking the groups of docs
-        # because connecting two docs means merging their groups
-        ## eg. doc1 and doc2 has no size, however their groups have different sizes
-        # should they be connected ?
-        # in a sense, if a group can include multiple sizes, what is the problem with merging 2 groups
         edges = itertools.combinations(single_doc_ids, 2)
         # check edges for size
         for edge in edges:
