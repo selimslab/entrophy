@@ -4,15 +4,18 @@ import constants as keys
 import paths as paths
 
 from prep.grouper import filter_docs, group_products
+from prep.cat_to_subcat import add_raw_subcats
+from prep.filter_names import add_filtered_names
+
 from cleaners.brand_to_clean import get_brand_original_to_clean
 from cleaners.subcat_to_clean import get_subcat_original_to_clean
-from cleaners.color_to_clean import get_color_original_to_clean
 
 from selectors.brand_selector import get_brand_pool, add_brand
-from prep.cat_to_subcat import add_raw_subcats
 from selectors.subcat_selector import get_possible_subcats_by_brand, add_subcat
+from selectors.color_selector import add_color
+
 from inspect_results import inspect_results
-from prep.filter_names import add_filtered_names
+
 from selectors.sub_brand_selector import (
     get_filtered_names_tree,
     create_possible_sub_brands,
@@ -21,7 +24,7 @@ from selectors.sub_brand_selector import (
 from analysis import analyze_subcat, analyze_brand
 
 
-def get_indexes(products):
+def create_indexes(products):
     brand_original_to_clean: dict = get_brand_original_to_clean(products)
 
     clean_brands = set(brand_original_to_clean.values())
@@ -40,27 +43,6 @@ def get_indexes(products):
     )
 
     return brand_original_to_clean, subcat_original_to_clean, possible_subcats_by_brand
-
-
-def select_color(clean_names, clean_colors):
-    for name in clean_names:
-        for color in clean_colors:
-            if color in name:
-                return color
-
-
-def add_color(products):
-    color_original_to_clean = get_color_original_to_clean(products)
-    services.save_json(paths.color_original_to_clean, color_original_to_clean)
-
-    for product in products:
-        clean_names = product.get(keys.CLEAN_NAMES, [])
-        clean_colors = product.get(keys.CLEAN_COLORS, [])
-        color = select_color(clean_names, clean_colors)
-        if color:
-            product[keys.SELECTED_COLOR] = color
-
-    return products
 
 
 def skus_to_products(skus: dict):
@@ -97,7 +79,7 @@ def enrich_product_data(products, debug=False):
         brand_original_to_clean,
         subcat_original_to_clean,
         possible_subcats_by_brand,
-    ) = get_indexes(products)
+    ) = create_indexes(products)
 
     brand_pool: set = get_brand_pool(products, possible_subcats_by_brand)
     # services.save_json(paths.brand_pool, sorted(list(brand_pool)))

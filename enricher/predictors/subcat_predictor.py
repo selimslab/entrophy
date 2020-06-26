@@ -8,7 +8,7 @@ import constants as keys
 import paths as paths
 
 from prep.filter_names import add_filtered_names
-from main import get_indexes
+from main import create_indexes
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -94,8 +94,8 @@ def group_by_brand(products):
         yield key, items
 
 
-def run(products):
-    *rest, possible_subcats_by_brand = get_indexes(products)
+def run(products: list):
+    *rest, possible_subcats_by_brand = create_indexes(products)
 
     # keep subcats for ML, remove brand and others
     products = add_filtered_names(
