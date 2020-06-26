@@ -42,7 +42,7 @@ def add_brand_and_subcat_to_doc(sku, sku_id, product, pairs):
         return
 
     size = sku.get(keys.SIZE)
-    colors = sku.get("colors", [])
+    color = product.get(keys.SELECTED_COLOR)
 
     for doc_id in doc_ids:
         doc = pairs.get(doc_id)
@@ -52,8 +52,7 @@ def add_brand_and_subcat_to_doc(sku, sku_id, product, pairs):
         doc[keys.SUB_BRAND] = sub_brand
         doc[keys.SUBCAT] = subcat
         doc["size_assigned"] = size
-        if colors:
-            doc["color_assigned"] = colors[0]
+        doc["color_assigned"] = color
         doc[keys.SUBCAT_SOURCE] = subcat_source
         doc[keys.PRODUCT_ID] = product_id
         doc[keys.SKU_ID] = sku_id
