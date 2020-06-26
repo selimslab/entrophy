@@ -104,7 +104,7 @@ def filter_tokens(name: str):
 
 
 def filter_out_known_word_groups_from_a_name(
-        product, possible_subcats_by_brand, remove_subcat=True
+    product, possible_subcats_by_brand, remove_subcat=True
 ):
     """
     remove brand candidates, subcat_candidates, color, gender, plural_to_singular
@@ -129,8 +129,6 @@ def filter_out_known_word_groups_from_a_name(
 
     """
 
-    # clean_colors = services.read_json(paths.clean_colors).values()
-
     clean_names = product.get(keys.CLEAN_NAMES, [])
 
     brand = product.get(keys.BRAND)
@@ -139,9 +137,9 @@ def filter_out_known_word_groups_from_a_name(
 
     possible_subcats = possible_subcats_by_brand.get(brand, [])
     clean_subcats = (
-            product.get(keys.CLEAN_SUBCATS, [])
-            + possible_subcats
-            + [product.get(keys.SUBCAT)]
+        product.get(keys.CLEAN_SUBCATS, [])
+        + possible_subcats
+        + [product.get(keys.SUBCAT)]
     )
     clean_subcats = [c for c in clean_subcats if c]
 

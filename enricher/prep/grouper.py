@@ -3,13 +3,14 @@ from typing import List
 import services
 import constants as keys
 
+
 keys_to_merge = {
     keys.CATEGORIES,
     keys.SUB_CATEGORIES,
     keys.BRANDS_MULTIPLE,
     keys.CLEAN_NAMES,
     keys.CLEAN_CATS,
-    keys.COLOR,
+    keys.COLOR_PLURAL,
     keys.VARIANT_NAME,
 }
 
@@ -41,12 +42,22 @@ def group_products(filtered_skus: List[dict]) -> List[dict]:
         else:
             products.append(sku)
 
-    for pid, docs in groups.items():
+    for pid, skus in groups.items():
         # merge info from multiple skus
         product = {keys.PRODUCT_ID: pid}
         for key in keys_to_merge:
-            vals = [doc.get(key, []) for doc in docs]
+            vals = [sku.get(key, []) for sku in skus]
             product[key] = services.flatten(vals)
+
+        # subcats are treated specially, because every vendor has 1 vote for subcat for a product
+        merged_subcats = defaultdict(list)
+        for sku in skus:
+            market_subs_pairs = sku.get(keys.SUB_CATEGORIES)
+            for market, subs in market_subs_pairs.items():
+                merged_subcats[market] += subs
+
+        subs = [list(set(subs)) for subs in merged_subcats.values()]
+        product[keys.SUB_CATEGORIES] = services.flatten(subs)
 
         products.append(product)
 

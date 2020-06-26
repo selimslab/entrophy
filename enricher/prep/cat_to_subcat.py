@@ -1,6 +1,7 @@
 import re
 from typing import List, Union
 from tqdm import tqdm
+from collections import defaultdict
 
 import services
 import constants as keys
@@ -44,25 +45,19 @@ def get_cats(sku):
 def get_subcats(sku):
     category_dict = sku.get(keys.CATEGORIES, {})
 
-    subcats = []
-    myos = []
-    # TODO only 1 vote per vendor
+    subcats = defaultdict(list)
+    # only 1 vote per vendor
     for market, cats in category_dict.items():
-        sub = None
-        if market in keys.MARKETYO_MARKET_NAMES:
-            myos += cats
-        elif market == "ty":
+        if market == "ty":
             sub = cats[-1]
         elif isinstance(cats, str) and "/" in cats:
             sub = cats.split("/")[0]
         else:
             sub = cats
         if sub:
-            subcats.append(sub)
+            subcats[market].append(sub)
 
-    # merge myos
-    subcats += list(set(myos))
-    subcats = unfold_cats(subcats)
+    subcats = {market: list(set(unfold_cats(subs))) for market, subs in subcats.items()}
 
     return subcats
 
