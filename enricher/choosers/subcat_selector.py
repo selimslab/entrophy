@@ -8,6 +8,8 @@ import constants as keys
 
 from prep.freq import get_subcat_freq
 
+from predictors.subcat_predictor import get_subcat_predictions
+
 
 def search_and_replace_partial_subcat(product, vendor_subcats, clean_names):
     """ a subcat might be written wrong, or abbreviated """
@@ -105,14 +107,14 @@ def get_subcat_and_source(product):
 
 def stage_report(products):
     logging.info("subcat stage report")
-    stages = {"global_name", "local_name", "majority", "partial"}
+    stages = {"global_name", "local_name", "majority", "partial", "ml"}
     for stage in stages:
         res = sum(p.get(keys.SUBCAT_SOURCE) == stage for p in products)
         print(res, stage)
 
 
 def add_subcat(
-    products: List[dict], subcat_original_to_clean: Dict[str, str], debug=False
+        products: List[dict], subcat_original_to_clean: Dict[str, str], debug=False
 ):
     logging.info("adding subcat..")
 
@@ -136,34 +138,14 @@ def add_subcat(
             product[keys.SUBCAT] = sub
             product[keys.SUBCAT_SOURCE] = source
 
+    subcat_predictions = get_subcat_predictions(products)
+    for product in products:
+        uid = product.get(keys.PRODUCT_ID) or product.get(keys.SKU_ID)
+        if keys.SUBCAT not in product and uid in subcat_predictions:
+            product[keys.SUBCAT] = subcat_predictions.get(uid)
+            product[keys.SUBCAT_SOURCE] = "ml"
+
     stage_report(products)
     return products
 
 
-def get_possible_subcats_by_brand(
-    products, brand_original_to_clean, subcat_original_to_clean
-) -> Dict[str, list]:
-    """ which subcats are possible for this brand
-
-    "ariel": [
-        "sivi jel deterjan",
-        "camasir yikama urunleri",
-        ...
-    ]
-    """
-    possible_subcats_by_brand = defaultdict(set)
-
-    for product in products:
-        brands = product.get(keys.BRANDS_MULTIPLE, [])
-        subcats = product.get(keys.SUB_CATEGORIES, [])
-
-        clean_brands = (brand_original_to_clean.get(b) for b in brands)
-        clean_subcats = (subcat_original_to_clean.get(s) for s in subcats)
-
-        for clean_brand in clean_brands:
-            possible_subcats_by_brand[clean_brand].update(set(clean_subcats))
-
-    possible_subcats_by_brand = {
-        k: list(v) for k, v in possible_subcats_by_brand.items()
-    }
-    return possible_subcats_by_brand

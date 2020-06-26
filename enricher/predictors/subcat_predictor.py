@@ -8,7 +8,7 @@ import constants as keys
 import paths as paths
 
 from prep.filter_names import add_filtered_names
-from main import create_indexes
+from prep.indexer import create_indexes
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -44,7 +44,7 @@ def split_training_and_test(products):
     return X_train, y_train, X_test, no_sub
 
 
-def predict_subcat(X_train, y_train, X_test, no_sub):
+def subcat_prediction_generator(X_train, y_train, X_test, no_sub):
     """
     use products with subcat as training, and classify the remaining
     """
@@ -72,19 +72,18 @@ def predict_subcat(X_train, y_train, X_test, no_sub):
     for i, product in enumerate(no_sub):
         predicted_class = y_pred[i]
         idx = y_train.index(predicted_class)
+
+        # might be used for a probability threshold
         try:
             log_prob = log_probas[i][idx]
-            print(X_test[i])
-            print(predicted_class, log_prob, max(log_probas[i]), sum(log_probas[i]))
-            if log_prob < -100:
-                continue
-            print()
         except IndexError:
             continue
-        product[keys.SUBCAT] = predicted_class
-        product[keys.SUBCAT_SOURCE] = "ML"
 
-    return no_sub
+        the_id = product.get(keys.PRODUCT_ID)
+        if not the_id:
+            the_id = product.get(keys.SKU_ID)
+
+        yield the_id, predicted_class
 
 
 def group_by_brand(products):
@@ -94,34 +93,21 @@ def group_by_brand(products):
         yield key, items
 
 
-def run(products: list):
+def get_subcat_predictions(products: list):
     *rest, possible_subcats_by_brand = create_indexes(products)
 
     # keep subcats for ML, remove brand and others
     products = add_filtered_names(
         products, possible_subcats_by_brand, remove_subcat=False
     )
-    relevant_keys = {
-        keys.PRODUCT_ID,
-        keys.SKU_ID,
-        keys.FILTERED_NAMES,
-        keys.SUBCAT,
-        keys.SUBCAT_SOURCE,
-        keys.CLEAN_NAMES,
-        keys.BRAND,
-    }
-    products = [services.filter_keys(p, relevant_keys) for p in products]
 
-    subcat_predicted = []
     # for brand, products in group_by_brand(products):
     X_train, y_train, X_test, no_sub = split_training_and_test(products)
-    predicted = predict_subcat(X_train, y_train, X_test, no_sub)
-    subcat_predicted += predicted
-    services.save_json("../stage/ML_subcat_predicted.json", subcat_predicted)
-    return subcat_predicted
+    predicted = subcat_prediction_generator(X_train, y_train, X_test, no_sub)
+    return {the_id: prediction for the_id, prediction in predicted}
 
 
-def test_mnb():
+def simple_bayes_example():
     import numpy as np
 
     rng = np.random.RandomState(1)
@@ -141,4 +127,4 @@ def test_mnb():
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     products = services.read_json(paths.products_out)
-    run(products)
+    get_subcat_predictions(products)
