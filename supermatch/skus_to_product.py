@@ -108,13 +108,13 @@ def group_skus(skus: dict, variants, links_of_products) -> list:
     color_only = {
         sku_id: sku
         for sku_id, sku in skus.items()
-        if keys.DIGIT_UNIT_TUPLES not in sku and "colors" in sku
+        if not sku.get(keys.SIZE) and sku.get("colors")
     }
 
     size_only = {
         sku_id: sku
         for sku_id, sku in skus.items()
-        if keys.DIGIT_UNIT_TUPLES in sku and "colors" not in sku
+        if sku.get(keys.SIZE) and not sku.get("colors")
     }
 
     edges_from_color = set_match_generator_for_skus(color_only)
@@ -130,7 +130,9 @@ def group_skus(skus: dict, variants, links_of_products) -> list:
         "edges_from_size connections for product set match",
     )
 
-    sku_groups = itertools.chain(google_groups, gratis_groups, edges_from_color, edges_from_size)
+    sku_groups = itertools.chain(
+        google_groups, gratis_groups, edges_from_color, edges_from_size
+    )
 
     graph_of_skus = services.GenericGraph.create_graph_from_neighbor_pairs(sku_groups)
     groups_of_sku_ids = services.GenericGraph.create_connected_component_groups(
