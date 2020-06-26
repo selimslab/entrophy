@@ -6,12 +6,10 @@ import paths as paths
 from prep.grouper import filter_docs, group_products
 from prep.cat_to_subcat import add_raw_subcats
 from prep.filter_names import add_filtered_names
-
-from cleaners.brand_to_clean import get_brand_original_to_clean
-from cleaners.subcat_to_clean import get_subcat_original_to_clean
+from prep.indexer import create_indexes
 
 from choosers.brand_selector import add_brand
-from choosers.subcat_selector import get_possible_subcats_by_brand, add_subcat
+from choosers.subcat_selector import add_subcat
 from choosers.color_selector import add_color
 
 from inspect_results import inspect_results
@@ -22,27 +20,6 @@ from choosers.sub_brand_selector import (
     select_subbrand,
 )
 from analysis import analyze_subcat, analyze_brand
-
-
-def create_indexes(products):
-    brand_original_to_clean: dict = get_brand_original_to_clean(products)
-
-    clean_brands = set(brand_original_to_clean.values())
-    subcat_original_to_clean: dict = get_subcat_original_to_clean(
-        products, clean_brands
-    )
-
-    possible_subcats_by_brand: dict = get_possible_subcats_by_brand(
-        products, brand_original_to_clean, subcat_original_to_clean
-    )
-
-    services.save_json(paths.brand_original_to_clean, brand_original_to_clean)
-    services.save_json(paths.subcat_original_to_clean, subcat_original_to_clean)
-    services.save_json(
-        paths.output_dir / "possible_subcats_by_brand.json", possible_subcats_by_brand
-    )
-
-    return brand_original_to_clean, subcat_original_to_clean, possible_subcats_by_brand
 
 
 def skus_to_products(skus: dict):
@@ -73,7 +50,7 @@ def add_sub_brand(products, possible_subcats_by_brand):
     return products
 
 
-def enrich_product_data(products, debug=False):
+def enrich_product_data(products):
     # we may need to find the original of a clean string
     (
         brand_original_to_clean,
@@ -116,7 +93,7 @@ def add_brand_sub_brand_subcat_to_skus(skus: dict):
     return skus, products
 
 
-def test_enrich(skus: dict):
+def debug_enrich(skus: dict):
     _, products = add_brand_sub_brand_subcat_to_skus(skus)
     inspect_results(products)
     analyze_brand(products)
@@ -127,7 +104,7 @@ def test_enrich(skus: dict):
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     skus: dict = services.read_json(paths.skus)
-    test_enrich(skus)
+    debug_enrich(skus)
     print("done!")
 
     """

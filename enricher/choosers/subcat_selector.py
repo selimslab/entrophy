@@ -114,7 +114,7 @@ def stage_report(products):
 
 
 def add_subcat(
-        products: List[dict], subcat_original_to_clean: Dict[str, str], debug=False
+    products: List[dict], subcat_original_to_clean: Dict[str, str], debug=False
 ):
     logging.info("adding subcat..")
 
@@ -147,5 +147,3 @@ def add_subcat(
 
     stage_report(products)
     return products
-
-

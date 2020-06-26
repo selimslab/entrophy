@@ -25,6 +25,9 @@ def match_and_save(pairs):
 
 
 def create_new_matching_from_query():
+    """
+    match result of a query only
+    """
     links = services.read_json("test_logs/old/links.json")
     query = {keys.LINK: {"$in": services.flatten(links)}}
     docs_to_match = data_services.get_docs_to_match(query)
@@ -34,6 +37,9 @@ def create_new_matching_from_query():
 
 
 def create_new_matching_from_scratch():
+    """
+    download and save the raw items
+    """
     docs_to_match = data_services.get_docs_to_match(
         {keys.MARKET: {"$in": keys.MATCHING_MARKETS}}
     )
@@ -43,6 +49,9 @@ def create_new_matching_from_scratch():
 
 
 def create_new_matching_from_existing_pairs(start: int = None, end: int = None):
+    """
+    match only a part of items
+    """
     pairs = services.read_json(pairs_path)
     if start is None:
         start = 0
@@ -54,6 +63,9 @@ def create_new_matching_from_existing_pairs(start: int = None, end: int = None):
 
 
 def end_to_end_test():
+    """
+
+    """
     pairs = services.read_json(pairs_path)
     skus: dict = create_matching(id_doc_pairs=pairs)
     services.save_json(pairs_path, pairs)

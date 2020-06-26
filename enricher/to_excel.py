@@ -108,7 +108,7 @@ def to_excel():
         keys.SUB_BRAND,
         keys.CATEGORIES,
         keys.SUBCAT,
-        keys.SUBCAT_SOURCE
+        keys.SUBCAT_SOURCE,
     ]
 
     products = services.read_json(paths.products_out)

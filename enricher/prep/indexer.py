@@ -10,7 +10,7 @@ from cleaners.subcat_to_clean import get_subcat_original_to_clean
 
 
 def get_possible_subcats_by_brand(
-        products, brand_original_to_clean, subcat_original_to_clean
+    products, brand_original_to_clean, subcat_original_to_clean
 ) -> Dict[str, list]:
     """ which subcats are possible for this brand
 
