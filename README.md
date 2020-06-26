@@ -8,6 +8,9 @@ from a raw mess of online products
 
 + this is a medium size project with around 10k lines of Python3 by June 2020
 
+around 200 files, with an average of 50 lines per file
+
+
 # directory walkthrough 
  
 ## api/
@@ -40,6 +43,10 @@ when a function needs to read or write some data, it just calls a service for it
 ### enrich/ 
 
 enrich skus with brand, category, color etc. 
+
+### topic-modelling
+
+experimental, not in production 
 
 ### mobile/ 
 
