@@ -16,6 +16,7 @@ SUB_BRAND = "sub_brand"
 
 
 COLOR = "color"
+COLOR_PLURAL = "colors"
 CLEAN_COLORS = "clean_colors"
 SELECTED_COLOR = "selected_color"
 

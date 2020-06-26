@@ -14,7 +14,7 @@ def is_bad_color(clean_color):
 
 
 def get_clean_colors(product):
-    colors = product.get(keys.COLOR, []) + product.get(keys.VARIANT_NAME, [])
+    colors = product.get(keys.COLOR_PLURAL, [])
     colors = services.flatten(colors)
     clean_colors = []
     original_to_clean = {}
