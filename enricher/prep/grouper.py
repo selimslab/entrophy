@@ -16,7 +16,6 @@ keys_to_merge = {
 }
 
 
-
 def group_products(filtered_skus: List[dict]) -> List[dict]:
     """ group skus to products
     there will be 2 kind of docs, product members and singles
